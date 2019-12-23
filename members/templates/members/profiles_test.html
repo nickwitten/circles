@@ -80,21 +80,26 @@
           <div class="mr-1 ml-1">
             <p class="m-0 mt-2 mr-1 d-inline-block">Data: </p>
 
-            <select id="data_displayed" class="tool-input form-control m-1 d-inline-block" type="text" placeholder="Data Type">
-              <option value="" selected value>None</option>
-              <option value='email'>Email</option>
-              <option value='cell'>Cell</option>
-              <option value='circles_id'>ID</option>
-              <option value='status'>Status</option>
-              <option value='birthdate'>Birthdate</option>
-              <option value='race'>Race</option>
-              <option value='gender'>Gender</option>
-              <option value='city'>City</option>
-              <option value='state'>State</option>
-              <option value='zip'>Zip</option>
-              <option value='site'>Site</option>
-              <option value='e_phone'>Emergency Number</option>
-            </select>
+            <div id="data_displayed_container" class="d-inline-block">
+              <select id="data_displayed" class="tool-input form-control m-1 d-inline-block" type="text">
+                <option value="" selected value>None</option>
+                <option value='email'>Email</option>
+                <option value='cell'>Cell</option>
+                <option value='circles_id'>ID</option>
+                <option value='status'>Status</option>
+                <option value='birthdate'>Birthdate</option>
+                <option value='race'>Race</option>
+                <option value='gender'>Gender</option>
+                <option value='city'>City</option>
+                <option value='state'>State</option>
+                <option value='zip'>Zip</option>
+                <option value='site'>Site</option>
+                <option value='e_phone'>Emergency Number</option>
+              </select>
+            </div>
+
+            <i id="add_data_btn" class="fas fa-plus-circle icon-btn d-inline-block"></i>
+
           </div>
 
         </div>
@@ -174,11 +179,14 @@
           .attr("href","profile/" + profile['pk'].toString())
           .text(profile['first name'] + ' ' + profile['last name'])
       );
-      $(right).append(
-        $('<p/>')
-          .text(profile['data'])
-          .addClass('col-6 m-0')
-      );
+      // Add each data that was requested
+      for (i=0; i<profile['data'].length; i++) {
+        $(right).append(
+          $('<p/>')
+            .text(profile['data'][i])
+            .addClass('col-6 m-0')
+        );
+      }
     }
 
     // Add the filter and delete button into the list of active filters
@@ -303,6 +311,32 @@
           .on("click", function() {deleteFilterset();})
       )
     }
+
+    function addDataHTML() {
+      var select =
+      $("<select/>")
+        .addClass("tool-input form-control m-1 d-inline-block")
+        .change(function () {getProfiles()});
+      select.append(
+        $("<option/>").val("").text("None"),
+        $("<option/>").val("email").text("Email"),
+        $("<option/>").val("cell").text("Cell"),
+        $("<option/>").val("circles_id").text("ID"),
+        $("<option/>").val("status").text("Status"),
+        $("<option/>").val("birthdate").text("Birthdate"),
+        $("<option/>").val("race").text("Race"),
+        $("<option/>").val("gender").text("Gender"),
+        $("<option/>").val("city").text("City"),
+        $("<option/>").val("state").text("State"),
+        $("<option/>").val("zip").text("Zip"),
+        $("<option/>").val("site").text("Site"),
+        $("<option/>").val("e_phone").text("Emergency Number"),
+      );
+      $("#data_displayed_container").append(
+        select
+      );
+    }
+
     ////////////////////////// functions ////////////////////////////////////
 
     // filters that are saved by the user are stored here as objects containing
@@ -329,7 +363,13 @@
       var filter_input = $('#filter_input').val();
       var search_input = $('#search_input').val();
       var sort_by = $("#sort_by").val();
-      var data_displayed = $('#data_displayed').val();
+      var data_displayed = [];
+      $('#data_displayed_container').children().each(function() {
+        data_displayed.push($(this).val());
+        console.log($(this));
+      });
+      data_displayed = JSON.stringify(data_displayed);
+      console.log(data_displayed);
       var saved_filters = JSON.stringify(filters);
       console.log(saved_filters);
       // Ajax call to the backend (GetProfiles)
@@ -347,7 +387,7 @@
         success: function (data) {
           // Returned:
           // group object containing a list of profile objects
-          // Profile objects contain first name, last name, and pk
+          // Profile objects contain first name, last name, pk, and data
           var groups = data.groups;
           console.log( groups );
           $('#result-list').html(null); // Clear the result list
@@ -565,6 +605,7 @@
         $('.text').text('Title'); // Expand to see the placeholder
       }
     }
+
     /////////////// Listners to update the page //////////////////////
 
     $("#filter_by").change(function() {
@@ -591,6 +632,9 @@
     });
     $("#filterset_create").on("click", function() {
       createFilterset(); // Create a list
+    });
+    $("#add_data_btn").on("click", function() {
+      addDataHTML();
     });
 
   </script>

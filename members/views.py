@@ -292,6 +292,7 @@ def GetProfiles(request):
     search_input = request.GET.get('search_input',None)
     sort_by = request.GET.get('sort_by',None)
     data_displayed = request.GET.get('data_displayed',None)
+    data_displayed = json.loads(data_displayed)
     saved_filters = request.GET.get('saved_filters',None)
     saved_filters = json.loads(saved_filters)
     profiles = Profile.objects.all()
@@ -333,14 +334,17 @@ def GetProfiles(request):
     # Loop through every profile
     for profile in profiles:
         # Get requested data for profile
-        data = None
-        if data_displayed: # if data is requested
-            data = getattr(profile,data_displayed) # fetch data
-             # If data is a phone number
-            if data and ((data_displayed == 'cell') or (data_displayed == 'e_phone')):
-                data = data.as_e164 # Turn into a string
-            if not data: # if the field is empty return not available
-                data = 'not available'
+        data = []
+        for data_type in data_displayed: # Loop through requested data
+            data_temp = None
+            if data_type: # if data is requested
+                data_temp = getattr(profile,data_type) # fetch data
+                 # If data is a phone number
+                if data_temp and ((data_type == 'cell') or (data_type == 'e_phone')):
+                    data_temp = data_temp.as_e164 # Turn into a string
+                if not data_temp: # if the field is empty return not available
+                    data_temp = 'not available'
+                data.append(data_temp) # Add that data result to list of data
         if sort_by == '':
             group_name = 'no groups' # User doesn't want them sorted
         else:
