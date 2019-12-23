@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" typy="text/css" href="{% static 'dashboard/css/main.css' %}">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+  </head>
+  <body>
+
+    <!-- Optional JavaScript -->
+    <!--<script src="{% static 'dashboard/js/main.js' %}" type="text/javascript"></script>-->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+
+    <script src="{% static 'assets/js/jquery-3.4.1.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="{% static 'assets/js/bootstrap.js' %}"></script>
+    <script src="{% static 'js/jquery.bootstrap.modal.forms.js' %}"></script>
+    <script src="{% static 'dashboard/js/main.js' %}"></script>
+
+    <header>
+
+      <div id='cssmenu' class="contents-blurred">
+        <ul>
+          {% block tabs %}
+          {% endblock tabs %}
+        </ul>
+        {% if user.is_authenticated %}
+        <a class='nav-right' href="{% url 'logout' %}">Logout</a>
+        {% else %}
+        <a class='nav-right' href="{% url 'login' %}">Login</a>
+        {% endif %}
+        <h2>Circles</h2>
+      </div>
+      {% block app_tabs %}
+      {% endblock app_tabs %}
+    </header>
+
+    <div class="alert-container contents-blurred contents-blurred">
+      {% if messages %}
+      {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+          </div>
+      {% endfor %}
+      {% endif %}
+    </div>
+      {% block content %}{% endblock %}
+
+      {% block js %}{% endblock js %}
+  </body>
+</html>

@@ -1,0 +1,375 @@
+{% extends 'members/base.html' %}
+
+
+<!--------------- Nav Bar ------------------->
+
+{% block app_tabs %}
+  <div class="bg-red contents-blurred">
+    <ul class="sub_tags">
+      <li><a class='text-white sub_tabs' href="{% url 'profiles' %}">Profiles</a></li>
+      <li><a class='blacklink sub_tabs' href="">Profile Info</a></li>
+    </ul>
+  </div>
+{% endblock app_tabs %}
+
+<!------------------------------------------->
+
+{% block content %}
+
+<!---------------------------- Child Info Slide ------------------------------->
+
+<div id="childInfoSlide" class="content-section shadow inactive-slide">
+  <button class="btn close-more-child-info" type="button" name="button"><-</button>
+  <div class="border-bottom text-center mb-2">
+    <h6>Children Associated With: {{ profile.first_name }} {{ profile.last_name }}</h6>
+  </div>
+  {% for childinfo in object.get_child_infos %}
+    <div class="profile-container shadow">
+      <div class="row">
+        <div class="col-6">
+          {% for child in childinfo.order_children %}
+            <div class="border-bottom m-3 pb-2">
+              <h6 class="mb-1">{{ child.last_name }}, {{ child.first_name }} {{ child.middle_initial }}.</h6>
+              <div class="row">
+                <div class="col-6">
+                  <p class="m-0">Relationship: {{ child.relationship }}</p>
+                </div>
+                <div class="col-6">
+                  <p class="m-0">Circles attendance: {{  child.attendance }}</p>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <p class="m-0">Birthdate: {{ child.birthdate }}</p>
+                </div>
+                <div class="col-6">
+                  <p class="m-0">Age: {{  child.calculate_age }}</p>
+                </div>
+              </div>
+              <p class="m-0">Gender: {{ child.gender }}</p>
+              <div class="row">
+                <div class="col-6">
+                  <p class="m-0">Known health issues:</p>
+                </div>
+                <div class="col-6">
+                  <p class="m-0">{{ child.health_issues }}</p>
+                </div>
+              </div>
+              <p class="m-0">Date of last physical exam: {{ child.physical_date }}</p>
+              <div class="row">
+                <div class="col-6">
+                  <p class="m-0">Allergies</p>
+                </div>
+                <div class="col-6">
+                  <p class="m-0">{{ child.allergies }}</p>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <p class="m-0">Medications:</p>
+                </div>
+                <div class="col-6">
+                  <p class="m-0">{{ child.medications }}</p>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <p class="m-0">Dietary modifications:</p>
+                </div>
+                <div class="col-6">
+                  <p class="m-0">{{ child.dietary_modifications }}</p>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <p class="m-0">Disability, behavioral barriers, limitations::</p>
+                </div>
+                <div class="col-6">
+                  <p class="m-0">{{ child.disabilities }}</p>
+                </div>
+              </div>
+
+            </div>
+          {% endfor %}
+          <div class="form-group mb-0 d-inline-block ml-3 mr-3">
+          </div>
+        </div>
+        <div class="col-2">
+        </div>
+        <div class="col-4">
+          <div class="m-3">
+            <div class="mb-3">
+              <p class="font-weight-bold mb-1">Parent/Guardian</p>
+              <p class="m-0">{{ childinfo.parent_first_name }} {{ childinfo.parent_last_name }}</p>
+              <p class="m-0">{{ childinfo.parent_phone }}</p>
+              <p class="m-0">{{ childinfo.parent_street_address }}, {% if childinfo.parent_unit %}Unit #{{childinfo.parent_unit }}{% endif %}
+              </p>
+              <p class="m-0">{{ childinfo.parent_city }}, {{ childinfo.parent_state }} {{ childinfo.parent_zip }}</p>
+            </div>
+            <div class="mb-3">
+              <p class="font-weight-bold mb-1">Emergency Contact</p>
+              <p class="m-0">{{ childinfo.e_relationship }}</p>
+              <p class="m-0">{{ childinfo.e_first_name }} {{ childinfo.e_last_name }}</p>
+              <p class="m-0">{{ childinfo.e_phone }}</p>
+            </div>
+            <div class="mb-3">
+              <p class="font-weight-bold mb-1">Physician</p>
+              <p class="m-0">{{ childinfo.physician_name }}</p>
+              <p class="m-0">{{ childinfo.physician_practice }}</p>
+              <p class="m-0">{{ childinfo.physician_phone }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<!----------------------------------------------------------------------------->
+
+
+<div class="blended container contents-blurred">
+  <div class="row">
+    <div class="col-6">
+
+<!------------------- Profile Fields --------------------->
+
+      <div class="profile-container shadow">
+        <div class="row mb-2">
+          <div class="col-6">
+          </div>
+          <div class="col-3">
+            <p class="field-label">Circles ID:</p>
+          </div>
+          <div class="col-3 field-value-container">
+            <div class="field-value-sub-container">
+              <p class="field-value font-weight-bold">{{ object.circles_id }}</p>
+            </div>
+          </div>
+        </div>
+
+        {% include 'members/sub_templates/detail_profile_field.html' with label='First name:' value=object.first_name %}
+        {% include 'members/sub_templates/detail_profile_field.html' with label='Last name:' value=object.last_name %}
+
+        <div class="row mb-2">
+          {{ form.birthdate.errors }}
+          {{ form.race.errors }}
+          {{ form.gender.errors }}
+          <div class="col-4 pr-0">
+            <div class="inline-field">
+              <p class="field-label-third">DOB: </p>
+              <!--<div class="field-value-container-third">-->
+                <p class="field-value d-inline-block font-weight-bold">{{ object.birthdate|date:'m-d-Y' }}</p>
+              <!--</div>-->
+            </div>
+          </div>
+          {% include 'members/sub_templates/detail_profile_field_third.html' with label='Gender:' value=object.gender %}
+          {% include 'members/sub_templates/detail_profile_field_third.html' with label='Race:' value=object.race %}
+        </div>
+
+        {% include 'members/sub_templates/detail_profile_field.html' with label='Email address:' value=object.email %}
+        {% include 'members/sub_templates/detail_profile_field.html' with label='Cell:' value=object.cell %}
+        {% include 'members/sub_templates/detail_profile_field.html' with label='Current address:' value=object.order_residences.first.street_address %}
+        {% if object.order_residences.first.unit %}{% include 'members/sub_templates/detail_profile_field.html' with label='Unit #:' value=object.order_residences.first.unit %}{% endif %}
+        <div class="row mb-2">
+          {% include 'members/sub_templates/detail_profile_field_third.html' with label='City:' value=object.order_residences.first.city %}
+          {% include 'members/sub_templates/detail_profile_field_third.html' with label='State:' value=object.order_residences.first.state %}
+          {% include 'members/sub_templates/detail_profile_field_third.html' with label='Zip:' value=object.order_residences.first.zip %}
+        </div>
+
+        <div class="row mb-2 mt-5">
+          <div class="col-6">
+            <p class="font-weight-bold">Emergency Contact</p>
+          </div>
+        </div>
+
+        {% include 'members/sub_templates/detail_profile_field.html' with label='Relationship:' value=object.e_relationship %}
+        {% include 'members/sub_templates/detail_profile_field.html' with label='First name:' value=object.e_first_name %}
+        {% include 'members/sub_templates/detail_profile_field.html' with label='Last name:' value=object.e_last_name %}
+        {% include 'members/sub_templates/detail_profile_field.html' with label='Phone number:' value=object.e_phone %}
+
+
+      </div>
+
+<!------------------ Housing Container ---------------------------------------->
+
+      <div class="profile-container shadow pt-0 pb-0">
+
+        <div class="mt-2 border-bottom text-center pt-2">
+          <h3>Housing</h3>
+        </div>
+
+        {% for house in object.order_residences %}
+          <div class="border-bottom">
+            <div class="row mb-2 p-2">
+              <div class="col-4">
+                <p class="mb-0">
+                  {{ house.start_date|date:'m/d/Y' }} - {{ house.end_date|date:'m/d/Y' }}
+                </p>
+              </div>
+              <div class="col-8">
+                <p class="m-0">
+                  {{ house.street_address }},
+                  {% if house.unit %}Unit #{{house.unit }}{% endif %}
+                </p>
+                <p class="m-0">
+                  {{ house.city }}, {{ house.state }} {{ house.zip }}
+                </p>
+                <p class="m-0">Ownership: {{ house.ownership }}</p>
+                <p class="m-0">Habitat: {{ house.habitat }}</p>
+                <p class="m-0">Safety: {{ house.safe }}, Repairs: {{ house.repair }}</p>
+                <p class="m-0">Monthly Hs. Payment: {{ house.payment }}</p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+
+      </div>
+<!----------------------------------------------------------------------------->
+
+    </div>
+    <div class="col-6">
+
+<!---------------------------- Children Container ----------------------------->
+
+      <div class="profile-container shadow pt-0 pb-0">
+
+        <div class="border-bottom text-center pt-2">
+          <h3>Children</h3>
+        </div>
+
+        {% for childinfo in object.get_child_infos %}
+          {% for child in childinfo.order_children %}
+            <div class="">
+              <div class="row pl-2">
+                <div class="col-6">
+                  <p class="m-2">{{ child.first_name }} {{ child.last_name }}</p>
+                </div>
+                <div class="col-6">
+                  <p class="m-2">{{ child.birthdate }}</p>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        {% endfor %}
+
+        <div class="text-right p-2">
+          <button class="btn more-child-info" type="button" name="button">More Info</button>
+        </div>
+
+      </div>
+
+<!---------------------------- Roles Container -------------------------------->
+
+      <div class="profile-container shadow pt-0 pb-0">
+
+        <div class="border-bottom text-center pt-2">
+          <h3>Roles</h3>
+        </div>
+
+        {% for role in object.order_roles %}
+          <div class="border-bottom">
+            <div class="row mb-2 p-2">
+                <div class="col-4">
+                  <p class="mb-0">
+                    {{ role.start_date|date:'m/d/Y' }} - {{ role.end_date|date:'m/d/Y' }}
+                  </p>
+                </div>
+                <div class="col-8">
+                  <h5 class="m-0 text-capitalize mb-1">
+                    {{ role.position }}
+                  </h5>
+                  <p class="m-0">Cohort: {{ role.cohort }}</p>
+                  <p class="m-0">Resource team name: {{ role.resource_team_name }}</p>
+                  <p class="m-0">Resource team role: {{ role.resource_team_role }}
+                  <p class="m-0">Location: {{ role.location }}</p>
+                </div>
+            </div>
+          </div>
+        {% endfor %}
+
+
+      </div>
+
+<!------------------------- Training Container -------------------------------->
+
+      <div class="profile-container shadow pt-0 pb-0">
+
+        <div class="border-bottom text-center pt-2">
+          <h3>Training</h3>
+        </div>
+
+        <div class="border-bottom">
+          <div class="row">
+            <div class="col-6">
+              <h5 class="m-0">Subject</h5>
+            </div>
+            <div class="col-5">
+              <h5 class="m-0">Date Completed</h5>
+            </div>
+          </div>
+        </div>
+
+        <div class="">
+          {% for training in object.order_training %}
+            <div class="row pt-2 pb-2">
+              <div class="col-6">
+                <p class="m-0">{{ training.subject }}</p>
+              </div>
+              <div class="col-5">
+                <p class="m-0">{{ training.date_completed }}</p>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+      </div>
+
+<!----------------------------------------------------------------------------->
+
+    </div>
+  </div>
+
+<!------------------ Nav Button ------------------>
+  <div class="form-group text-right p-4">
+    <a class="btn btn-outline-secondary" href="{% url 'profile-update' object.id %}">Profile Settings</a>
+  </div>
+</div>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+
+    $(".more-child-info").click(function(){
+      $(".inactive-slide").animate({
+        left: $(".inactive-slide").parent().width() / 2 - $(".inactive-slide").width() / 2
+      }, 33);
+
+      var i = 0;
+      var j = document.getElementsByClassName("contents-blurred").length;
+      for (i = 0; i < j; i++) {
+
+        document.getElementsByClassName("contents-blurred")[i].classList.add('blur');
+      };
+
+    });
+
+    $(".close-more-child-info").click(function(){
+      $(".inactive-slide").animate({
+        left: -1000
+      }, 33);
+
+      var i = 0;
+      var j = document.getElementsByClassName("contents-blurred").length;
+      for (i = 0; i < j; i++) {
+
+        document.getElementsByClassName("contents-blurred")[i].classList.remove('blur');
+      };
+
+    });
+
+  });
+
+</script>
+
+
+{% endblock content %}

@@ -1,0 +1,538 @@
+{% extends 'members/base.html' %}
+{% load crispy_forms_tags %}
+
+<!--------------- Nav Bar ------------------->
+
+{% block app_tabs %}
+
+  <div class="bg-red contents-blurred">
+    <ul class="sub_tags">
+      <li><a class='text-white sub_tabs' href="{% url 'profiles' %}">Profiles</a></li>
+      <li><a class='blacklink sub_tabs' href="">Profile Info</a></li>
+    </ul>
+  </div>
+
+{% endblock app_tabs %}
+
+<!------------------------------------------->
+
+{% block content %}
+
+  <!------------------- Children Info Slide ----------->
+
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <fieldset class="form-group">
+      <div class="blended container">
+
+<!---------------- errors in form --------------------------->
+
+      {% if form.errors %}
+        {% for field in form %}
+            {% for error in field.errors %}
+                <div class="alert alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+      {% endif %}
+
+<!------------------------------------------------------------>
+
+        <div class="row">
+          <div class="col-6">
+
+<!-------------- Basic Profile Info Container ---------------->
+
+            <div id="mainContainer"class="profile-container shadow">
+              <div class="row mb-2">
+                <div class="col-6">
+                  <!--<img class="rounded-circle article-img" src="{{ object.image.url }}" height=100 width=75>-->
+                </div>
+                <div class="col-3">
+                  {{ form.circles_id.label_tag }}
+                </div>
+                <div class="col-3">
+                  {{ form.circles_id }}
+                </div>
+              </div>
+
+              {% include 'members/sub_templates/create_profile_field.html' with field=form.first_name %}
+              {% include 'members/sub_templates/create_profile_field.html' with field=form.last_name %}
+
+              <div class="row mb-2">
+                {% include 'members/sub_templates/create_profile_field_third.html' with field=form.birthdate %}
+                {% include 'members/sub_templates/create_profile_field_third.html' with field=form.gender %}
+                {% include 'members/sub_templates/create_profile_field_third.html' with field=form.race %}
+              </div>
+
+              {% include 'members/sub_templates/create_profile_field.html' with field=form.email %}
+              {% include 'members/sub_templates/create_profile_field.html' with field=form.cell %}
+              {% include 'members/sub_templates/create_profile_field.html' with field=form.other_phone %}
+              {% include 'members/sub_templates/create_profile_field.html' with field=form.image %}
+
+              <div class="row mb-2 mt-5">
+                <div class="col-6">
+                  <p class="font-weight-bold">Emergency Contact</p>
+                </div>
+              </div>
+
+              {% include 'members/sub_templates/create_profile_field.html' with field=form.e_relationship %}
+              {% include 'members/sub_templates/create_profile_field.html' with field=form.e_first_name %}
+              {% include 'members/sub_templates/create_profile_field.html' with field=form.e_last_name %}
+              {% include 'members/sub_templates/create_profile_field.html' with field=form.e_phone %}
+
+
+              {% if request.path == '/members/create_profile/' %}
+
+                <div class="">
+                  <div class="row">
+                    <div class="col-6 form-group d-inline-block">
+                      <a class="btn btn-outline-secondary" href="{% url 'profiles' %}">Cancel</a>
+                    </div>
+                    <div class="col-6 form-group mt-3 mb-0">
+                      <button class="btn btn-outline-info" type="submit">Create Profile</button>
+                    </div>
+                  </div>
+                </div>
+              {% endif %}
+
+            </div>
+
+<!-------------------- Housing Container ---------------------------------->
+
+            {% if request.path == '/members/create_profile/' %}
+
+              <!-- Create View -->
+
+              <div class="profile-container shadow pt-0 pb-0 contents-blurred">
+
+                <div class="mt-2 border-bottom border-secondary text-center pt-2">
+                  <h3>Housing</h3>
+                </div>
+
+
+                <div class="text-right">
+
+                  <!-- Add Home Info Button -->
+                  <div class="form-group m-0 pb-2 pt-2 d-inline-block">
+                    <button class="btn btn-outline-secondary" type="submit" name="button">Add Home Info</button>
+                  </div>
+
+                </div>
+
+              </div>
+
+            {% else %}
+
+              <!-- Update View -->
+
+              <div class="profile-container shadow pt-0 pb-0">
+
+                <div class="mt-2 border-bottom text-center pt-2">
+                  <h3>Housing</h3>
+                </div>
+
+                {% for house in object.order_residences %}
+                  <div class="border-bottom">
+                    <div class="row mb-2 p-2">
+                      <div class="col-4">
+                        <div class="">
+                          <p class="mb-0">
+                            {{ house.start_date|date:'m/d/Y' }} - {{ house.end_date|date:'m/d/Y' }}
+                          </p>
+                        </div>
+                        <div class="pt-4 mt-4">
+                          <div class="form-group mb-0 pt-2 d-inline-block">
+                            <button class="modal-trigger far fa-edit icon-btn text-small" data-id="{% url 'update-residence' house.pk %}" type="button" name="button">
+                            </button>
+                          </div>
+                          <div class="form-group mb-0 pt-2 d-inline-block">
+                            <button class="modal-trigger far fa-trash-alt icon-btn text-small" data-id="{% url 'delete-residence' house.pk %}" type="button" name="button">
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-8">
+                        <p class="m-0">
+                          {{ house.street_address }},
+                          {% if house.unit %}Unit #{{house.unit }}{% endif %}
+                        </p>
+                        <p class="m-0">
+                          {{ house.city }}, {{ house.state }} {{ house.zip }}
+                        </p>
+                        <p class="m-0">Ownership: {{ house.ownership }}</p>
+                        <p class="m-0">Habitat: {{ house.habitat }}</p>
+                        <p class="m-0">Safety: {{ house.safe }}, Repairs: {{ house.repair }}</p>
+                        <p class="m-0">Monthly Hs. Payment: {{ house.payment }}</p>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+
+                <div class="text-right">
+
+                  <!-- Add Home Info Button -->
+                  <div class="form-group m-0 pb-2 pt-2 d-inline-block">
+                    <button class="create-residence btn btn-outline-secondary" type="button" name="button">Add Home Info</button>
+                  </div>
+
+                </div>
+
+              </div>
+
+            {% endif %}
+
+<!------------------------------------------------------>
+
+          </div>
+          <div class="col-6">
+
+<!-------------------- Children Container ------------------------------->
+
+            {% if request.path == '/members/create_profile/' %}
+
+            <!---------------------- Create View ------------------------------>
+
+              <div class="profile-container shadow pt-0 pb-0 contents-blurred">
+                <div class="border-bottom border-secondary text-center pt-2">
+                  <h3>Children</h3>
+                </div>
+
+                <div class="text-right">
+
+                  <!-- Add Child Button -->
+                  <div class="form-group m-0 pb-2 pt-2 d-inline-block">
+                    <button class="children-info btn btn-outline-secondary" type="submit" name="button">Add Child</button>
+                  </div>
+
+                </div>
+              </div>
+
+            <!----------------------------------------------------------------->
+
+            {% else %}
+
+              <!---------------------- Update View ------------------------------>
+
+              <div class="profile-container shadow pt-0 pb-0">
+
+                <div class="border-bottom text-center pt-2">
+                  <h3>Children</h3>
+                </div>
+
+                {% for child in object.order_children %}
+                  <div class="">
+                    <div class="row pl-2">
+                      <div class="col-6">
+                        <p class="m-2">{{ child.first_name }} {{ child.last_name }}</p>
+                      </div>
+                      <div class="col-6">
+                        <p class="m-2">{{ child.calculate_age }}</p>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+
+                <div class="text-right">
+
+                  <!-- Add Child Button -->
+                  <div class="form-group m-0 pb-2 pt-2 d-inline-block">
+                    <a class="btn btn-outline-secondary" href="{% url 'edit-children' object.pk %}">Edit Children</a>
+                  </div>
+
+                </div>
+
+              </div>
+
+              <!----------------------------------------------------------------->
+
+            {% endif %}
+
+<!-------------------- Roles Container ---------------------------------->
+
+            {% if request.path == '/members/create_profile/' %}
+
+            <!---------------------- Create View ---------------------------->
+
+              <div class="profile-container shadow pt-0 pb-0 contents-blurred">
+                <div class="border-bottom border-secondary text-center pt-2">
+                  <h3>Roles</h3>
+                </div>
+
+                            <!-- Status Field -->
+                <div class="border-bottom border-secondary">
+                  <div class="row pt-4 pb-4">
+                    <div class="col-4">
+                      <div class="inline-field">
+                        {% if form.status.errors %}
+                          <p class="error">*</p>
+                        {% endif %}
+                        {{ form.status.label_tag }}
+                      </div>
+                    </div>
+                    <div class="col-8">
+                      <!--{{ form.status }}-->
+                    </div>
+                  </div>
+                </div>
+
+                <div class="text-right">
+
+                  <!-- Add Child Button -->
+                  <div class="form-group m-0 pb-2 pt-2 d-inline-block">
+                    <button class="create-role btn btn-outline-secondary" type="submit" name="button">Add Role</button>
+                  </div>
+
+                </div>
+              </div>
+
+            <!--------------------------------------------------------------->
+
+            {% else %}
+
+            <!---------------------- Update View ---------------------------->
+
+              <div class="profile-container shadow pt-0 pb-0">
+
+                <div class="border-bottom text-center pt-2">
+                  <h3>Roles</h3>
+                </div>
+
+                            <!-- Status Field -->
+                <div class="border-bottom">
+                  <div class="row pt-4 pb-4">
+                    <div class="col-4">
+                      <div class="inline-field">
+                        {% if form.status.errors %}
+                          <p class="error">*</p>
+                        {% endif %}
+                        {{ form.status.label_tag }}
+                      </div>
+                    </div>
+                    <div class="col-8">
+                      {{ form.status }}
+                    </div>
+                  </div>
+                </div>
+
+                            <!-- Role Objects -->
+                {% for role in object.order_roles %}
+                  <div class="border-bottom">
+                    <div class="row mb-2 p-2">
+                      <div class="col-4">
+                        <div class="">
+                          <p class="mb-0">
+                            {{ role.start_date|date:'m/d/Y' }} - {{ role.end_date|date:'m/d/Y' }}
+                          </p>
+                        </div>
+                        <div class="pt-2 mt-4">
+                          <div class="form-group mb-0 pt-2 d-inline-block">
+                            <button class="modal-trigger far fa-edit icon-btn text-small" data-id="{% url 'update-role' role.pk %}" type="button" name="button">
+                            </button>
+                          </div>
+                          <div class="form-group mb-0 pt-2 d-inline-block">
+                            <button class="modal-trigger far fa-trash-alt icon-btn text-small" data-id="{% url 'delete-role' role.pk %}" type="button" name="button">
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-8">
+                        <h5 class="m-0 text-capitalize mb-1">
+                          {{ role.position }}
+                        </h5>
+                        <p class="m-0">Cohort: {{ role.cohort }}</p>
+                        <p class="m-0">Resource team name: {{ role.resource_team_name }}</p>
+                        <p class="m-0">Resource team role: {{ role.resource_team_role }}</p>
+                        <p class="m-0">Location: {{ role.location }}</p>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+
+
+                <div class="text-right">
+
+                  <!-- Add Role Button -->
+                  <div class="form-group m-0 pb-2 pt-2 d-inline-block">
+                    <button class="create-role btn btn-outline-secondary" type="button" name="button">Add Role</button>
+                  </div>
+
+                </div>
+
+              </div>
+
+              <!------------------------------------------------------------->
+
+            {% endif %}
+
+<!----------------------- Training Container ---------------------------------->
+
+            {% if request.path == '/members/create_profile/' %}
+
+            <!----------------------- Create View --------------------------->
+
+            <div class="profile-container shadow pt-0 pb-0 contents-blurred">
+
+              <div class="border-bottom border-secondary text-center pt-2">
+                <h3>Training</h3>
+              </div>
+
+                <div class="border-bottom border-secondary">
+                  <div class="row">
+                    <div class="col-5">
+                      <h5 class="m-0">Subject</h5>
+                    </div>
+                    <div class="col-5">
+                      <h5 class="m-0">Date Completed</h5>
+                    </div>
+                  </div>
+                </div>
+
+              <div class="text-right">
+
+                <!-- Add Child Button -->
+                <div class="form-group m-0 pb-2 pt-2 d-inline-block">
+                  <button class="add-training btn btn-outline-secondary" type="submit" name="button">Add Training</button>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!--------------------------------------------------------------->
+
+            {% else %}
+
+            <!----------------------- Update View --------------------------->
+
+            <div class="profile-container shadow pt-0 pb-0">
+              <div class="border-bottom text-center pt-2">
+                <h3>Training</h3>
+              </div>
+
+              <div class="border-bottom">
+                <div class="row">
+                  <div class="col-5">
+                    <h5 class="m-0">Subject</h5>
+                  </div>
+                  <div class="col-5">
+                    <h5 class="m-0">Date Completed</h5>
+                  </div>
+                </div>
+              </div>
+
+              <div class="border-bottom">
+                {% for training in object.order_training %}
+                  <div class="row pt-2 pb-2">
+                    <div class="col-5">
+                      <p class="m-0">{{ training.subject }}</p>
+                    </div>
+                    <div class="col-4">
+                      <p class="m-0">{{ training.date_completed }}</p>
+                    </div>
+                    <div class="col-3">
+                      <button class="modal-trigger far fa-edit icon-btn text-small" data-id="{% url 'update-training' training.pk %}" type="button" name="button">
+                      </button>
+                      <button class="modal-trigger far fa-trash-alt icon-btn text-small" data-id="{% url 'delete-training' training.pk %}" type="button" name="button">
+                      </button>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+
+              <div class="text-right">
+
+                <!-- Add Training Button -->
+                <div class="form-group m-0 pb-2 pt-2 d-inline-block">
+                  <button class="add-training btn btn-outline-secondary" type="button" name="button">Add Training</button>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!--------------------------------------------------------------->
+
+            {% endif %}
+
+<!----------------------------------------------------------------------------->
+
+          </div>
+        </div>
+
+<!---------------------- Navigation Buttons -------------------------------->
+
+        {% if request.path == '/members/create_profile/' %}
+
+        {% else %}
+          <div class="form-group float-left text-align-right p-4 d-inline-block">
+            <a class="btn btn-outline-danger" href="{% url 'profile-delete' object.id %}">Delete Profile</a>
+          </div>
+          <div class="form-group float-right text-align-left p-4 d-inline-block">
+            <button class="btn btn-outline-secondary" type="submit">Save</button>
+          </div>
+        {% endif %}
+
+<!------------------------------------------------------>
+
+      </div>
+    </fieldset>
+  </form>
+
+<!---------------------- Modal Popup ------------------>
+
+  <div class="modal fade" tabindex="-1" role="dialog" id="modal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content popup">
+      </div>
+    </div>
+  </div>
+
+  {% if request.path == '/members/create_profile/' %}
+
+    <script type="text/javascript">
+
+      var i = 0;
+      var j = document.getElementsByClassName("contents-blurred").length;
+      for (i = 0; i < j; i++) {
+        document.getElementsByClassName("contents-blurred")[i].classList.add('blur');
+      };
+
+      document.getElementById("mainContainer").classList.add('screen-middle');
+
+    </script>
+
+  {% else %}
+
+    <script type="text/javascript">
+      $(document).ready(function() {
+
+        $(".create-residence").modalForm({
+          formURL: "{% url 'create-residence' object.id %}"
+        });
+
+        $(".create-role").modalForm({
+          formURL: "{% url 'create-role' object.id %}"
+        });
+
+        $(".add-training").modalForm({
+          formURL: "{% url 'add-training' object.id %}"
+        });
+
+        $(".modal-trigger").each(function () {
+          $(this).modalForm({formURL: $(this).data('id')});
+        });
+
+      });
+
+
+    </script>
+  {% endif %}
+
+{% endblock content %}

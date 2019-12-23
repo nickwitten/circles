@@ -1,0 +1,20 @@
+{% extends "dashboard/base.html" %}
+{% load crispy_forms_tags %}
+
+<!--------------- Nav Bar ------------------->
+
+{% block tabs %}
+  <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+  <li class='active'><a href="{% url 'profiles' %}">Members</a></li>
+  <li><a href="#">Meetings</a></li>
+  <li><a href="#">Training</a></li>
+  <li><a href="#">Progress</a></li>
+{% endblock tabs %}
+
+{% block app_tabs %}
+{% endblock app_tabs %}
+
+<!------------------------------------------->
+
+{% block content %}
+{% endblock content %}

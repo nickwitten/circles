@@ -1,0 +1,26 @@
+{% extends "members/base.html" %}
+
+{% block app_tabs %}
+  <div class="bg-red">
+    <ul class="sub_tags">
+      <li><a class='text-white sub_tabs' href="{% url 'profiles' %}">Profiles</a></li>
+      <li><a class='blacklink sub_tabs' href="{% url 'profiles' %}">Profile Info</a></li>
+    </ul>
+  </div>
+{% endblock app_tabs %}
+
+{% block content %}
+	<div class="content-section shadow">
+		<form method="POST">
+			{% csrf_token %}
+			<fieldset class="form-group">
+				<legend class="border-bottom mb-4">Delete Profile</legend>
+				<h2>Are you sure you want to delete the profile: {{ object.first_name }} {{ object.last_name }}</h2>
+			</fieldset>
+			<div class="form-group">
+				<button class="btn btn-outline-danger" type="submit">Yes Delete</button>
+        <a class="btn btn-outline-secondary" href="{% url 'profile-detail' object.id %}">Cancel</a>
+			</div>
+		</form
+		</div>
+{% endblock content %}

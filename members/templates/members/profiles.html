@@ -1,0 +1,104 @@
+{% extends 'members/base.html' %}
+{% load crispy_forms_tags %}
+{% load members_tags %}
+
+
+<!--------------- Nav Bar ------------------->
+
+{% block app_tabs %}
+  <div class="bg-red">
+    <ul class="sub_tags">
+      <li><a class='blacklink sub_tabs' href="{% url 'profiles' %}">Profiles</a></li>
+    </ul>
+  </div>
+{% endblock app_tabs %}
+
+<!------------------------------------------->
+
+{% block content %}
+
+  <div class="content-section shadow">
+    <form method="POST">
+      {% csrf_token %}
+      <fieldset class="form-group">
+        {{ query_form|crispy }}
+      </fieldset>
+      <div class="form-group">
+        <button class="btn btn-outline-info" type="submit">submit</button>
+      </div>
+    </form>
+
+    <script>
+      function getProfiles() {
+        var filter_by = $('#id_filter_by').val();
+        var filter_input = $('#id_filter_by_value').val();
+        var search_by = $("#id_search_by").val();
+        var search_input = $('#id_search_by_value').val();
+        var sort_by = $("#id_sort_by").val();
+        var sort_input = $("#id_sort_by_value").val();
+        var data_displayed = $('#id_data_displayed').val();
+        $.ajax({
+          url: '{% url "get-profiles" %}',
+          data: {
+            'filter_by': filter_by,
+            'filter_input': filter_input,
+            'search_by': search_by,
+            'search_input': search_input,
+            'sort_by': sort_by,
+            'sort_input': sort_input,
+            'data_displayed': data_displayed,
+          },
+          dataType: 'json',
+          success: function (data) {
+            var profile_links = data.profile_links
+            console.log( profile_links );
+            $('#result-list').html(null);
+            var i = 0;
+            var j = profile_links.length;
+            for (i = 0; i < j; i++) {
+              var tuple_number = i.toString();
+              if (profile_links[i][0] == 'no groups'){
+              }
+              else {
+                $('#result-list').append('<h3>' + profile_links[i][0] + '</h3>');
+              };
+              var k = 0;
+              var l = profile_links[i][1].length;
+              for (k = 0; k < l; k++) {
+                $('#result-list').append(profile_links[i][1][k]);
+              };
+            };
+          }
+        });
+      }
+      $(document).ready(function(){
+        getProfiles();
+      });
+      $("#id_filter_by").change(function() {
+        getProfiles();
+      });
+      $("#id_filter_by_value").on("keyup", function() {
+        getProfiles();
+      });
+      $("#id_search_by").change(function() {
+        getProfiles();
+      });
+      $("#id_search_by_value").on("keyup", function() {
+        getProfiles();
+      });
+      $("#id_sort_by").change(function() {
+        getProfiles();
+      });
+      $("#id_data_displayed").change(function() {
+        getProfiles();
+      });
+
+
+    </script>
+
+    <ul class="list-group p-2" id="result-list">
+    </ul>
+
+  </div>
+
+{% endblock content %}

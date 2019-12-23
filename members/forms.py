@@ -1,0 +1,107 @@
+from django import forms
+from bootstrap_modal_forms.forms import BSModalForm
+from .models import Profile, Residence, Role, Training, Child, ChildInfo
+
+class ProfileCreationForm(forms.ModelForm):
+
+#                      Change CSS Classes
+    def __init__(self, *args, **kwargs):
+        super(ProfileCreationForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+
+            #gives text input crispy classes
+            visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
+
+    class Meta:
+        model = Profile
+        fields = '__all__'
+        labels = {
+            "circles_id":"Circles ID",
+            "birthdate":"DOB",
+            "other_phone":"Other phone",
+            "email":"Email address",
+            "cell":"Cell phone",
+            "e_relationship":"Relationship",
+            "e_first_name":"First name",
+            "e_last_name":"Last name",
+            "e_phone":"Phone number",
+        }
+
+class ResidenceCreationForm(BSModalForm):
+
+    class Meta:
+        model = Residence
+        #fields = '__all__'
+        exclude = ('profile',)
+        labels = {
+            "end_date":"End date (leave empty if current)"
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ResidenceCreationForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+
+            #gives text input crispy classes
+            visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
+
+class RoleCreationForm(BSModalForm):
+
+    class Meta:
+        model = Role
+        exclude = ('profile',)
+        labels = {
+            "end_date":"End date (leave empty if current)"
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(RoleCreationForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+
+            #gives text input crispy classes
+            visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
+
+class TrainingAddForm(BSModalForm):
+
+    class Meta:
+        model = Training
+        exclude = ('profile',)
+        labels = {
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(TrainingAddForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+
+            #gives text input crispy classes
+            visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
+
+class ChildCreationForm(forms.ModelForm):
+
+    class Meta:
+        model = Child
+        exclude = ('child_info',)
+        labels = {
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ChildCreationForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+
+            #gives text input crispy classes
+            visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
+
+class ChildInfoCreationForm(BSModalForm):
+
+    class Meta:
+        model = ChildInfo
+        #fields = '__all__'
+        exclude = ('profile',)
+        labels = {
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ChildInfoCreationForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+
+            #gives text input crispy classes
+            visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
