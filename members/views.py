@@ -281,7 +281,7 @@ def profiles(request):
         'filterset_objects' : filterset_objects
     }
 
-    return render(request, 'members/profiles_test.html',context)
+    return render(request, 'members/profiles.html',context)
 
 # Returns a list of html link elements of profiles that match the active filters,
 # search input, and are sorted.
@@ -330,6 +330,8 @@ def GetProfiles(request):
 
     ################## sort and data feature ##################
 
+    # Types of data that need to be fetched from a residence model
+    residence_data = ['street_address','city','state','zip']
 
     # Loop through every profile
     for profile in profiles:
@@ -338,7 +340,21 @@ def GetProfiles(request):
         for data_type in data_displayed: # Loop through requested data
             data_temp = None
             if data_type: # if data is requested
-                data_temp = getattr(profile,data_type) # fetch data
+                # If data requested is part of the residence model
+                if (data_type in residence_data):
+                    # Get the current residence model
+                    residence = profile.order_residences().first()
+                    # If one was found get the data
+                    if residence:
+                        data_temp = getattr(residence,data_type)
+                # If data requested is part of children model
+                elif (data_type == 'children'):
+                    children = profile.order_children() # Get children
+                    data_temp = ''
+                    for child in children:
+                        data_temp += child.first_name + ' '
+                else:
+                    data_temp = getattr(profile,data_type) # fetch data
                  # If data is a phone number
                 if data_temp and ((data_type == 'cell') or (data_type == 'e_phone')):
                     data_temp = data_temp.as_e164 # Turn into a string
@@ -347,6 +363,14 @@ def GetProfiles(request):
                 data.append(data_temp) # Add that data result to list of data
         if sort_by == '':
             group_name = 'no groups' # User doesn't want them sorted
+        elif (sort_by in residence_data): # If sort data is in residence model
+            # Get the current residence model
+            residence = profile.order_residences().first()
+            # If one was found get the data
+            if residence:
+                group_name = getattr(residence,sort_by)
+            else:
+                group_name = None
         else:
             group_name = getattr(profile,sort_by) # Get the requested sort attribute
         if group_name == None:

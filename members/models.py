@@ -17,9 +17,6 @@ class Profile(models.Model):
     email = models.EmailField(blank=True,null=True)
     cell = PhoneNumberField(blank=True,null=True)
     other_phone = PhoneNumberField(blank=True,null=True)
-    city = models.CharField(blank=True,null=True,max_length=15)
-    state = models.CharField(blank=True,null=True,max_length=15)
-    zip = models.CharField(blank=True,null=True,max_length=10)
     site = models.CharField(blank=True,null=True,max_length = 20)
     image = models.ImageField(default='default.jpg',upload_to='profile_pics')
     e_relationship = models.CharField(blank=True,null=True,max_length=10,choices=[('friend','Friend',),('parent','Parent'),('sibling','Sibling')])
@@ -54,8 +51,19 @@ class Profile(models.Model):
     def order_training(self):
         return self.training.order_by('-date_completed')
 
+    # Get all ChildInfos
     def get_child_infos(self):
         return self.childinfos.all()
+
+    # Get all Children
+    def order_children(self):
+        children = []
+        # Loop through all childinfos
+        for childinfo in self.childinfos.all():
+            # Loop through all children in childinfos
+            for child in childinfo.order_children():
+                children.append(child) # Add child to the list
+        return children
 
 class Residence(models.Model):
     profile = models.ForeignKey(Profile,on_delete=models.CASCADE,related_name='residences')
