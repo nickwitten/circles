@@ -40,6 +40,11 @@
             <select id="filter_by" class="tool-input form-control mt-1 d-inline-block" type="text" placeholder="filter by">
               <option value="" selected value>None</option>
               <option value='site'>Site</option>
+              <option value='current_role'>Current Role</option>
+              <option value='role'>All Roles</option>
+              <option value='city'>City</option>
+              <option value='state'>State</option>
+              <option value='zip'>Zip</option>
               <option value='gender'>Gender</option>
               <option value='last_name'>Last Name</option>
             </select>
@@ -49,9 +54,6 @@
             <p class="m-0 mt-2 mr-1 d-inline-block">Filter Input: </p>
 
             <div id="filter_input_container" class="tool-input d-inline-block p-0 pt-1">
-              <select class="form-control" name="">
-                <option value="" disabled selected>Select</option>
-              </select>
             </div>
           </div>
 
@@ -180,6 +182,7 @@
         site:"Site",
         gender:"Gender",
         last_name:"Last Name",
+        current_role:"Current Role",
       }
       var container =
       $("<div/>")
@@ -226,6 +229,7 @@
             .addClass("d-inline-block form-control m-0")
             .attr("id","filter_input")
             .change(function() {getProfiles()})
+            .val('')
         );
         // disabled option that just says select
         $('#filter_input').append(
@@ -250,6 +254,7 @@
             .attr("id","filter_input")
             .attr("placeholder","Enter Value")
             .on("keyup", function() {getProfiles()})
+            .val("")
         );
       }
     }
@@ -305,6 +310,8 @@
         .change(function () {getProfiles()});
       select.append(
         $("<option/>").val("").text("None"),
+        $("<option/>").val("current_role").text("Current Roles"),
+        $("<option/>").val("role").text("All Roles"),
         $("<option/>").val("email").text("Email"),
         $("<option/>").val("cell").text("Cell"),
         $("<option/>").val("circles_id").text("ID"),
@@ -338,6 +345,8 @@
       getUserFilterSets();
       // Add data select
       addDataSelectHTML();
+      // Add filter input
+      addFilterInputHTML(null);
       // Hide filter and search
       document.getElementById('profile_search_content').scrollTop = 12;
       document.getElementById('top_search_container').classList.remove('d-none');
@@ -351,27 +360,29 @@
       // Collect data to input to the backend
       var filter_by = $('#filter_by').val();
       var filter_input = $('#filter_input').val();
+      if (!filter_input) filter_input = '';
       var search_input = $('#search_input').val();
       var sort_by = $("#sort_by").val();
+      // Add unsaved filters to saved filters
+      var unsaved_filter = {"filterby": filter_by, "filterinput": filter_input};
+      var all_filters = filters.slice() // Create a copy of the array
+      all_filters.push(unsaved_filter); // Add the unsaved filter
+      // Add each data type to a list
       var data_displayed = [];
       $('#data_displayed_container').children().each(function() {
         data_displayed.push($(this).val());
-        console.log($(this));
       });
+      // Stringify the two lists to be sent to backend
       data_displayed = JSON.stringify(data_displayed);
-      console.log(data_displayed);
-      var saved_filters = JSON.stringify(filters);
-      console.log(saved_filters);
+      all_filters = JSON.stringify(all_filters);
       // Ajax call to the backend (GetProfiles)
       $.ajax({
         url: '{% url "get-profiles" %}',
         data: {
-          'filter_by': filter_by,
-          'filter_input': filter_input,
           'search_input': search_input,
           'sort_by': sort_by,
           'data_displayed': data_displayed,
-          'saved_filters': saved_filters,
+          'filters': all_filters,
         },
         dataType: 'json',
         success: function (data) {

@@ -287,37 +287,21 @@ def profiles(request):
 # search input, and are sorted.
 def GetProfiles(request):
     # Receive data
-    filter_by = request.GET.get('filter_by',None) + '__icontains'
-    filter_input = request.GET.get('filter_input',None)
     search_input = request.GET.get('search_input',None)
     sort_by = request.GET.get('sort_by',None)
     data_displayed = request.GET.get('data_displayed',None)
     data_displayed = json.loads(data_displayed)
-    saved_filters = request.GET.get('saved_filters',None)
-    saved_filters = json.loads(saved_filters)
+    filters = request.GET.get('filters',None)
+    filters = json.loads(filters)
     profiles = Profile.objects.all()
     sorted_profiles = []
 
-    ######## filter feature (filter without yet adding to saved filters) ######
+    # Types of data that need to be fetched from a residence model
+    residence_data = ['street_address','city','state','zip']
+    # Types of data that need to be fetched from a role model
+    role_data = ['current_role','role']
 
-    if filter_by == '__icontains': # No filter active
-        profiles = profiles
-    else:
-        # Only filter out if there is an input
-        if filter_input != '' or filter_input != None:
-            filter = {}
-            filter[filter_by] = filter_input
-            # Only profiles that pass the filter
-            profiles = profiles.filter(**filter)
 
-    # Saved filters (filters that have been added)
-    # List of [(filterby, filterinput)]
-    for filter in saved_filters:
-        # Only filter out if there is an input
-        if filter["filterinput"] != '' or filter["filterinput"] != None:
-            query = {}
-            query[filter["filterby"] + '__icontains'] = filter["filterinput"]
-            profiles = profiles.filter(**query)
 
     ################### search feature #########################
 
@@ -328,10 +312,54 @@ def GetProfiles(request):
     profiles = annotated_queryset.filter(fullname__icontains=search_input)
 
 
-    ################## sort and data feature ##################
+    ######## filter feature (filter without yet adding to saved filters) ######
 
-    # Types of data that need to be fetched from a residence model
-    residence_data = ['street_address','city','state','zip']
+    keywords = {
+        'city':'city__icontains',
+        'state':'state__icontains',
+        'current_role':'position__icontains',
+        'role':'position__icontains',
+    }
+
+
+    # Saved filters (filters that have been added)
+    # List of [(filterby, filterinput)]
+    for filter in filters:
+        filterby = filter["filterby"]
+        filterinput = filter["filterinput"]
+        if not filterinput: # If there is no input don't filter
+            continue
+
+        # For data that needs to be retrieved from a related model
+        elif filterby in residence_data or filterby in role_data:
+            profile_ids = []
+            for profile in profiles:
+                # For residence model
+                if filterby in residence_data:
+                    # Set query fields
+                    query = {'end_date':None, keywords[filterby]:filterinput}
+                    # If found add profile
+                    if profile.order_residences().filter(**query):
+                        profile_ids.append(profile.pk)
+                # For role model
+                else:
+                    # Set query fields
+                    if (filterby=='current_role'): query = {'end_date':None, keywords[filterby]:filterinput}
+                    if (filterby=='role'): query = {keywords[filterby]:filterinput}
+                    # If found add profile
+                    if profile.order_roles().filter(**query):
+                        profile_ids.append(profile.pk)
+            profiles = profiles.filter(pk__in=profile_ids) # Query all found profiles
+
+
+        # Data is in the profile model
+        else:
+            query = {}
+            query[filter["filterby"] + '__icontains'] = filter["filterinput"]
+            profiles = profiles.filter(**query)
+
+
+    ################## sort and data feature ##################
 
     # Loop through every profile
     for profile in profiles:
@@ -353,6 +381,13 @@ def GetProfiles(request):
                     data_temp = ''
                     for child in children:
                         data_temp += child.first_name + ' '
+                # If data requested is part of role model
+                elif (data_type in role_data):
+                    if (data_type == 'current_role'): roles = profile.roles.filter(end_date=None)
+                    if (data_type == 'role'): roles = profile.roles.all()
+                    data_temp = ''
+                    for role in roles:
+                        data_temp += role.position + ' '
                 else:
                     data_temp = getattr(profile,data_type) # fetch data
                  # If data is a phone number

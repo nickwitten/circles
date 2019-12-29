@@ -149,7 +149,7 @@ class Child(models.Model):
     def calculate_age(self):
         today = date.today()
         if self.birthdate == None:
-            return 'Not available'
+            return 'Not Available'
         else:
             return today.year - self.birthdate.year - ((today.month, today.day) < (self.birthdate.month, self.birthdate.day))
 
