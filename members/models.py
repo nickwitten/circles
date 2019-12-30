@@ -17,7 +17,6 @@ class Profile(models.Model):
     email = models.EmailField(blank=True,null=True)
     cell = PhoneNumberField(blank=True,null=True)
     other_phone = PhoneNumberField(blank=True,null=True)
-    site = models.CharField(blank=True,null=True,max_length = 20)
     image = models.ImageField(default='default.jpg',upload_to='profile_pics')
     e_relationship = models.CharField(blank=True,null=True,max_length=10,choices=[('friend','Friend',),('parent','Parent'),('sibling','Sibling')])
     e_first_name = models.CharField(blank=True,null=True,max_length = 20)
@@ -91,7 +90,7 @@ class Role(models.Model):
     cohort = models.CharField(blank=True,null=True,max_length = 6, choices = [('cl','CL'),('ally', 'Ally')])
     resource_team_name = models.CharField(blank=True,null=True,max_length = 16)
     resource_team_role = models.CharField(blank=True,null=True,max_length = 16)
-    location = models.CharField(blank=True,null=True,max_length = 16)
+    site = models.CharField(blank=True,null=True,max_length = 16)
 
 
     def __str__(self):

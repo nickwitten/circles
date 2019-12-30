@@ -39,14 +39,24 @@
 
             <select id="filter_by" class="tool-input form-control mt-1 d-inline-block" type="text" placeholder="filter by">
               <option value="" selected value>None</option>
-              <option value='site'>Site</option>
+              <option value='current_site'>Site</option>
               <option value='current_role'>Current Role</option>
-              <option value='role'>All Roles</option>
+              <option value='all_roles'>All Roles</option>
+              <option value='current_cohort'>Cohort</option>
+              <option value='current_resource_team'>Resource Team</option>
+              <option value='current_resource_team_roll'>Resource Team Roll</option>
+              <option value='completed_training'>Completed Training</option>
+              <option value='incomplete_training'>Incomplete Training</option>
               <option value='city'>City</option>
               <option value='state'>State</option>
               <option value='zip'>Zip</option>
               <option value='gender'>Gender</option>
-              <option value='last_name'>Last Name</option>
+              <option value='race'>Race</option>
+              <option value='home_ownership'>Home Ownership</option>
+              <option value='habitat_home'>Habitat Home</option>
+              <option value='safe_home'>Safe Home</option>
+              <option value='repair_home'>Home Needs Repair</option>
+              <option value='birthdate'>Birthdate</option>
             </select>
           </div>
 
@@ -65,11 +75,20 @@
 
             <select id="sort_by" class="tool-input form-control mt-1 d-inline-block" type="text" placeholder="Sort By">
               <option value="" selected value>None</option>
-              <option value='site'>Site</option>
-              <option value='status'>Status</option>
+              <option value='current_site'>Site</option>
+              <option value='current_cohort'>Cohort</option>
+              <option value='current_resource_team'>Resource Team</option>
+              <option value='current_resource_team_role'>Resource Team Role</option>
               <option value='city'>City</option>
               <option value='state'>State</option>
+              <option value='zip'>Zip</option>
+              <option value='last_name'>Last Name</option>
               <option value='birthdate'>Birthdate</option>
+              <option value='home_ownership'>Home Ownership</option>
+              <option value='habitat_home'>Habitat Home</option>
+              <option value='safe_home'>Safe Home</option>
+              <option value='repair_home'>Home Needs Repair</option>
+              <option value='current_role'>Current Role</option>
               <option value='race'>Race</option>
               <option value='gender'>Gender</option>
             </select>
@@ -311,7 +330,11 @@
       select.append(
         $("<option/>").val("").text("None"),
         $("<option/>").val("current_role").text("Current Roles"),
-        $("<option/>").val("role").text("All Roles"),
+        $("<option/>").val("all_roles").text("All Roles"),
+        $("<option/>").val("current_cohort").text("Cohort"),
+        $("<option/>").val("current_resource_team").text("Resource Team"),
+        $("<option/>").val("current_resource_team_role").text("Resource Team Role"),
+        $("<option/>").val("completed_training").text("Training"),
         $("<option/>").val("email").text("Email"),
         $("<option/>").val("cell").text("Cell"),
         $("<option/>").val("circles_id").text("ID"),
@@ -324,7 +347,11 @@
         $("<option/>").val("city").text("City"),
         $("<option/>").val("state").text("State"),
         $("<option/>").val("zip").text("Zip"),
-        $("<option/>").val("site").text("Site"),
+        $("<option/>").val("home_ownership").text("Home Ownership"),
+        $("<option/>").val("habitat_home").text("Habitat Home"),
+        $("<option/>").val("safe_home").text("Safe Home"),
+        $("<option/>").val("repair_home").text("Home Needs Repair"),
+        $("<option/>").val("current_site").text("Site"),
         $("<option/>").val("e_phone").text("Emergency Number"),
       );
       $("#data_displayed_container").append(
