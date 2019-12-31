@@ -1,7 +1,7 @@
 from django.urls import path
 from django.conf.urls import url
 from . import views
-from .views import ProfileListView, ProfileCreateView, ProfileDetailView, ProfileDeleteView, ProfileUpdateView, update_profile, create_profile, ResidenceCreateView, ResidenceUpdateView, ResidenceDeleteView, RoleCreateView, RoleUpdateView, RoleDeleteView, TrainingAddView, TrainingUpdateView, TrainingDeleteView, ChildCreateView, ChildUpdateView, ChildrenEditView, ChildInfoCreateView, profiles, GetProfiles, CreateFilterset,GetFiltersets,AddFiltersetTitle,DeleteFilterset
+from .views import ProfileListView, ProfileCreateView, ProfileDetailView, ProfileDeleteView, ProfileUpdateView, update_profile, create_profile, ResidenceCreateView, ResidenceUpdateView, ResidenceDeleteView, RoleCreateView, RoleUpdateView, RoleDeleteView, TrainingAddView, TrainingUpdateView, TrainingDeleteView, ChildCreateView, ChildUpdateView, ChildrenEditView, ChildInfoCreateView, profiles, GetProfiles, CreateFilterset,GetFiltersets,AddFiltersetTitle,DeleteFilterset,FilterInput
 
 urlpatterns = [
     #path('',ProfileListView.as_view(),name='profiles'),
@@ -28,4 +28,5 @@ urlpatterns = [
     path('profile/get-filtersets',GetFiltersets,name='get-filtersets'),
     path('profile/add-filterset-title',AddFiltersetTitle,name='add-filterset-title'),
     path('profile/delete-filterset',DeleteFilterset,name='delete-filterset'),
+    path('profile/get-filterinput',FilterInput,name='get-filterinput'),
 ]

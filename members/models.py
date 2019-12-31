@@ -64,6 +64,12 @@ class Profile(models.Model):
                 children.append(child) # Add child to the list
         return children
 
+class Site(models.Model):
+    site = models.CharField(max_length=32)
+
+    def __str__(self):
+        return f'{self.site}'
+
 class Residence(models.Model):
     profile = models.ForeignKey(Profile,on_delete=models.CASCADE,related_name='residences')
     start_date = models.DateField(blank=True,null=True)
@@ -90,7 +96,7 @@ class Role(models.Model):
     cohort = models.CharField(blank=True,null=True,max_length = 6, choices = [('cl','CL'),('ally', 'Ally')])
     resource_team_name = models.CharField(blank=True,null=True,max_length = 16)
     resource_team_role = models.CharField(blank=True,null=True,max_length = 16)
-    site = models.CharField(blank=True,null=True,max_length = 16)
+    site = models.ForeignKey(Site,blank=True,null=True,on_delete=models.SET_NULL,related_name='roles')
 
 
     def __str__(self):

@@ -1,5 +1,6 @@
 from django.db.models.functions import Concat
 from django.db.models import Value
+from .models import Profile, Site, Residence, Role, Training, ChildInfo, Child
 
 # Types of data that need to be fetched from a residence model
 residence_data = ['street_address','city','state','zip','home_ownership','habitat_home','safe_home','repair_home']
@@ -60,9 +61,13 @@ def filter_profiles(profiles,filters):
                         profile_ids.append(profile.pk)
                 # For role model
                 elif filterby in role_data:
+                    query = {}
                     # Set query fields
-                    if (filterby[0:7]=='current'): query = {'end_date':None, keywords[filterby]+'__icontains':filterinput}
-                    else: query = {keywords[filterby]+'__icontains':filterinput}
+                    if (filterby[0:7]=='current'): query['end_date'] = None
+                    if (filterby == 'current_site'): # Related field
+                        query[keywords[filterby]+'__site'] = filterinput
+                    else: # Regular field
+                        query[keywords[filterby]+'__icontains'] = filterinput
                     # If found add profile
                     if profile.order_roles().filter(**query):
                         profile_ids.append(profile.pk)
@@ -110,17 +115,30 @@ def get_profile_data(profiles, data_displayed):
                 elif (data_type == 'children'):
                     children = profile.order_children() # Get children
                     data_temp = ''
+                    i = 0
                     for child in children:
-                        data_temp += child.first_name + ' '
+                        i += 1
+                        if i == len(children): data_temp += child.first_name
+                        else: data_temp += child.first_name + ', '
                 # If data requested is part of role model
                 elif (data_type in role_data):
                     if (data_type[0:7] == 'current'): roles = profile.roles.filter(end_date=None)
                     else: roles = profile.roles.all()
                     data_temp = ''
+                    i = 0
                     for role in roles:
+                        print(len(roles))
+                        print(data_temp)
+                        i += 1
                         temp = getattr(role,keywords[data_type])
-                        if temp:
-                            data_temp += temp + ' '
+                        print(temp)
+                        if i == len(roles): # For last item
+                            if temp: # If value found
+                                data_temp += temp
+                            else: # If value not found
+                                data_temp = data_temp[:-2] # Remove comma from last item
+                        else:
+                            if temp: data_temp += temp + ', '
                 # If data requested is part of training model
                 elif (data_type in training_data):
                     training = profile.training.exclude(date_completed=None)
@@ -170,7 +188,7 @@ def sort_profiles(profiles, sort_by):
             if group_name == None:
                 # Profile has no data for this field
                 group_names[i] = 'Not Assigned'
-            ++i
+            i += 1
         # Loop through list of groups (a group is a dictionary)
         profile_added = False
         for group in sorted_profiles:
@@ -202,3 +220,29 @@ def sort_profiles(profiles, sort_by):
                     }
                 )
     return sorted_profiles
+
+# Get the choices of a certain field
+def get_field_options(filterby):
+    options = []
+    if filterby in residence_data:
+        field = Residence._meta.get_field(keywords[filterby])
+    elif filterby in role_data:
+        field = Role._meta.get_field(keywords[filterby])
+    elif filterby in training_data:
+        field = Training._meta.get_field(keywords[filterby])
+    else:
+        field = Profile._meta.get_field(filterby)
+    # IF the field is a related model, get all the objects
+    if field.get_internal_type() == 'ForeignKey':
+        temp_options = field.remote_field.model.objects.all()
+        # Add the names of the objects to the options
+        for option in temp_options:
+            options.append(option.__str__())
+    # For a regular field type
+    else:
+        temp_options = field.choices
+        # Places the readable option into a list
+        for option in temp_options:
+            options.append(option[1])
+
+    return options

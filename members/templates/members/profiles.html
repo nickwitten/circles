@@ -44,7 +44,7 @@
               <option value='all_roles'>All Roles</option>
               <option value='current_cohort'>Cohort</option>
               <option value='current_resource_team'>Resource Team</option>
-              <option value='current_resource_team_roll'>Resource Team Roll</option>
+              <option value='current_resource_team_role'>Resource Team Role</option>
               <option value='completed_training'>Completed Training</option>
               <option value='incomplete_training'>Incomplete Training</option>
               <option value='city'>City</option>
@@ -98,13 +98,16 @@
           <div class="tool-seperator">
           </div>
 
-          <div class="mr-1 ml-1">
+          <div id="data_container" class="mr-1 ml-1">
             <p class="m-0 mt-2 mr-1 d-inline-block">Data: </p>
 
             <div id="data_displayed_container" class="d-inline-block">
             </div>
 
             <i id="add_data_btn" class="fas fa-plus-circle icon-btn d-inline-block"></i>
+
+            <div id="data_delete_btn_container" class="d-inline-block">
+            </div>
 
           </div>
 
@@ -198,7 +201,23 @@
     // Add the filter and delete button into the list of active filters
     function addFilterHTML(filter, filter_number) {
       var filtertext = {
-        site:"Site",
+        current_site:"Site",
+        city:"City",
+        state:"State",
+        zip:"Zip",
+        street_address:"Street Address",
+        current_role:"Current Role",
+        all_roles:"All Roles",
+        current_cohort:"Cohort",
+        street_address:"street_address",
+        current_resource_team:"Resource Team",
+        current_resource_team_role:"Resource Team Role",
+        completed_training:"Completed Training",
+        incomplete_training:"Incomplete Training",
+        home_ownership:"Home Ownership",
+        habitat_home:"Habitat Home",
+        safe_home:"Safe Home",
+        repair_home:"Home Needs Repair",
         gender:"Gender",
         last_name:"Last Name",
         current_role:"Current Role",
@@ -242,7 +261,7 @@
 
     // Add the correct input for a filter based on the filter by field
     function addFilterInputHTML(options) {
-      if (options) { // If there are options create a dropdown
+      if (options.length) { // If there are options create a dropdown
         $("#filter_input_container").append(
           $('<select/>')
             .addClass("d-inline-block form-control m-0")
@@ -359,6 +378,15 @@
       );
     }
 
+    // Add filter submit button
+    function addDataDeleteBtnHTML() {
+      $("#data_delete_btn_container").append(
+        $("<i/>")
+          .attr("id","filter_submit")
+          .addClass("fas fa-minus-circle icon-btn d-inline-block")
+          .on("click", function() {deleteDataBtn(true);})
+      );
+    }
     ////////////////////////// functions ////////////////////////////////////
 
     // filters that are saved by the user are stored here as objects containing
@@ -373,7 +401,7 @@
       // Add data select
       addDataSelectHTML();
       // Add filter input
-      addFilterInputHTML(null);
+      addFilterInputHTML([]);
       // Hide filter and search
       document.getElementById('profile_search_content').scrollTop = 12;
       document.getElementById('top_search_container').classList.remove('d-none');
@@ -469,7 +497,7 @@
       // Clear the filter by
       $('#filter_by').val('');
       $('#filter_input_container').html(null); // Remove the input
-      addFilterInputHTML(null); // Add an input to hold the place
+      addFilterInputHTML([]); // Add an input to hold the place
       // Deactivate any active lists
       $('#list_title').html(null);
       $("#delete_list_btn_container").html(null);
@@ -519,15 +547,18 @@
 
     // Change the filter input to the appropriate options
     function getFilterInputField(filter_by) {
-      // Create options for each category
-      if (filter_by == 'site') {
-        options = ['Winter Garden', 'Atlanta'];
-      } else if (filter_by == 'gender') {
-        options = ['Male', 'Female'];
-      // If not one of these filter by just use an input field
-      } else {
-        options = null;
-      }
+      $.ajax({
+        url: "{% url 'get-filterinput' %}",
+        data: {
+          'filterby':filter_by,
+        },
+        dataType: 'json',
+        success: function (data) {
+          options = data.options;
+          console.log(options);
+        },
+        async: false,
+      });
       $("#filter_input_container").html(null); // Clear the input container
       $("#filter_submit_btn_container").html(null); // Clear the button container
       addFilterInputHTML(options); // Add the correct input type to the container
@@ -634,6 +665,19 @@
       }
     }
 
+    // Add the deleteDataBtn and optionally delete a data select
+    function deleteDataBtn(delete_select) {
+      // Delete the last data select if wanted
+      if (delete_select) {
+        $("#data_displayed_container").children().last().remove();
+      }
+      $("#data_delete_btn_container").html(null); // Delete existing button
+      // If there are more than one data selects add the data delete button
+      if ($("#data_displayed_container > select").length > 1) {
+        addDataDeleteBtnHTML();
+      }
+      getProfiles();
+    }
     /////////////// Listners to update the page //////////////////////
 
     $("#filter_by").change(function() {
@@ -663,6 +707,7 @@
     });
     $("#add_data_btn").on("click", function() {
       addDataSelectHTML(); // Add a select element
+      deleteDataBtn(false); // Add the delete data btn
     });
 
   </script>

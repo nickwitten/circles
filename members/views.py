@@ -11,7 +11,7 @@ from django.db.models import Value
 from django.http import JsonResponse
 from django.core import serializers
 import json
-from .data import search_profiles, filter_profiles, get_profile_data, sort_profiles
+from .data import search_profiles, filter_profiles, get_profile_data, sort_profiles, get_field_options
 
 
 # Create your views here.
@@ -364,5 +364,17 @@ def DeleteFilterset(request):
     # Delete the active filterset
     request.user.filtersets.filter(title=title, filterset=filters).first().delete()
     data = {
+    }
+    return JsonResponse(data)
+
+# Gets a fields options
+def FilterInput(request):
+    filterby = request.GET.get('filterby',None)
+    if filterby:
+        options = get_field_options(filterby)
+    else:
+        options = []
+    data = {
+        'options':options,
     }
     return JsonResponse(data)
