@@ -326,7 +326,7 @@
           .attr("maxlength",40)
           .attr("onInput","expandTitle()")
           .attr("value", title)
-          .change(function() {addFiltersetTitle($(this).val())})
+          .change(function() {addFiltersetTitle($(this).val());})
       )
     }
 
@@ -445,7 +445,6 @@
           // group object containing a list of profile objects
           // Profile objects contain first name, last name, pk, and data
           var groups = data.groups;
-          console.log( groups );
           $('#result-list').html(null); // Clear the result list
           // Loop throught the groups
           var i = 0;
@@ -540,7 +539,8 @@
           // Data contains list of filterset objects which contain
           // a title and a list of filter objects
           addFilterSetsHTML(data.filtersets); // Add the html elements
-        }
+        },
+        async: false,
       });
     };
 
@@ -555,7 +555,6 @@
         dataType: 'json',
         success: function (data) {
           options = data.options;
-          console.log(options);
         },
         async: false,
       });
@@ -598,10 +597,17 @@
         success: function (data) {
             // Update page
             getUserFilterSets();
-        }
+        },
+        async: false,
       });
-      // Remove cursor from field
-      $("#title_input").blur();
+      // Set the list select to the new title
+      $("#list_select option").each(function () {
+              if ($(this).html() == title) {
+                  $(this).attr("selected", "selected");
+                  return;
+              }
+      });
+      $("#title_input").blur(); // Remove cursor from field
     }
 
     // Delete a filterset from database

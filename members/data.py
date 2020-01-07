@@ -64,7 +64,7 @@ def filter_profiles(profiles,filters):
                     query = {}
                     # Set query fields
                     if (filterby[0:7]=='current'): query['end_date'] = None
-                    if (filterby == 'current_site'): # Related field
+                    if (filterby == 'current_site'): # Related model
                         query[keywords[filterby]+'__site'] = filterinput
                     else: # Regular field
                         query[keywords[filterby]+'__icontains'] = filterinput
@@ -85,8 +85,6 @@ def filter_profiles(profiles,filters):
                         profile_ids.append(profile.pk)
 
             profiles = profiles.filter(pk__in=profile_ids) # Query all found profiles
-
-
         # Data is in the profile model
         else:
             query = {}

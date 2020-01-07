@@ -350,7 +350,8 @@ def AddFiltersetTitle(request):
     filterset_object.title = title
     filterset_object.save()
     data = {
-        'object_title' : filterset_object.title,
+        'title' : filterset_object.title,
+        'filters' : filterset_object.filterset,
     }
 
     return JsonResponse(data)
