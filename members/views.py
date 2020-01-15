@@ -8,10 +8,12 @@ from .forms import ProfileCreationForm, ResidenceCreationForm, RoleCreationForm,
 from bootstrap_modal_forms.generic import BSModalCreateView, BSModalUpdateView, BSModalDeleteView
 from django.db.models.functions import Concat
 from django.db.models import Value
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.core import serializers
 import json
-from .data import search_profiles, filter_profiles, get_profile_data, sort_profiles, get_field_options
+from .data import get_profiles
+from io import BytesIO
+import xlsxwriter
 
 
 # Create your views here.
@@ -285,27 +287,9 @@ def profiles(request):
 
     return render(request, 'members/profiles.html',context)
 
-# Returns a list of html link elements of profiles that match the active filters,
-# search input, and are sorted.
+# Get profiles view that returns profile data
 def GetProfiles(request):
-    # Receive data
-    search_input = request.GET.get('search_input',None)
-    sort_by = request.GET.get('sort_by',None)
-    data_displayed = request.GET.get('data_displayed',None)
-    data_displayed = json.loads(data_displayed)
-    filters = request.GET.get('filters',None)
-    filters = json.loads(filters)
-    profiles = Profile.objects.all()
-
-    profiles = search_profiles(profiles,search_input)
-    profiles = filter_profiles(profiles,filters)
-    profiles = get_profile_data(profiles,data_displayed)
-    sorted_profiles = sort_profiles(profiles,sort_by)
-
-    data = {
-        'groups' : sorted_profiles
-    }
-
+    data = get_profiles(request)
     return JsonResponse(data)
 
 # Add a filterset to the current user
@@ -379,3 +363,38 @@ def FilterInput(request):
         'options':options,
     }
     return JsonResponse(data)
+
+# Creates an excel document
+def ExcelDump(request):
+    print("in excel dump")
+    sorted_profiles = get_profiles(request)
+    output = BytesIO()
+    # Feed a buffer to workbook
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet("profiles")
+    bold = workbook.add_format({'bold': True})
+
+    # Fill out the datasheet
+
+    fields = request.GET.get('data_displayed')
+    fields = json.loads(fields)
+
+    print(fields)
+    if fields:
+        # Fill first row with columns
+        row = 0
+        for i, field in enumerate(fields):
+            worksheet.write(row, i+1, field, bold)
+
+
+    # Now fill other rows with columns
+    for group in sorted_profiles["groups"]:
+        for row, profile in enumerate(group["profiles"]):
+            worksheet.write(row+1, 0, profile["first name"], bold)
+            print(profile["data"])
+            for i, data in enumerate(profile["data"]):
+                worksheet.write(row+1, i+1, data, bold)
+    workbook.close()
+    output.seek(0)
+    response = HttpResponse(output.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    return response

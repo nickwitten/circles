@@ -1,6 +1,7 @@
 from django.db.models.functions import Concat
 from django.db.models import Value
 from .models import Profile, Site, Residence, Role, Training, ChildInfo, Child
+import json
 
 # Types of data that need to be fetched from a residence model
 residence_data = ['street_address','city','state','zip','home_ownership','habitat_home','safe_home','repair_home']
@@ -28,6 +29,24 @@ keywords = {
     'repair_home':'repair',
 }
 
+def get_profiles(request):
+    search_input = request.GET.get('search_input',None)
+    sort_by = request.GET.get('sort_by',None)
+    data_displayed = request.GET.get('data_displayed',None)
+    data_displayed = json.loads(data_displayed)
+    filters = request.GET.get('filters',None)
+    filters = json.loads(filters)
+    profiles = Profile.objects.all()
+
+    profiles = search_profiles(profiles,search_input)
+    profiles = filter_profiles(profiles,filters)
+    profiles = get_profile_data(profiles,data_displayed)
+    sorted_profiles = sort_profiles(profiles,sort_by)
+
+    data = {
+        'groups' : sorted_profiles
+    }
+    return data
 
 def search_profiles(profiles,search_input):
     search = {}
@@ -136,7 +155,7 @@ def get_profile_data(profiles, data_displayed):
                             else: # If value not found
                                 data_temp = data_temp[:-2] # Remove comma from last item
                         else:
-                            if temp: data_temp += temp + ', '
+                            if temp: data_temp += temp + ', '  #BUGBUGBUGBUG
                 # If data requested is part of training model
                 elif (data_type in training_data):
                     training = profile.training.exclude(date_completed=None)

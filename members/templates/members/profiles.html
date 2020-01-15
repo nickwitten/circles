@@ -111,6 +111,13 @@
 
           </div>
 
+          <div class="tool-seperator">
+          </div>
+
+          <div class="mr-1 ml-1">
+            <button id="export_excel_btn" class="btn btn-secondary">Export to Excel</button>
+          </div>
+
         </div>
         <div class="row">
           <div class="col-11 p-0 mb-0">
@@ -412,33 +419,11 @@
     // Get the profiles based on current filters and search input and add them
     // to the page
     function getProfiles() {
-      // Collect data to input to the backend
-      var filter_by = $('#filter_by').val();
-      var filter_input = $('#filter_input').val();
-      if (!filter_input) filter_input = '';
-      var search_input = $('#search_input').val();
-      var sort_by = $("#sort_by").val();
-      // Add unsaved filters to saved filters
-      var unsaved_filter = {"filterby": filter_by, "filterinput": filter_input};
-      var all_filters = filters.slice() // Create a copy of the array
-      all_filters.push(unsaved_filter); // Add the unsaved filter
-      // Add each data type to a list
-      var data_displayed = [];
-      $('#data_displayed_container').children().each(function() {
-        data_displayed.push($(this).val());
-      });
-      // Stringify the two lists to be sent to backend
-      data_displayed = JSON.stringify(data_displayed);
-      all_filters = JSON.stringify(all_filters);
+      data = collectPageData()
       // Ajax call to the backend (GetProfiles)
       $.ajax({
         url: '{% url "get-profiles" %}',
-        data: {
-          'search_input': search_input,
-          'sort_by': sort_by,
-          'data_displayed': data_displayed,
-          'filters': all_filters,
-        },
+        data: data,
         dataType: 'json',
         success: function (data) {
           // Returned:
@@ -470,6 +455,34 @@
     }
 
 
+    // Collect the shear input, sort by, data displayed, and filters
+    function collectPageData() {
+      // Collect data to input to the backend
+      var filter_by = $('#filter_by').val();
+      var filter_input = $('#filter_input').val();
+      if (!filter_input) filter_input = '';
+      var search_input = $('#search_input').val();
+      var sort_by = $("#sort_by").val();
+      // Add unsaved filters to saved filters
+      var unsaved_filter = {"filterby": filter_by, "filterinput": filter_input};
+      var all_filters = filters.slice() // Create a copy of the array
+      all_filters.push(unsaved_filter); // Add the unsaved filter
+      // Add each data type to a list
+      var data_displayed = [];
+      $('#data_displayed_container').children().each(function() {
+        data_displayed.push($(this).val());
+      });
+      // Stringify the two lists to be sent to backend
+      data_displayed = JSON.stringify(data_displayed);
+      all_filters = JSON.stringify(all_filters);
+      data = {
+        'search_input': search_input,
+        'sort_by': sort_by,
+        'data_displayed': data_displayed,
+        'filters': all_filters,
+      }
+      return data;
+    }
 
 
     // Create the filter elements and add them to the page based on the saved
@@ -684,6 +697,31 @@
       }
       getProfiles();
     }
+
+    // Send an XML response to export the current data to an excel sheet
+    function exportToExcel() {
+
+      var data = collectPageData();
+      xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
+           var a, today;
+           if (xhttp.readyState === 4 && xhttp.status === 200) {
+               a = document.createElement('a');
+               a.href = window.URL.createObjectURL(xhttp.response);
+               today = new Date();
+               a.download = "users_" + today.toDateString().split(" ").join("_") + ".xlsx";
+               a.style.display = 'none';
+               document.body.appendChild(a);
+               return a.click();
+           }
+       };
+       data = $.param(data);
+       xhttp.open("GET", "/members/profile/get-profiles-excel?" + data, true);
+       xhttp.setRequestHeader("Content-Type", "application/json");
+       xhttp.responseType = 'blob';
+       xhttp.send();
+     }
+
     /////////////// Listners to update the page //////////////////////
 
     $("#filter_by").change(function() {
@@ -715,6 +753,9 @@
       addDataSelectHTML(); // Add a select element
       deleteDataBtn(false); // Add the delete data btn
     });
+    $("#export_excel_btn").on("click", function() {
+      exportToExcel();
+    })
 
   </script>
 
