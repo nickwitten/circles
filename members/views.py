@@ -373,6 +373,7 @@ def ExcelDump(request):
     workbook = xlsxwriter.Workbook(output)
     worksheet = workbook.add_worksheet("profiles")
     bold = workbook.add_format({'bold': True})
+    light = workbook.add_format()
 
     # Fill out the datasheet
 
@@ -398,7 +399,7 @@ def ExcelDump(request):
             worksheet.write(row, 0, profile["first name"], bold)
             print(profile["data"])
             for j, data in enumerate(profile["data"]):
-                worksheet.write(row, j+1, data, bold)
+                worksheet.write(row, j+1, data, light)
             row += 1 # move down a row
         row += 1 # skip a row after each group
     workbook.close()
