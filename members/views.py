@@ -11,7 +11,7 @@ from django.db.models import Value
 from django.http import JsonResponse, HttpResponse
 from django.core import serializers
 import json
-from .data import get_profiles
+from .data import get_profiles, get_field_options
 from io import BytesIO
 import xlsxwriter
 
@@ -378,22 +378,29 @@ def ExcelDump(request):
 
     fields = request.GET.get('data_displayed')
     fields = json.loads(fields)
-
+    row = 0
     print(fields)
-    if fields:
-        # Fill first row with columns
-        row = 0
+    if fields[0]:
+        # Fill first row with field description
         for i, field in enumerate(fields):
             worksheet.write(row, i+1, field, bold)
 
+        row += 1 # move down a row
+        print("data to display")
 
-    # Now fill other rows with columns
+
+    # Add profiles and their data
     for group in sorted_profiles["groups"]:
-        for row, profile in enumerate(group["profiles"]):
-            worksheet.write(row+1, 0, profile["first name"], bold)
+        if not group["group name"] == "no groups":
+            worksheet.write(row,0,group["group name"], bold)
+            row += 1 # move down a row
+        for i, profile in enumerate(group["profiles"]):
+            worksheet.write(row, 0, profile["first name"], bold)
             print(profile["data"])
-            for i, data in enumerate(profile["data"]):
-                worksheet.write(row+1, i+1, data, bold)
+            for j, data in enumerate(profile["data"]):
+                worksheet.write(row, j+1, data, bold)
+            row += 1 # move down a row
+        row += 1 # skip a row after each group
     workbook.close()
     output.seek(0)
     response = HttpResponse(output.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
