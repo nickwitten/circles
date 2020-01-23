@@ -311,6 +311,9 @@ button:focus {
 #list_select {
   width:80%;
 }
+#tool_btns_container button {
+  vertical-align: top;
+}
 .tool-seperator {
   width:6%;
 }

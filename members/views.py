@@ -11,9 +11,8 @@ from django.db.models import Value
 from django.http import JsonResponse, HttpResponse
 from django.core import serializers
 import json
-from .data import get_profiles, get_field_options
-from io import BytesIO
-import xlsxwriter
+from .data import get_profiles, get_field_options, create_excel
+
 
 
 # Create your views here.
@@ -366,43 +365,7 @@ def FilterInput(request):
 
 # Creates an excel document
 def ExcelDump(request):
-    print("in excel dump")
     sorted_profiles = get_profiles(request)
-    output = BytesIO()
-    # Feed a buffer to workbook
-    workbook = xlsxwriter.Workbook(output)
-    worksheet = workbook.add_worksheet("profiles")
-    bold = workbook.add_format({'bold': True})
-    light = workbook.add_format()
-
-    # Fill out the datasheet
-
-    fields = request.GET.get('data_displayed')
-    fields = json.loads(fields)
-    row = 0
-    print(fields)
-    if fields[0]:
-        # Fill first row with field description
-        for i, field in enumerate(fields):
-            worksheet.write(row, i+1, field, bold)
-
-        row += 1 # move down a row
-        print("data to display")
-
-
-    # Add profiles and their data
-    for group in sorted_profiles["groups"]:
-        if not group["group name"] == "no groups":
-            worksheet.write(row,0,group["group name"], bold)
-            row += 1 # move down a row
-        for i, profile in enumerate(group["profiles"]):
-            worksheet.write(row, 0, profile["first name"], bold)
-            print(profile["data"])
-            for j, data in enumerate(profile["data"]):
-                worksheet.write(row, j+1, data, light)
-            row += 1 # move down a row
-        row += 1 # skip a row after each group
-    workbook.close()
-    output.seek(0)
+    output = create_excel(request, sorted_profiles)
     response = HttpResponse(output.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     return response

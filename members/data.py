@@ -2,6 +2,8 @@ from django.db.models.functions import Concat
 from django.db.models import Value
 from .models import Profile, Site, Residence, Role, Training, ChildInfo, Child
 import json
+from io import BytesIO
+import xlsxwriter
 
 # Types of data that need to be fetched from a residence model
 residence_data = ['street_address','city','state','zip','home_ownership','habitat_home','safe_home','repair_home']
@@ -28,7 +30,32 @@ keywords = {
     'safe_home':'safe',
     'repair_home':'repair',
 }
-
+display_text = {
+    'current_role':'Current Role',
+    'all_roles':'All Roles',
+    'current_cohort':'Cohort',
+    'current_resource_team':'Resource Team',
+    'current_resource_team_role':'Resource Team Role',
+    'completed_training':'Training',
+    'email':'Email',
+    'cell':'Cell',
+    'circles_id':'ID',
+    'status':'Status',
+    'birthdate':'Birthdate',
+    'race':'Race',
+    'gender':'Gender',
+    'children':'Children',
+    'street_address':'Address',
+    'city':'City',
+    'state':'State',
+    'zip':'Zip',
+    'home_ownership':'Home Ownership',
+    'habitat_home':'Habitat Home',
+    'safe_home':'Safe Home',
+    'repair_home':'Repair Home',
+    'current_site':'Site',
+    'e_phone':'Emergency Number',
+}
 def get_profiles(request):
     search_input = request.GET.get('search_input',None)
     sort_by = request.GET.get('sort_by',None)
@@ -144,11 +171,8 @@ def get_profile_data(profiles, data_displayed):
                     data_temp = ''
                     i = 0
                     for role in roles:
-                        print(len(roles))
-                        print(data_temp)
                         i += 1
                         temp = getattr(role,keywords[data_type])
-                        print(temp)
                         if i == len(roles): # For last item
                             if temp: # If value found
                                 data_temp += temp
@@ -263,3 +287,39 @@ def get_field_options(filterby):
             options.append(option[1])
 
     return options
+
+def create_excel(request, sorted_profiles):
+    output = BytesIO()
+    # Feed a buffer to workbook
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet("profiles")
+    bold = workbook.add_format({'bold': True})
+    light = workbook.add_format()
+
+    # Fill out the datasheet
+
+    fields = request.GET.get('data_displayed')
+    fields = json.loads(fields)
+    row = 0
+    if fields[0]:
+        # Fill first row with field description
+        for i, field in enumerate(fields):
+            worksheet.write(row, i+1, display_text[field], bold)
+
+        row += 1 # move down a row
+
+
+    # Add profiles and their data
+    for group in sorted_profiles["groups"]:
+        if not group["group name"] == "no groups":
+            worksheet.write(row,0,group["group name"], bold)
+            row += 1 # move down a row
+        for i, profile in enumerate(group["profiles"]):
+            worksheet.write(row, 0, profile["first name"] + " " + profile["last name"], bold)
+            for j, data in enumerate(profile["data"]):
+                worksheet.write(row, j+1, data, light)
+            row += 1 # move down a row
+        row += 1 # skip a row after each group
+    workbook.close()
+    output.seek(0)
+    return output

@@ -92,7 +92,7 @@ class Role(models.Model):
     profile = models.ForeignKey(Profile,on_delete=models.CASCADE,related_name='roles')
     start_date = models.DateField(blank=True,null=True)
     end_date = models.DateField(blank=True,null=True)
-    position = models.CharField(max_length=64,choices=[('circle leader','Circle leader'),('ally','Ally'),('volunteer','Volunteer'),('resource team','Resource team'),('donor','Donor')])
+    position = models.CharField(max_length=64,choices=[('circle leader','Circle Leader'),('ally','Ally'),('volunteer','Volunteer'),('resource team','Resource Team'),('donor','Donor')])
     cohort = models.CharField(blank=True,null=True,max_length = 6, choices = [('cl','CL'),('ally', 'Ally')])
     resource_team_name = models.CharField(blank=True,null=True,max_length = 16)
     resource_team_role = models.CharField(blank=True,null=True,max_length = 16)

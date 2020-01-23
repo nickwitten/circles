@@ -119,14 +119,14 @@
 
         </div>
         <div class="row">
-          <div class="col-11 p-0 mb-0">
+          <div class="col-8 p-0 mb-0">
             <div id="filter_list" class="mb-0 p-0 d-inline-block">
             </div>
-            <button id="filterset_create" class="btn btn-outline-secondary btn-sm" type="button" name="button">Create List</button>
-            <button id="export_excel_btn" class="btn btn-outline-secondary btn-sm">Export to Excel</button>
           </div>
-          <div class="pr-1 col-1 text-right">
-            <i class="fas fa-chevron-up icon-btn mt-3" id="filter_cancel"></i>
+          <div id="tool_btns_container" class="pr-1 col-4 text-right">
+            <button id="filterset_create" class="btn btn-outline-secondary btn-sm" type="button" name="button">Create List</button>
+            <button id="export_excel_btn" class="btn btn-outline-secondary btn-sm mr-3">Export to Excel</button>
+            <i class="fas fa-chevron-up icon-btn mt-3" id="hide_tools"></i>
           </div>
         </div>
       </div>
@@ -389,7 +389,7 @@
     function addDataDeleteBtnHTML() {
       $("#data_delete_btn_container").append(
         $("<i/>")
-          .attr("id","filter_submit")
+          .attr("id","data_delete_btn")
           .addClass("fas fa-minus-circle icon-btn d-inline-block")
           .on("click", function() {deleteDataBtn(true);})
       );
@@ -709,7 +709,7 @@
                a = document.createElement('a');
                a.href = window.URL.createObjectURL(xhttp.response);
                today = new Date();
-               a.download = "users_" + today.toDateString().split(" ").join("_") + ".xlsx";
+               a.download = "profiles_" + today.toDateString().split(" ").join("_") + ".xlsx";
                a.style.display = 'none';
                document.body.appendChild(a);
                return a.click();
@@ -743,7 +743,7 @@
       showFilters(); // Show the filters
     });
 
-    $("#filter_cancel").on("click", function() {
+    $("#hide_tools").on("click", function() {
       hideFilters(); // Hide the filters
     });
     $("#filterset_create").on("click", function() {
