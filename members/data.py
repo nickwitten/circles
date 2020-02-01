@@ -1,5 +1,6 @@
 from django.db.models.functions import Concat
 from django.db.models import Value
+from django.db import models
 from .models import Profile, Site, Residence, Role, Training, ChildInfo, Child
 import json
 from io import BytesIO
@@ -11,6 +12,9 @@ residence_data = ['street_address','city','state','zip','home_ownership','habita
 role_data = ['current_site','current_role','all_roles','current_cohort','current_resource_team','current_resource_team_role']
 # Types of data that need to be fetched from a training model
 training_data = ['completed_training','incomplete_training']
+# Data that is stored in a model
+model_data = (Site)
+
 
 keywords = {
     'current_site':'site',
@@ -224,9 +228,12 @@ def sort_profiles(profiles, sort_by):
             if len(group_names) == 0: group_names = [None]
         else:
             group_names = [getattr(profile,sort_by)] # Get the requested sort attribute
+        # Make sure group_names is a list of strings
         i = 0
         for group_name in group_names:
-            if group_name == None:
+            if isinstance(group_name, model_data):
+                group_names[i] = group_name.__str__()
+            if not group_name:
                 # Profile has no data for this field
                 group_names[i] = 'Not Assigned'
             i += 1
