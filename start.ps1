@@ -2,5 +2,5 @@ cd ~
 cd .\environments
 circles\Scripts\activate
 cd ~
-cd '.\Google Drive\projects\circles\'
+cd .\circles\
 python manage.py runserver
