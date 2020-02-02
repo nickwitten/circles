@@ -12,7 +12,7 @@ residence_data = ['street_address','city','state','zip','home_ownership','habita
 role_data = ['current_site','current_role','all_roles','current_cohort','current_resource_team','current_resource_team_role']
 # Types of data that need to be fetched from a training model
 training_data = ['completed_training','incomplete_training']
-# Data that is stored in a model
+# Fields that have options in the database
 model_data = (Site)
 
 
@@ -60,6 +60,13 @@ display_text = {
     'current_site':'Site',
     'e_phone':'Emergency Number',
 }
+
+def field_to_model(field):
+        if field in residence_data: return Residence
+        elif field in role_data: return Role
+        elif field in training_data: return Training
+        else: return Profile
+
 def get_profiles(request):
     search_input = request.GET.get('search_input',None)
     sort_by = request.GET.get('sort_by',None)
@@ -90,56 +97,39 @@ def search_profiles(profiles,search_input):
 
 def filter_profiles(profiles,filters):
 
-    # Saved filters (filters that have been added)
-    # List of [(filterby, filterinput)]
     for filter in filters:
         filterby = filter["filterby"]
         filterinput = filter["filterinput"]
         if not filterinput: # If there is no input don't filter
             continue
-
-        # For data that needs to be retrieved from a related model
-        elif filterby in residence_data or filterby in role_data or filterby in training_data:
+        # Get model that the field is in
+        model = field_to_model(filterby)
+        # Get the field from the model
+        field = model._meta.get_field(keywords[filterby])
+        # If the field is a related model change search type
+        if field.get_internal_type() == 'ForeignKey':
+            search_type = '__' + keywords[filterby]
+        else:
+            search_type = '__icontains'
+        # When the field is in the top Profile model
+        if model == Profile:
+            query = {}
+            query[filterby + search_type] = filterinput
+            profiles = profiles.filter(**query)
+        # When the field is in a related model
+        else:
+            # Build query
+            query = {}
+            if filterby[0:7]=='current': query['end_date'] = None
+            query[keywords[filterby] + search_type] = filterinput
+            # All profiles who have an object that passes query in this List
             profile_ids = []
             for profile in profiles:
-                # For residence model
-                if filterby in residence_data:
-                    # Set query fields
-                    query = {'end_date':None, keywords[filterby]+'__icontains':filterinput}
-                    # If found add profile
-                    if profile.order_residences().filter(**query):
-                        profile_ids.append(profile.pk)
-                # For role model
-                elif filterby in role_data:
-                    query = {}
-                    # Set query fields
-                    if (filterby[0:7]=='current'): query['end_date'] = None
-                    if (filterby == 'current_site'): # Related model
-                        query[keywords[filterby]+'__site'] = filterinput
-                    else: # Regular field
-                        query[keywords[filterby]+'__icontains'] = filterinput
-                    # If found add profile
-                    if profile.order_roles().filter(**query):
-                        profile_ids.append(profile.pk)
-                # For training model
-                elif filterby in training_data:
-                    # Get a list of all completed trainings
-                    completed_trainings = profile.training.exclude(date_completed=None)
-                    # Set query
-                    query = {keywords[filterby]+'__icontains':filterinput}
-                    # Check if profile has the completed training in filterinput
-                    if (filterby=='completed_training' and completed_trainings.filter(**query)):
-                        profile_ids.append(profile.pk)
-                    # Check if the profile doesnt have the completed training
-                    if (filterby=='incomplete_training' and not completed_trainings.filter(**query)):
-                        profile_ids.append(profile.pk)
-
-            profiles = profiles.filter(pk__in=profile_ids) # Query all found profiles
-        # Data is in the profile model
-        else:
-            query = {}
-            query[filter["filterby"] + '__icontains'] = filter["filterinput"]
-            profiles = profiles.filter(**query)
+                related_models = model.objects.all().filter(profile=profile.pk)
+                if related_models.filter(**query):
+                    profile_ids.append(profile.pk)
+            # Query profiles with pk in profile_ids
+            profiles = profiles.filter(pk__in=profile_ids)
 
     return profiles
 
