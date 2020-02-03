@@ -11,7 +11,7 @@ residence_data = ['street_address','city','state','zip','home_ownership','habita
 # Types of data that need to be fetched from a role model
 role_data = ['current_site','current_role','all_roles','current_cohort','current_resource_team','current_resource_team_role']
 # Types of data that need to be fetched from a training model
-training_data = ['completed_training','incomplete_training']
+training_data = ['excurrent_training','excurrent_not_training']
 # Fields that have options in the database
 model_data = (Site)
 
@@ -27,8 +27,8 @@ keywords = {
     'current_cohort':'cohort',
     'current_resource_team':'resource_team_name',
     'current_resource_team_role':'resource_team_role',
-    'completed_training':'subject',
-    'incomplete_training':'subject',
+    'excurrent_training':'subject',
+    'excurrent_not_training':'subject',
     'home_ownership':'ownership',
     'habitat_home':'habitat',
     'safe_home':'safe',
@@ -126,7 +126,11 @@ def filter_profiles(profiles,filters):
             profile_ids = []
             for profile in profiles:
                 related_models = model.objects.all().filter(profile=profile.pk)
-                if related_models.filter(**query):
+                if 'excurrent' in filterby:
+                    related_models = related_models.exclude(end_date=None)
+                if 'not' in filterby and not related_models.filter(**query):
+                    profile_ids.append(profile.pk)
+                elif 'not' not in filterby and  related_models.filter(**query):
                     profile_ids.append(profile.pk)
             # Query profiles with pk in profile_ids
             profiles = profiles.filter(pk__in=profile_ids)
@@ -176,7 +180,7 @@ def get_profile_data(profiles, data_displayed):
                             if temp: data_temp += temp + ', '  #BUGBUGBUGBUG
                 # If data requested is part of training model
                 elif (data_type in training_data):
-                    training = profile.training.exclude(date_completed=None)
+                    training = profile.training.exclude(end_date=None)
                     data_temp = ''
                     for item in training:
                         data_temp += item.subject + ' '

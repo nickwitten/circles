@@ -5,9 +5,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from PIL import Image
 from datetime import date
 
-# Create your models here.
-
-class Profile(models.Model):
+class Profile(models.Model): # ForeignKey field must have same name as related model
     first_name = models.CharField(max_length = 20)
     last_name = models.CharField(max_length = 20)
     circles_id = models.CharField(blank=True,null=True,max_length = 6)
@@ -48,7 +46,7 @@ class Profile(models.Model):
         return self.roles.order_by('-start_date')
 
     def order_training(self):
-        return self.training.order_by('-date_completed')
+        return self.training.order_by('-end_date')
 
     # Get all ChildInfos
     def get_child_infos(self):
@@ -105,7 +103,7 @@ class Role(models.Model):
 class Training(models.Model):
     profile = models.ForeignKey(Profile,on_delete=models.CASCADE,related_name='training')
     subject = models.CharField(blank=True,null=True,max_length = 32)
-    date_completed = models.DateField(blank=True,null=True)
+    end_date = models.DateField(blank=True,null=True)
 
     def __str__(self):
         return f'{self.profile} {self.start_date}'
