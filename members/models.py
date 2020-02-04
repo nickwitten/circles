@@ -86,6 +86,9 @@ class Residence(models.Model):
     def __str__(self):
         return f'{self.street_address}'
 
+    def get_related(profile):
+        return profile.order_residences()
+
 class Role(models.Model):
     profile = models.ForeignKey(Profile,on_delete=models.CASCADE,related_name='roles')
     start_date = models.DateField(blank=True,null=True)
@@ -100,6 +103,10 @@ class Role(models.Model):
     def __str__(self):
         return f'{self.profile} {self.start_date}'
 
+    def get_related(profile):
+        return profile.order_roles()
+
+
 class Training(models.Model):
     profile = models.ForeignKey(Profile,on_delete=models.CASCADE,related_name='training')
     subject = models.CharField(blank=True,null=True,max_length = 32)
@@ -107,6 +114,10 @@ class Training(models.Model):
 
     def __str__(self):
         return f'{self.profile} {self.start_date}'
+
+    def get_related(profile):
+        return profile.order_training()
+
 
 class ChildInfo(models.Model):
     profile = models.ForeignKey(Profile,on_delete=models.CASCADE,related_name='childinfos')
@@ -128,7 +139,6 @@ class ChildInfo(models.Model):
 
     def order_children(self):
         return self.children.order_by('-birthdate')
-
 
 class Child(models.Model):
     child_info = models.ForeignKey(ChildInfo,on_delete=models.CASCADE,related_name='children')
@@ -158,6 +168,10 @@ class Child(models.Model):
 
     def middle_initial(self):
         return self.middle_name[0]
+
+    def get_related(profile):
+        return profile.order_children()
+
 
 class FilterSet(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='filtersets')
