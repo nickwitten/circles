@@ -1,6 +1,7 @@
 from django.db.models.functions import Concat
 from django.db.models import Value
 from django.db import models
+from phonenumber_field.phonenumber import PhoneNumber
 from .models import Profile, Site, Residence, Role, Training, ChildInfo, Child
 import json
 from io import BytesIO
@@ -159,7 +160,13 @@ def get_profile_data(profiles, data_displayed):
                 model = field_to_model(data_type)
                 if model == Profile:
                     value = getattr(profile,data_type)
-                    if value:
+                    print(type(value))
+                    print(PhoneNumber)
+                    if isinstance(value,PhoneNumber):
+                        data_temp += value.as_e164
+                    elif isinstance(value,model_data):
+                        data_temp += value.__str__()
+                    elif isinstance(value,str):
                         data_temp += value
                 else:
                     related_models = model.get_related(profile)
@@ -173,21 +180,16 @@ def get_profile_data(profiles, data_displayed):
                         if related_model:
                             field = keywords[data_type]
                             value = getattr(related_model, field)
-                            if isinstance(value,model_data):
+                            if isinstance(value,PhoneNumber):
+                                data_temp += value.as_e164
+                            elif isinstance(value,model_data):
                                 data_temp += value.__str__()
                             else:
                                 data_temp += value
-            print()
-            print(data_temp)
-            print()
             if not data_temp: data_temp = 'Not Available'
             data.append(data_temp)
         profiles_temp.append({'profile':profile,'data':data})
     profiles = profiles_temp
-
-    print()
-    print(profiles)
-    print()
 
 
 
