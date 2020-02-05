@@ -40,9 +40,9 @@ keywords = {
     'all_children':'first_name'
 }
 # Data Fields that are in related models
-residence_data = list(keywords.keys())[0:7]
-training_data = list(keywords.keys())[8:13]
-role_data = list(keywords.keys())[14:15]
+residence_data = list(keywords.keys())[0:8]
+role_data = list(keywords.keys())[8:14]
+training_data = list(keywords.keys())[14:15]
 child_data = list(keywords.keys())[16]
 # HTML Value --> HTML Display
 display_text = {
@@ -163,7 +163,7 @@ def get_profile_data(profiles, data_displayed):
                         data_temp += value
                 else:
                     related_models = model.get_related(profile)
-                    # Different querries based on need
+                    # Different Queries on Related Models
                     if 'first' in data_type: related_models = [related_models.first()]
                     elif 'all' in data_type: related_models = related_models
                     elif 'current' in data_type: related_models = list(related_models.filter(end_date=None))
