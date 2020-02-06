@@ -7,14 +7,10 @@ import json
 from io import BytesIO
 import xlsxwriter
 
-# # Types of data that need to be fetched from a residence model
-# residence_data = ['first_street_address','first_city','state','zip','home_ownership','habitat_home','safe_home','repair_home']
-# # Types of data that need to be fetched from a role model
-# role_data = ['current_site','current_role','all_roles','current_cohort','current_resource_team','current_resource_team_role']
-# # Types of data that need to be fetched from a training model
-# training_data = ['excurrent_training','excurrent_not_training']
-# Fields that have options in the database
-model_data = (Site)
+######### Fill for new fields and models #########
+
+# All data values that are models
+model_data = (Site, Child)
 
 # HTML Value --> Model Field Name
 keywords = {
@@ -38,7 +34,16 @@ keywords = {
     'excurrent_training':'subject',
     'excurrent_not_training':'subject',
     # Child Data
-    'all_children':'first_name'
+    'all_children':'first_name',
+    # Profile Data
+    'email':'email',
+    'cell':'cell',
+    'circles_id':'circles_id',
+    'status':'status',
+    'birthdate':'birthdate',
+    'race':'race',
+    'gender':'gender',
+    'e_phone':'e_phone',
 }
 # Data Fields that are in related models
 residence_data = list(keywords.keys())[0:8]
@@ -73,12 +78,10 @@ display_text = {
     'e_phone':'Emergency Number',
 }
 
-def field_to_model(field):
-        if field in residence_data: return Residence
-        elif field in role_data: return Role
-        elif field in training_data: return Training
-        elif field in child_data: return Child
-        else: return Profile
+
+########## Main Functions #########################
+
+
 
 def get_profiles(request):
     search_input = request.GET.get('search_input',None)
@@ -98,6 +101,7 @@ def get_profiles(request):
         'groups' : sorted_profiles
     }
     return data
+
 
 def search_profiles(profiles,search_input):
     search = {}
@@ -138,7 +142,7 @@ def filter_profiles(profiles,filters):
             # All profiles who have an object that passes query in this List
             profile_ids = []
             for profile in profiles:
-                related_models = model.objects.all().filter(profile=profile.pk)
+                related_models = model.get_related(profile)
                 if 'excurrent' in filterby:
                     related_models = related_models.exclude(end_date=None)
                 if 'not' in filterby and not related_models.filter(**query):
@@ -150,106 +154,33 @@ def filter_profiles(profiles,filters):
 
     return profiles
 
-def get_profile_data(profiles, data_displayed):
+def get_profile_data(profiles, data_types):
     profiles_temp = []
     for profile in profiles:
         data = []
-        for data_type in data_displayed:
+        for data_type in data_types:
             data_temp = ''
             if data_type:
                 model = field_to_model(data_type)
                 if model == Profile:
                     value = getattr(profile,data_type)
-                    print(type(value))
-                    print(PhoneNumber)
-                    if isinstance(value,PhoneNumber):
-                        data_temp += value.as_e164
-                    elif isinstance(value,model_data):
-                        data_temp += value.__str__()
-                    elif isinstance(value,str):
-                        data_temp += value
+                    data_temp += data_to_string(value)
                 else:
                     related_models = model.get_related(profile)
                     # Different Queries on Related Models
-                    if 'first' in data_type: related_models = [related_models.first()]
-                    elif 'all' in data_type: related_models = related_models
-                    elif 'current' in data_type: related_models = list(related_models.filter(end_date=None))
-                    elif 'excurrent' in data_type: related_models = list(related_models.exclude(end_date=None))
-
-                    for related_model in related_models:
+                    related_models = query_related(related_models, data_type)
+                    for index, related_model in enumerate(related_models):
                         if related_model:
                             field = keywords[data_type]
                             value = getattr(related_model, field)
-                            if isinstance(value,PhoneNumber):
-                                data_temp += value.as_e164
-                            elif isinstance(value,model_data):
-                                data_temp += value.__str__()
-                            else:
-                                data_temp += value
-            if not data_temp: data_temp = 'Not Available'
+                            data_temp += data_to_string(value)
+                            if index < len(related_models) - 1:
+                                data_temp += ', '
+                if not data_temp: data_temp = 'Not Available'
             data.append(data_temp)
         profiles_temp.append({'profile':profile,'data':data})
     profiles = profiles_temp
 
-
-
-    # # Loop through every profile
-    # profiles_temp = []
-    # for profile in profiles:
-    #     # Get requested data for profile
-    #     data = []
-    #     for data_type in data_displayed: # Loop through requested data
-    #         data_temp = None
-    #         if data_type: # if data is requested
-    #             # If data requested is part of the residence model
-    #             if (data_type in residence_data):
-    #                 # Get the current residence model
-    #                 residence = profile.order_residences().first()
-    #                 # If one was found get the data
-    #                 if residence:
-    #                     data_temp = getattr(residence,keywords[data_type])
-    #             # If data requested is part of children model
-    #             elif (data_type == 'children'):
-    #                 children = profile.order_children() # Get children
-    #                 data_temp = ''
-    #                 i = 0
-    #                 for child in children:
-    #                     i += 1
-    #                     if i == len(children): data_temp += child.first_name
-    #                     else: data_temp += child.first_name + ', '
-    #             # If data requested is part of role model
-    #             elif (data_type in role_data):
-    #                 if (data_type[0:7] == 'current'): roles = profile.roles.filter(end_date=None)
-    #                 else: roles = profile.roles.all()
-    #                 data_temp = ''
-    #                 i = 0
-    #                 for role in roles:
-    #                     i += 1
-    #                     temp = getattr(role,keywords[data_type])
-    #                     if i == len(roles): # For last item
-    #                         if temp: # If value found
-    #                             data_temp += temp
-    #                         else: # If value not found
-    #                             data_temp = data_temp[:-2] # Remove comma from last item
-    #                     else:
-    #                         if temp: data_temp += temp + ', '  #BUGBUGBUGBUG
-    #             # If data requested is part of training model
-    #             elif (data_type in training_data):
-    #                 training = profile.training.exclude(end_date=None)
-    #                 data_temp = ''
-    #                 for item in training:
-    #                     data_temp += item.subject + ' '
-    #             # If data is part of main profile model
-    #             else:
-    #                 data_temp = getattr(profile,data_type)
-    #              # If data is a phone number
-    #             if data_temp and ((data_type == 'cell') or (data_type == 'e_phone')):
-    #                 data_temp = data_temp.as_e164 # Turn into a string
-    #             if not data_temp: # if the field is empty return not available
-    #                 data_temp = 'not available'
-    #             data.append(data_temp) # Add that data result to list of data
-    #     profiles_temp.append({'profile':profile,'data':data})
-    # profiles = profiles_temp
     return profiles
 
 
@@ -259,33 +190,27 @@ def sort_profiles(profiles, sort_by):
         group_names = []
         profile = profile_object['profile']
         if sort_by == '':
-            group_names = ['no groups'] # User doesn't want them sorted
-        elif (sort_by in residence_data): # If sort data is in residence model
-            # Get the current residence model
-            residence = profile.order_residences().first()
-            # If one was found get the data
-            if residence:
-                group_names = [getattr(residence,keywords[sort_by])]
-            else:
-                group_names = [None]
-        elif (sort_by in role_data): # If sort data is in role model
-            current_roles = profile.roles.filter(end_date=None) # Get current roles
-            for role in current_roles: # Add the roles to the profile's group names
-                name = getattr(role,keywords[sort_by])
-                if name: group_names.append(name)
-            # IF the profile has no current roles
-            if len(group_names) == 0: group_names = [None]
+            group_names = ['no groups']
         else:
-            group_names = [getattr(profile,sort_by)] # Get the requested sort attribute
-        # Make sure group_names is a list of strings
-        i = 0
-        for group_name in group_names:
-            if isinstance(group_name, model_data):
-                group_names[i] = group_name.__str__()
-            if not group_name:
-                # Profile has no data for this field
-                group_names[i] = 'Not Assigned'
-            i += 1
+            model = field_to_model(sort_by)
+            if model == Profile:
+                value = getattr(profile,sort_by)
+                if value:
+                    name = data_to_string(value)
+                    group_names.append(name)
+            else:
+                related_models = model.get_related(profile)
+                related_models = query_related(related_models, sort_by)
+                for model in related_models:
+                    if model:
+                        value = getattr(model, keywords[sort_by])
+                        if value:
+                            name = data_to_string(value)
+                            group_names.append(name)
+            if len(group_names) == 0:
+                group_names = [None]
+            for i, group_name in enumerate(group_names):
+                if not group_name: group_names[i] = 'Not Available'
         # Loop through list of groups (a group is a dictionary)
         profile_added = False
         for group in sorted_profiles:
@@ -317,6 +242,7 @@ def sort_profiles(profiles, sort_by):
                     }
                 )
     return sorted_profiles
+
 
 # Get the choices of a certain field
 def get_field_options(filterby):
@@ -379,3 +305,35 @@ def create_excel(request, sorted_profiles):
     workbook.close()
     output.seek(0)
     return output
+
+
+########## Helper Functions #######################
+
+
+def field_to_model(field):
+    if field in residence_data: return Residence
+    elif field in role_data: return Role
+    elif field in training_data: return Training
+    elif field in child_data: return Child
+    else: return Profile
+
+
+
+def data_to_string(value):
+    if isinstance(value,PhoneNumber):
+        return value.as_e164
+    elif isinstance(value,model_data):
+        return value.__str__()
+    elif isinstance(value,str):
+        return value
+    else:
+        return ''
+
+
+def query_related(related_models, data_type):
+    if 'first' in data_type: related_models = [related_models.first()]
+    elif 'all' in data_type: related_models = list(related_models)
+    elif 'current' in data_type: related_models = list(related_models.filter(end_date=None))
+    elif 'excurrent' in data_type: related_models = list(related_models.exclude(end_date=None))
+
+    return related_models
