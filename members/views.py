@@ -4,14 +4,14 @@ from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
 from django.http import HttpResponseRedirect
 from .models import Profile, Residence, Role, Training, Child, ChildInfo, FilterSet
-from .forms import ProfileCreationForm, ResidenceCreationForm, RoleCreationForm, TrainingAddForm, ChildCreationForm, ChildInfoCreationForm
+from .forms import ProfileCreationForm, ResidenceCreationForm, RoleCreationForm, TrainingAddForm, ChildCreationForm, ChildInfoCreationForm, ProfilesToolsForm
 from bootstrap_modal_forms.generic import BSModalCreateView, BSModalUpdateView, BSModalDeleteView
 from django.db.models.functions import Concat
 from django.db.models import Value
 from django.http import JsonResponse, HttpResponse
 from django.core import serializers
 import json
-from .data import get_profiles, get_field_options, create_excel
+from .data import get_profiles, get_field_options, create_excel, form_choices_text
 
 
 
@@ -280,16 +280,29 @@ class ChildUpdateView(LoginRequiredMixin, UpdateView):
 
 def profiles(request):
     filterset_objects = request.user.filtersets.all()
+    form = ProfilesToolsForm
     context = {
-        'filterset_objects' : filterset_objects
+        'form': form,
+        'form_choices_text': form_choices_text,
+        'form_choices_text_json': json.dumps(form_choices_text),
+        'filterset_objects' : filterset_objects,
     }
 
     return render(request, 'members/profiles.html',context)
 
 # Get profiles view that returns profile data
 def GetProfiles(request):
-    data = get_profiles(request)
-    return JsonResponse(data)
+    tools_form = ProfilesToolsForm(request.POST)
+    if tools_form.is_valid():
+        tool_inputs = tools_form.cleaned_data
+        print('//////// tool inputs: ')
+        print(tool_inputs)
+        print()
+        data = get_profiles(tools_form.cleaned_data)
+        return JsonResponse(data)
+    print()
+    print('FORM INVALID')
+    print()
 
 # Add a filterset to the current user
 def CreateFilterset(request):
@@ -365,7 +378,15 @@ def FilterInput(request):
 
 # Creates an excel document
 def ExcelDump(request):
-    sorted_profiles = get_profiles(request)
-    output = create_excel(request, sorted_profiles)
-    response = HttpResponse(output.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    return response
+    tools_form = ProfilesToolsForm(request.POST)
+    if tools_form.is_valid():
+        tool_inputs = tools_form.cleaned_data
+        print(tool_inputs)
+        sorted_profiles = get_profiles(tool_inputs)
+        output = create_excel(tool_inputs, sorted_profiles)
+        response = HttpResponse(output.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        return response
+    else:
+        print()
+        print('INVALID FORM')
+        print()

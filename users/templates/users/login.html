@@ -1,6 +1,29 @@
 {% extends 'users/base.html' %}
 {% load crispy_forms_tags %}
 
+
+{% block tabs %}
+  {% if user.is_authenticated %}
+    <li class='active'><a href="{% url 'dashboard' %}">Dashboard</a></li>
+    <li><a href="{% url 'profiles' %}">Members</a></li>
+    <li><a href="#">Meetings</a></li>
+    <li><a href="#">Training</a></li>
+    <li><a href="#">Progress</a></li>
+  {% else %}
+    <li class='active'><a href="{% url 'dashboard' %}">Dashboard</a></li>
+  {% endif %}
+{% endblock tabs %}
+
+
+{% block app_tabs %}
+  <div class="bg-red">
+    <ul class="sub_tags">
+      <li><a class='text-white sub_tabs' href="#">Dashboard</a></li>
+    </ul>
+  </div>
+{% endblock app_tabs %}
+
+
   {% block content %}
     <div class="content-section shadow">
       <form method="POST">

@@ -19,119 +19,92 @@
 
   <div id="profile_search_content" class="content-section shadow">
 
+    <form id="tool_input_form" class="" action="post">
+      {% csrf_token %}
+      <div id="top_search_container" class="top-search-container d-none">
 
-    <div id="top_search_container" class="top-search-container d-none">
-
-      <div class="input-group">
-        <input id="search_input" type="text" class="form-control" value="" placeholder="" aria-label="" aria-describedby="basic-addon1">
-        <div class="input-group-append">
-          <button id="add_filter_btn" class="btn btn-secondary" type="button">Tools</button>
-          <select id="list_select" class="d-inline-block rounded-0 custom-select bg-secondary text-white" name="">
-          </select>
-        </div>
-      </div>
-
-      <div id="tool_container" class="d-block-notimportant border pl-3 pr-3 pt-2 d-none">
-        <div class="row">
-
-          <div class="mr-1 ml-1">
-            <p class="m-0 mt-2 mr-1 d-inline-block">Filter By: </p>
-
-            <select id="filter_by" class="tool-input form-control mt-1 d-inline-block" type="text" placeholder="filter by">
-              <option value="" selected value>None</option>
-              <option value='current_site'>Site</option>
-              <option value='current_role'>Current Role</option>
-              <option value='all_roles'>All Roles</option>
-              <option value='current_cohort'>Cohort</option>
-              <option value='current_resource_team'>Resource Team</option>
-              <option value='current_resource_team_role'>Resource Team Role</option>
-              <option value='excurrent_training'>Completed Training</option>
-              <option value='excurrent_not_training'>Incomplete Training</option>
-              <option value='first_city'>City</option>
-              <option value='first_state'>State</option>
-              <option value='first_zip'>Zip</option>
-              <option value='gender'>Gender</option>
-              <option value='race'>Race</option>
-              <option value='first_home_ownership'>Home Ownership</option>
-              <option value='first_habitat_home'>Habitat Home</option>
-              <option value='first_safe_home'>Safe Home</option>
-              <option value='first_repair_home'>Home Needs Repair</option>
-              <option value='birthdate'>Birthdate</option>
+        <div class="input-group">
+          {{ form.searchinput }}
+          <div class="input-group-append">
+            <button id="add_filter_btn" class="btn btn-secondary" type="button">Tools</button>
+            <select id="list_select" class="d-inline-block rounded-0 custom-select bg-secondary text-white" name="">
             </select>
           </div>
-
-          <div class="mr-1 ml-1">
-            <p class="m-0 mt-2 mr-1 d-inline-block">Filter Input: </p>
-
-            <div id="filter_input_container" class="tool-input d-inline-block p-0 pt-1">
-            </div>
-          </div>
-
-          <div id="filter_submit_btn_container" class="p-0 tool-seperator">
-          </div>
-
-          <div class="mr-1 ml-1">
-            <p class="m-0 mt-2 mr-1 d-inline-block">Sort By: </p>
-
-            <select id="sort_by" class="tool-input form-control mt-1 d-inline-block" type="text" placeholder="Sort By">
-              <option value="" selected value>None</option>
-              <option value='current_site'>Site</option>
-              <option value='current_cohort'>Cohort</option>
-              <option value='current_resource_team'>Resource Team</option>
-              <option value='current_resource_team_role'>Resource Team Role</option>
-              <option value='first_city'>City</option>
-              <option value='first_state'>State</option>
-              <option value='first_zip'>Zip</option>
-              <option value='last_name'>Last Name</option>
-              <option value='birthdate'>Birthdate</option>
-              <option value='first_home_ownership'>Home Ownership</option>
-              <option value='first_habitat_home'>Habitat Home</option>
-              <option value='first_safe_home'>Safe Home</option>
-              <option value='first_repair_home'>Home Needs Repair</option>
-              <option value='current_role'>Current Role</option>
-              <option value='race'>Race</option>
-              <option value='gender'>Gender</option>
-            </select>
-          </div>
-
-
-          <div class="tool-seperator">
-          </div>
-
-          <div id="data_container" class="mr-1 ml-1">
-            <p class="m-0 mt-2 mr-1 d-inline-block">Data: </p>
-
-            <div id="data_displayed_container" class="d-inline-block">
-            </div>
-
-            <i id="add_data_btn" class="fas fa-plus-circle icon-btn d-inline-block"></i>
-
-            <div id="data_delete_btn_container" class="d-inline-block">
-            </div>
-
-          </div>
-
-          <div class="tool-seperator">
-          </div>
-
-          <div class="mr-1 ml-1">
-          </div>
-
         </div>
-        <div class="row">
-          <div class="col-8 p-0 mb-0">
-            <div id="filter_list" class="mb-0 p-0 d-inline-block">
+
+        <div id="tool_container" class="d-block-notimportant border pl-3 pr-3 pt-2 d-none">
+          <div class="row">
+
+            <div class="mr-1 ml-1">
+              <p class="m-0 mt-2 mr-1 d-inline-block">Filter By: </p>
+
+              <select id="filter_by" class="tool-input form-control mt-1 d-inline-block" type="text" placeholder="filter by">
+                {% for value, display in form_choices_text %}
+                <option value="{{ value }}">{{ display }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mr-1 ml-1">
+              <p class="m-0 mt-2 mr-1 d-inline-block">Filter Input: </p>
+
+              <div id="filter_input_container" class="tool-input d-inline-block p-0 pt-1">
+              </div>
+            </div>
+
+            <div id="filter_submit_btn_container" class="p-0 tool-seperator">
+            </div>
+
+            <div class="mr-1 ml-1">
+              <p class="m-0 mt-2 mr-1 d-inline-block">Sort By: </p>
+              {{ form.sortby }}
+            </div>
+
+
+            <div class="tool-seperator">
+            </div>
+
+            <div id="data_container" class="mr-1 ml-1">
+              <p class="m-0 mt-2 mr-1 d-inline-block">Data: </p>
+
+              <div id="data_displayed_container" class="d-inline-block">
+              </div>
+
+              <i id="add_data_btn" class="fas fa-plus-circle icon-btn d-inline-block"></i>
+
+              <div id="data_delete_btn_container" class="d-inline-block">
+              </div>
+
+            </div>
+
+            <div class="tool-seperator">
+            </div>
+
+            <div class="mr-1 ml-1">
+            </div>
+
+          </div>
+          <div class="row">
+            <div class="col-8 p-0 mb-0">
+              <div id="filter_list" class="mb-0 p-0 d-inline-block">
+              </div>
+            </div>
+            <div id="tool_btns_container" class="pr-1 col-4 text-right">
+              <button id="filterset_create" class="btn btn-outline-secondary btn-sm" type="button" name="button">Create List</button>
+              <button id="export_excel_btn" class="btn btn-outline-secondary btn-sm mr-3" type="button" name="button">Export to Excel</button>
+              <i class="fas fa-chevron-up icon-btn mt-3" id="hide_tools"></i>
             </div>
           </div>
-          <div id="tool_btns_container" class="pr-1 col-4 text-right">
-            <button id="filterset_create" class="btn btn-outline-secondary btn-sm" type="button" name="button">Create List</button>
-            <button id="export_excel_btn" class="btn btn-outline-secondary btn-sm mr-3">Export to Excel</button>
-            <i class="fas fa-chevron-up icon-btn mt-3" id="hide_tools"></i>
-          </div>
+          {{ form.filters.as_hidden }}
+          {{ form.datatype.as_hidden }}
         </div>
       </div>
+    </form>
 
-    </div>
+
+
+
+
 
     <div class="text-center">
       <div id="list_title" class="border-bottom">
@@ -229,6 +202,11 @@
         last_name:"Last Name",
         current_role:"Current Role",
       }
+      choices = JSON.parse("{{ form_choices_text_json|escapejs }}");
+      filtertext = {};
+      for (var i = 0; i < choices.length; i++) {
+        filtertext[choices[i][0]] = choices[i][1];
+      }
       var container =
       $("<div/>")
         .addClass("rounded border d-inline-block m-1");
@@ -239,7 +217,7 @@
           .text(filtertext[filter["filterby"]] + ': ' + filter["filterinput"]),
         // Trash can icon next to filter element
         $('<button/>')
-          .attr("id","delete-" + i.toString())
+          .attr("id","delete-" + filter_number.toString())
           .addClass("fas fa-times icon-btn text-small")
           .click(function() { removeFilter($(this))})
       );
@@ -353,33 +331,37 @@
       $("<select/>")
         .addClass("tool-input form-control m-1 d-inline-block")
         .change(function () {getProfiles()});
-      select.append(
-        $("<option/>").val("").text("None"),
-        $("<option/>").val("current_role").text("Current Roles"),
-        $("<option/>").val("all_roles").text("All Roles"),
-        $("<option/>").val("current_cohort").text("Cohort"),
-        $("<option/>").val("current_resource_team").text("Resource Team"),
-        $("<option/>").val("current_resource_team_role").text("Resource Team Role"),
-        $("<option/>").val("excurrent_training").text("Training"),
-        $("<option/>").val("email").text("Email"),
-        $("<option/>").val("cell").text("Cell"),
-        $("<option/>").val("circles_id").text("ID"),
-        $("<option/>").val("status").text("Status"),
-        $("<option/>").val("birthdate").text("Birthdate"),
-        $("<option/>").val("race").text("Race"),
-        $("<option/>").val("gender").text("Gender"),
-        $("<option/>").val("all_children").text("Children"),
-        $("<option/>").val("first_street_address").text("Address"),
-        $("<option/>").val("first_city").text("City"),
-        $("<option/>").val("first_state").text("State"),
-        $("<option/>").val("first_zip").text("Zip"),
-        $("<option/>").val("first_home_ownership").text("Home Ownership"),
-        $("<option/>").val("first_habitat_home").text("Habitat Home"),
-        $("<option/>").val("first_safe_home").text("Safe Home"),
-        $("<option/>").val("first_repair_home").text("Home Needs Repair"),
-        $("<option/>").val("current_site").text("Site"),
-        $("<option/>").val("e_phone").text("Emergency Number"),
-      );
+      var choices = JSON.parse("{{ form_choices_text_json|escapejs }}");
+      for (var i = 0; i < choices.length; i++) {
+        select.append($("<option/>").val(choices[i][0]).text(choices[i][1]))
+      }
+      // select.append(
+      //   $("<option/>").val("").text("None"),
+      //   $("<option/>").val("current_role").text("Current Roles"),
+      //   $("<option/>").val("all_roles").text("All Roles"),
+      //   $("<option/>").val("current_cohort").text("Cohort"),
+      //   $("<option/>").val("current_resource_team").text("Resource Team"),
+      //   $("<option/>").val("current_resource_team_role").text("Resource Team Role"),
+      //   $("<option/>").val("excurrent_training").text("Training"),
+      //   $("<option/>").val("email").text("Email"),
+      //   $("<option/>").val("cell").text("Cell"),
+      //   $("<option/>").val("circles_id").text("ID"),
+      //   $("<option/>").val("status").text("Status"),
+      //   $("<option/>").val("birthdate").text("Birthdate"),
+      //   $("<option/>").val("race").text("Race"),
+      //   $("<option/>").val("gender").text("Gender"),
+      //   $("<option/>").val("all_children").text("Children"),
+      //   $("<option/>").val("first_street_address").text("Address"),
+      //   $("<option/>").val("first_city").text("City"),
+      //   $("<option/>").val("first_state").text("State"),
+      //   $("<option/>").val("first_zip").text("Zip"),
+      //   $("<option/>").val("first_home_ownership").text("Home Ownership"),
+      //   $("<option/>").val("first_habitat_home").text("Habitat Home"),
+      //   $("<option/>").val("first_safe_home").text("Safe Home"),
+      //   $("<option/>").val("first_repair_home").text("Home Needs Repair"),
+      //   $("<option/>").val("current_site").text("Site"),
+      //   $("<option/>").val("e_phone").text("Emergency Number"),
+      // );
       $("#data_displayed_container").append(
         select
       );
@@ -399,6 +381,8 @@
     // filters that are saved by the user are stored here as objects containing
     // filterby and filterinput
     var filters = [];
+    // Form that contains user inputs to filter out and display profile data
+    var toolinputform;
 
 
     // Initialize page
@@ -419,12 +403,12 @@
     // Get the profiles based on current filters and search input and add them
     // to the page
     function getProfiles() {
-      data = collectPageData()
+      toolinputform = collectPageData();
       // Ajax call to the backend (GetProfiles)
       $.ajax({
         url: '{% url "get-profiles" %}',
-        data: data,
-        dataType: 'json',
+        data: toolinputform,
+        method: 'POST',
         success: function (data) {
           // Returned:
           // group object containing a list of profile objects
@@ -454,35 +438,59 @@
       });
     }
 
-
     // Collect the shear input, sort by, data displayed, and filters
     function collectPageData() {
-      // Collect data to input to the backend
-      var filter_by = $('#filter_by').val();
-      var filter_input = $('#filter_input').val();
-      if (!filter_input) filter_input = '';
-      var search_input = $('#search_input').val();
-      var sort_by = $("#sort_by").val();
-      // Add unsaved filters to saved filters
-      var unsaved_filter = {"filterby": filter_by, "filterinput": filter_input};
-      var all_filters = filters.slice() // Create a copy of the array
-      all_filters.push(unsaved_filter); // Add the unsaved filter
+
       // Add each data type to a list
-      var data_displayed = [];
+      var data_types = [];
       $('#data_displayed_container').children().each(function() {
-        data_displayed.push($(this).val());
+        data_types.push($(this).val());
       });
-      // Stringify the two lists to be sent to backend
-      data_displayed = JSON.stringify(data_displayed);
-      all_filters = JSON.stringify(all_filters);
-      data = {
-        'search_input': search_input,
-        'sort_by': sort_by,
-        'data_displayed': data_displayed,
-        'filters': all_filters,
+      // Add unsaved filter to the list of filters
+      var filters_cpy = filters.slice() // Create a copy of the array
+      if ($('#filter_by').val()) {
+        var unsaved_filter = {"filterby": $('#filter_by').val(),
+                              "filterinput": $('#filter_input').val(),
+                             };
+        filters_cpy.push(unsaved_filter); // Add the unsaved filter
       }
-      return data;
+      // Stringify the two lists to be sent to backend
+      data_types = JSON.stringify(data_types);
+      filters_cpy = JSON.stringify(filters_cpy);
+      $('#id_datatype').val(data_types);
+      $('#id_filters').val(filters_cpy);
+      return $('#tool_input_form').serialize();
+      // var filter_by = $('#filter_by').val();
+      // var filter_input = $('#filter_input').val();
+
+      // Collect data to input to the backend
+
+      // var filter_by = $('#filter_by').val();
+      // var filter_input = $('#filter_input').val();
+      // if (!filter_input) filter_input = '';
+      // var search_input = $('#search_input').val();
+      // var sort_by = $("#sort_by").val();
+      // // Add unsaved filters to saved filters
+      // var unsaved_filter = {"filterby": filter_by, "filterinput": filter_input};
+      // var all_filters = filters.slice() // Create a copy of the array
+      // all_filters.push(unsaved_filter); // Add the unsaved filter
+      // // Add each data type to a list
+      // var data_displayed = [];
+      // $('#data_displayed_container').children().each(function() {
+      //   data_displayed.push($(this).val());
+      // });
+      // // Stringify the two lists to be sent to backend
+      // data_displayed = JSON.stringify(data_displayed);
+      // all_filters = JSON.stringify(all_filters);
+      // data = {
+      //   'search_input': search_input,
+      //   'sort_by': sort_by,
+      //   'data_displayed': data_displayed,
+      //   'filters': all_filters,
+      // }
+      // return data;
     }
+
 
 
     // Create the filter elements and add them to the page based on the saved
@@ -575,7 +583,7 @@
       $("#filter_submit_btn_container").html(null); // Clear the button container
       addFilterInputHTML(options); // Add the correct input type to the container
       addFilterSubmitHTML();
-      getProfiles(); // Update page
+      getProfiles() // update page
     }
 
     // Adds a the current filters to a filterset and adds to users filtersets
@@ -700,7 +708,6 @@
 
     // Send an XML response to export the current data to an excel sheet
     function exportToExcel() {
-
       var data = collectPageData();
       xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function() {
@@ -715,25 +722,27 @@
                return a.click();
            }
        };
-       data = $.param(data);
-       xhttp.open("GET", "/members/profile/get-profiles-excel?" + data, true);
-       xhttp.setRequestHeader("Content-Type", "application/json");
+       xhttp.open("POST", "/members/profile/get-profiles-excel?", true);
+       xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
        xhttp.responseType = 'blob';
-       xhttp.send();
+       xhttp.send(data);
      }
 
     /////////////// Listners to update the page //////////////////////
+    $('#tool_input_form').on('submit', function(event){
+        event.preventDefault();
+    });
+    $("#id_searchinput").on("keyup", function(){
+      getProfiles();
+    });
 
     $("#filter_by").change(function() {
       getFilterInputField($(this).val()); // Add an input field
     });
-    $("#search_input").on("keyup", function() {
+    $("#id_sortby").change(function() {
       getProfiles();
     });
-    $("#sort_by").change(function() {
-      getProfiles();
-    });
-    $("#data_displayed").change(function() {
+    $("#id_datatype").change(function() {
       getProfiles();
     });
     $("#list_select").change(function() {

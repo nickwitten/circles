@@ -1,6 +1,8 @@
 from django import forms
 from bootstrap_modal_forms.forms import BSModalForm
 from .models import Profile, Residence, Role, Training, Child, ChildInfo
+from .data import form_choices_text
+
 
 class ProfileCreationForm(forms.ModelForm):
 
@@ -105,3 +107,35 @@ class ChildInfoCreationForm(BSModalForm):
 
             #gives text input crispy classes
             visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
+
+# class ProfilesToolsForm(forms.ModelForm):
+#
+#     class Meta:
+#         model = ToolInputs
+#         exclude = {}
+#
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         search_input_widget = self.fields['searchinput'].widget
+#         search_input_widget.attrs['class'] = "form-control"
+#         search_input_widget.attrs['aria-describedby'] = "basic-addon1"
+#
+#         sort_by_widget = self.fields['sortby'].widget
+#         sort_by_widget.attrs[]
+
+class ProfilesToolsForm(forms.Form):
+    searchinput = forms.CharField(required=False,
+                                  widget=forms.TextInput(attrs={
+                                    'class':"form-control",
+                                    'aria-describedby':'basic-addon1',
+                                  }))
+    filters = forms.CharField(required=False)
+    datatype = forms.CharField(required=False)
+    sortby = forms.ChoiceField(required=False,
+                               choices=form_choices_text,
+                               widget=forms.Select(attrs={
+                                'class':'tool-input form-control mt-1 d-inline-block',
+                                'type':'text',
+                                'placeholder':'Sort By',
+                                'default':None,
+                               }))

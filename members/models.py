@@ -54,13 +54,7 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
 
     # Get all Children
     def order_children(self):
-        children = []
-        # Loop through all childinfos
-        for childinfo in self.childinfos.all():
-            # Loop through all children in childinfos
-            for child in childinfo.order_children():
-                children.append(child) # Add child to the list
-        return children
+        return Child.objects.filter(child_info__profile=self)
 
 class Site(models.Model):
     site = models.CharField(max_length=32)

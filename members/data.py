@@ -48,10 +48,10 @@ keywords = {
 # Data Fields that are in related models
 residence_data = list(keywords.keys())[0:8]
 role_data = list(keywords.keys())[8:14]
-training_data = list(keywords.keys())[14:15]
+training_data = list(keywords.keys())[14:16]
 child_data = list(keywords.keys())[16]
 # HTML Value --> HTML Display
-display_text = {
+form_display_text = {
     'current_role':'Current Role',
     'all_roles':'All Roles',
     'current_cohort':'Cohort',
@@ -78,24 +78,34 @@ display_text = {
     'e_phone':'Emergency Number',
 }
 
+form_choices_text = [[key, value] for key, value in form_display_text.items()]
+form_choices_text.insert(0, ["",""])
+
 
 ########## Main Functions #########################
 
 
 
-def get_profiles(request):
-    search_input = request.GET.get('search_input',None)
-    sort_by = request.GET.get('sort_by',None)
-    data_displayed = request.GET.get('data_displayed',None)
-    data_displayed = json.loads(data_displayed)
-    filters = request.GET.get('filters',None)
-    filters = json.loads(filters)
+def get_profiles(tool_inputs):
+    # #search_input = request.GET.get('search_input',None)
+    # sort_by = request.GET.get('sort_by',None)
+    # data_displayed = request.GET.get('data_displayed',None)
+    # data_displayed = json.loads(data_displayed)
+    # filters = request.GET.get('filters',None)
+    # filters = json.loads(filters)
+    try:
+        data_type = json.loads(tool_inputs['datatype'])
+    except Exception as e:
+        print(type(e), e)
+    try:
+        filters = json.loads(tool_inputs['filters'])
+    except Exception as e:
+        print(type(e), e)
     profiles = Profile.objects.all()
-
-    profiles = search_profiles(profiles,search_input)
-    profiles = filter_profiles(profiles,filters)
-    profiles = get_profile_data(profiles,data_displayed)
-    sorted_profiles = sort_profiles(profiles,sort_by)
+    profiles = search_profiles(profiles, tool_inputs['searchinput'] or '')
+    profiles = filter_profiles(profiles, filters)
+    profiles = get_profile_data(profiles, data_type)
+    sorted_profiles = sort_profiles(profiles, tool_inputs['sortby'] or '')
 
     data = {
         'groups' : sorted_profiles
@@ -113,7 +123,6 @@ def search_profiles(profiles,search_input):
 
 
 def filter_profiles(profiles,filters):
-
     for filter in filters:
         filterby = filter["filterby"]
         filterinput = filter["filterinput"]
@@ -143,6 +152,7 @@ def filter_profiles(profiles,filters):
             profile_ids = []
             for profile in profiles:
                 related_models = model.get_related(profile)
+                print(related_models)
                 if 'excurrent' in filterby:
                     related_models = related_models.exclude(end_date=None)
                 if 'not' in filterby and not related_models.filter(**query):
@@ -247,14 +257,8 @@ def sort_profiles(profiles, sort_by):
 # Get the choices of a certain field
 def get_field_options(filterby):
     options = []
-    if filterby in residence_data:
-        field = Residence._meta.get_field(keywords[filterby])
-    elif filterby in role_data:
-        field = Role._meta.get_field(keywords[filterby])
-    elif filterby in training_data:
-        field = Training._meta.get_field(keywords[filterby])
-    else:
-        field = Profile._meta.get_field(filterby)
+    model = field_to_model(filterby)
+    field = model._meta.get_field(keywords[filterby])
     # IF the field is a related model, get all the objects
     if field.get_internal_type() == 'ForeignKey':
         temp_options = field.remote_field.model.objects.all()
@@ -270,7 +274,7 @@ def get_field_options(filterby):
 
     return options
 
-def create_excel(request, sorted_profiles):
+def create_excel(tools_form, sorted_profiles):
     output = BytesIO()
     # Feed a buffer to workbook
     workbook = xlsxwriter.Workbook(output)
@@ -280,13 +284,13 @@ def create_excel(request, sorted_profiles):
 
     # Fill out the datasheet
 
-    fields = request.GET.get('data_displayed')
+    fields = tools_form['datatype']
     fields = json.loads(fields)
     row = 0
     if fields[0]:
         # Fill first row with field description
         for i, field in enumerate(fields):
-            worksheet.write(row, i+1, display_text[field], bold)
+            worksheet.write(row, i+1, form_display_text[field], bold)
 
         row += 1 # move down a row
 
