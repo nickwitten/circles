@@ -180,28 +180,28 @@
 
     // Add the filter and delete button into the list of active filters
     function addFilterHTML(filter, filter_number) {
-      var filtertext = {
-        current_site:"Site",
-        first_city:"City",
-        first_state:"State",
-        first_zip:"Zip",
-        first_street_address:"Street Address",
-        current_role:"Current Role",
-        all_roles:"All Roles",
-        current_cohort:"Cohort",
-        current_resource_team:"Resource Team",
-        current_resource_team_role:"Resource Team Role",
-        excurrent_training:"Completed Training",
-        excurrent_not_training:"Incomplete Training",
-        first_home_ownership:"Home Ownership",
-        first_habitat_home:"Habitat Home",
-        first_safe_home:"Safe Home",
-        first_repair_home:"Home Needs Repair",
-        gender:"Gender",
-        race:"Race",
-        last_name:"Last Name",
-        current_role:"Current Role",
-      }
+      // var filtertext = {
+      //   current_site:"Site",
+      //   first_city:"City",
+      //   first_state:"State",
+      //   first_zip:"Zip",
+      //   first_street_address:"Street Address",
+      //   current_role:"Current Role",
+      //   all_roles:"All Roles",
+      //   current_cohort:"Cohort",
+      //   current_resource_team:"Resource Team",
+      //   current_resource_team_role:"Resource Team Role",
+      //   excurrent_training:"Completed Training",
+      //   excurrent_not_training:"Incomplete Training",
+      //   first_home_ownership:"Home Ownership",
+      //   first_habitat_home:"Habitat Home",
+      //   first_safe_home:"Safe Home",
+      //   first_repair_home:"Home Needs Repair",
+      //   gender:"Gender",
+      //   race:"Race",
+      //   last_name:"Last Name",
+      //   current_role:"Current Role",
+      // }
       choices = JSON.parse("{{ form_choices_text_json|escapejs }}");
       filtertext = {};
       for (var i = 0; i < choices.length; i++) {
