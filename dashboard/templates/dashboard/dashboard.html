@@ -7,7 +7,7 @@
   {% if user.is_authenticated %}
     <li class='active'><a href="{% url 'dashboard' %}">Dashboard</a></li>
     <li><a href="{% url 'profiles' %}">Members</a></li>
-    <li><a href="#">Meetings</a></li>
+    <li><a href="{% url 'meetings' %}">Meetings</a></li>
     <li><a href="#">Training</a></li>
     <li><a href="#">Progress</a></li>
   {% else %}

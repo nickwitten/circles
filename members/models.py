@@ -6,8 +6,8 @@ from PIL import Image
 from datetime import date
 
 class Profile(models.Model): # ForeignKey field must have same name as related model
-    first_name = models.CharField(max_length = 20)
-    last_name = models.CharField(max_length = 20)
+    first_name = models.CharField(max_length=20)
+    last_name = models.CharField(max_length=20)
     circles_id = models.CharField(blank=True,null=True,max_length = 6)
     birthdate = models.DateField(blank=True,null=True)
     race = models.CharField(blank=True,null=True,max_length=10,choices=[('white','White',),('black','Black'),('other','Other')])

@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'members.apps.MembersConfig',
     'dashboard.apps.DashboardConfig',
+    'meetings.apps.MeetingsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

@@ -4,9 +4,11 @@
 <!--------------- Nav Bar ------------------->
 
 {% block tabs %}
+  <link rel="stylesheet" type="text/css" href='/static/meetings/css/meetings.css'>
+
   <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
-  <li class='active'><a href="{% url 'profiles' %}">Members</a></li>
-  <li><a href="{% url 'meetings' %}">Meetings</a></li>
+  <li><a href="{% url 'profiles' %}">Members</a></li>
+  <li class="active"><a href="{% url 'meetings' %}">Meetings</a></li>
   <li><a href="#">Training</a></li>
   <li><a href="#">Progress</a></li>
 {% endblock tabs %}
@@ -18,3 +20,6 @@
 
 {% block content %}
 {% endblock content %}
+
+{% block js %}
+{% endblock js %}

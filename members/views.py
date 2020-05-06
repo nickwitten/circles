@@ -30,6 +30,7 @@ class ProfileCreateView(LoginRequiredMixin, CreateView):
     model = Profile
     template_name = 'members/create_profile.html'
     form_class = ProfileCreationForm
+
     def form_valid(self,form):
         self.object = form.save()
         return redirect('profile-update',self.object.id)

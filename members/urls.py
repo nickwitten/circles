@@ -1,10 +1,13 @@
 from django.urls import path
 from django.conf.urls import url
 from . import views
-from .views import ProfileListView, ProfileCreateView, ProfileDetailView, ProfileDeleteView, ProfileUpdateView, update_profile, create_profile, ResidenceCreateView, ResidenceUpdateView, ResidenceDeleteView, RoleCreateView, RoleUpdateView, RoleDeleteView, TrainingAddView, TrainingUpdateView, TrainingDeleteView, ChildCreateView, ChildUpdateView, ChildrenEditView, ChildInfoCreateView, profiles, GetProfiles, CreateFilterset,GetFiltersets,AddFiltersetTitle,DeleteFilterset,FilterInput,ExcelDump
+from .views import ProfileListView, ProfileCreateView, ProfileDetailView, ProfileDeleteView, ProfileUpdateView, \
+                    update_profile, create_profile, ResidenceCreateView, ResidenceUpdateView, ResidenceDeleteView, \
+                    RoleCreateView, RoleUpdateView, RoleDeleteView, TrainingAddView, TrainingUpdateView, TrainingDeleteView, \
+                    ChildCreateView, ChildUpdateView, ChildrenEditView, ChildInfoCreateView, profiles, GetProfiles, \
+                    CreateFilterset,GetFiltersets,AddFiltersetTitle,DeleteFilterset,FilterInput,ExcelDump
 
 urlpatterns = [
-    #path('',ProfileListView.as_view(),name='profiles'),
     path('',profiles,name='profiles'),
     path('create_profile/',ProfileCreateView.as_view(),name='create-profile'),
     path('profile/<int:pk>/',ProfileDetailView.as_view(),name='profile-detail'),
