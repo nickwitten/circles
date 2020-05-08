@@ -9,11 +9,30 @@
 {% endblock app_tabs %}
 
 {% block content %}
-<div class="calendar-content">
-  <h1 class="calendar-content">HELLO</h1>
+<div id="calendar_content" class="content-section shadow p-0 pt-2 mb-4">
+  <div id="calendar_header" class="text-center pt-2">
+    <i class="fas fa-long-arrow-alt-left icon-btn d-inline-block pl-2 pr-2" onclick="buildCalendar(monthOffset--, step=-1);"></i>
+    <div id="month_container" class="d-inline-block"></div>
+    <i class="fas fa-long-arrow-alt-right icon-btn d-inline-block pl-2 pr-2" onclick="buildCalendar(monthOffset++, step=1);"></i>
+    <div id="year_container"></div>
+  </div>
+  <div class="">
+    <ul id="day_labels" class="border-bottom border-top">
+      <li>SUN
+      <li>MON
+      <li>TUE
+      <li>WED
+      <li>THU
+      <li>FRI
+      <li>SAT
+    </ul>
+  </div>
+  <div id="days_container">
+  </div>
 </div>
 {% endblock content %}
 
 {% block js %}
-
+<script src="/static/assets/js/moment.js"></script>
+<script src="/static/meetings/js/meetings.js"></script>
 {% endblock js %}

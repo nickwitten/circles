@@ -43,16 +43,17 @@
       {% endblock app_tabs %}
     </header>
 
-    <div class="alert-container contents-blurred contents-blurred">
-      {% if messages %}
-      {% for message in messages %}
-          <div class="alert alert-{{ message.tags }}">
-            {{ message }}
-            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-          </div>
-      {% endfor %}
-      {% endif %}
-    </div>
+<!--    <div class="alert-container contents-blurred contents-blurred">-->
+<!--      {% if messages %}-->
+<!--      {% for message in messages %}-->
+<!--          <div class="alert alert-{{ message.tags }}">-->
+<!--            {{ message }}-->
+<!--            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>-->
+<!--          </div>-->
+<!--      {% endfor %}-->
+<!--      {% endif %}-->
+<!--    </div>-->
+
       {% block content %}{% endblock %}
 
       {% block js %}{% endblock js %}
