@@ -19,8 +19,9 @@ function addWeekHTML(days) {
         for (var j=0; j<days[i]['meetings'].length; j++) {
             meeting = $('<div/>')
                 .addClass('calendar-meeting')
+                .attr('data-pk', days[i]['meetings'][j][2]);
             meeting.append($('<p/>')
-                .text(days[i]['meetings'][j])
+                .text(days[i]['meetings'][j][0])
                 .addClass('meeting-description'));
             meetings_container.append(meeting);
         }
@@ -49,6 +50,7 @@ var monthOffset = 0;
 
 $(document).ready(function(){
     buildCalendar(monthOffset, null);
+    startListeners();
 });
 
 // parameters:
@@ -67,14 +69,39 @@ function buildCalendar(month_offset, step) {
     var current_date = dates[1];
     dates = dates[0];
 
-    checkMeetingQuery(month_offset, step, current_date[0], current_date[1]);
+    // True means meetings were queried and rest was handled by success
+    if (!checkMeetingQuery(month_offset, step, current_date[0], current_date[1], dates, view)) {
+        addDays(dates, view);
+        startCalendarListeners();
+    }
+}
 
-    addDays(dates, view);
+// query for selected meeting and get filled meeting form
+// pk = null get uninitialized meeting form
+// construct the html to display all fields
+function buildMeetingInfo (pk) {
+    showMeetingInfo();
+    if (pk) {
+        getMeetingInfo(pk);
+    }
+}
+
+function submitMeeting(pk) {
+    form = $("#meeting_form").serialize();
+    $.ajax({
+        url: 'post-meeting-info/' + pk,
+        data: form,
+        type: 'post',
+        success: function(data) {
+            buildCalendar(monthOffset, 0);
+        }
+    })
 }
 
 // Returns a list of month days that need to be added,
 // current date in (year, month, day) or null if not in current view,
 // month and year of current view
+
 function getDates(month_offset) {
     var current_date = moment().format('YYYY-MM-DD');
     var year = parseInt(current_date.slice(0,4));
@@ -110,7 +137,7 @@ function floorbase32(int) {
     return Math.floor(int / 32) * 32;
 }
 
-function checkMeetingQuery(month_offset, step, current_year, current_month) {
+function checkMeetingQuery(month_offset, step, current_year, current_month, dates, view) {
     var meetings_basemonthoffset = floorbase32(month_offset + step + 16) - 16;
     if (floorbase32(month_offset + 16) - 16 != meetings_basemonthoffset || !step) {
         var current_date = moment().year(current_year).month(current_month-1);
@@ -120,15 +147,13 @@ function checkMeetingQuery(month_offset, step, current_year, current_month) {
         var end_date = base_date.add(32 + 2, 'month');
         var endyear = end_date.format('YYYY');
         var endmonth = end_date.format('MM');
-        console.log(baseyear);
-        console.log(basemonth);
-        console.log(endyear);
-        console.log(endmonth);
-        queryMeetingsDb(baseyear, basemonth, endyear, endmonth);
+        queryMeetingsDb(baseyear, basemonth, endyear, endmonth, dates, view);
+        return true
     }
+    return false
 }
 
-function queryMeetingsDb(baseyear, basemonth, endyear, endmonth) {
+function queryMeetingsDb(baseyear, basemonth, endyear, endmonth, dates, view) {
     var data = {
         'baseyear': baseyear,
         'basemonth': basemonth,
@@ -139,7 +164,6 @@ function queryMeetingsDb(baseyear, basemonth, endyear, endmonth) {
         url: "get-meetings",
         data: data,
         method: 'GET',
-        async: false,
         success: function(data) {
             meetings = {};
             for (var i=0; i<data.meetings.length; i++) {
@@ -153,6 +177,8 @@ function queryMeetingsDb(baseyear, basemonth, endyear, endmonth) {
                     meetings[date] = [[meeting['title'], time, meeting['pk']], ];
                 }
             }
+            addDays(dates, view);
+            startCalendarListeners();
         }
     });
 }
@@ -174,17 +200,54 @@ function addDays(dates, view) {
                 day = view_moment.format('-MM-YYYY');
             }
             day = monthnum.toString().padStart(2, '0') + day;
-            try {
-                var found_meetings = meetings[day];
-                var meeting_names = [];
-                for (var k=0; k<found_meetings.length; k++) {
-                    meeting_names.push(found_meetings[k][0]);
-                }
-            } catch(err) {
+            var found_meetings = meetings[day];
+            if (!found_meetings) {
+                found_meetings = [];
             }
-            var day = {monthnum: monthnum, meetings: meeting_names};
+            var day = {monthnum: monthnum, meetings: found_meetings};
             days.push(day);
         }
         addWeekHTML(days);
     }
+}
+
+function getMeetingInfo(pk) {
+    var data = {'pk':pk};
+    var data_outer = null;
+    $.ajax({
+        url: "get-meeting-info",
+        data: data,
+        method: 'GET',
+        success: function(data) {
+            initializeForm(data);
+        }
+    });
+}
+
+function initializeForm(meeting) {
+    $('#id_title').val(meeting.title);
+    $('#id_start_time').val(meeting.start_time);
+    $('#id_end_time').val(meeting.end_time);
+    $('#meeting_submit_btn').attr('data-pk', meeting.pk);
+}
+
+function showMeetingInfo() {
+    document.getElementById('meeting_info_container').classList.add('show');
+}
+
+function hideMeetingInfo() {
+    document.getElementById('meeting_info_container').classList.remove('show');
+}
+function startCalendarListeners() {
+    $(".calendar-meeting").on("click", function() {
+        buildMeetingInfo($(this).attr("data-pk"));
+    });
+    $("#meeting_back_btn").on("click", function() {
+        hideMeetingInfo();
+    });
+}
+function startListeners() {
+    $("#meeting_submit_btn").on("click", function() {
+        submitMeeting($(this).attr("data-pk"));
+    });
 }

@@ -1,0 +1,152 @@
+                        /* members styles */
+.a
+                     /*profile creation syles*/
+/*text input styles*/
+.inline-field .form-control{
+  display:inline-block;
+  width:100%;
+  text-align:left;
+  padding:3px 0px
+}
+.form-control{
+  padding-top:4px;
+  padding-bottom:4px;
+}
+.inline-field .form-control{
+  display:inline;
+  width:53%;
+  text-align:left;
+}
+select.form-control:not([size]):not([multiple]) {
+    height:30px;
+}
+.error{
+  color:red;
+  display:inline;
+}
+/*label styles*/
+.profile-container label{
+  margin-top:0.25rem;
+  margin-right:5px;
+}
+.asteriskField{
+  display:none;
+}
+                    /*profile detail styles*/
+/*label styles*/
+.field-label{
+  margin-top:0.25rem;
+  margin-bottom:8px;
+}
+.field-label-third{
+  margin:4px 5px 8px 0px;
+  display:inline-block;
+}
+/*Value styles*/
+.field-value-container{
+  padding:0px 15px;
+}
+.field-value-container-third{
+  padding:4px 13px;
+  display:inline-block;
+  text-align:left;
+}
+.field-value-sub-container{
+  padding:4px 13px
+}
+.field-value{
+  margin-bottom:4px;
+}
+
+/*.scroll{
+  height:15rem;
+  overflow:auto;
+} */
+
+.inactive-slide {
+  position: absolute;
+  z-index:1;
+  left:-100%;
+  transition:1s;
+  margin:0px;
+}
+.icon-btn {
+  border:none;
+  background:none;
+  outline: none;
+}
+button:focus {
+  outline:0;
+}
+
+            /*Profile Search Styles*/
+
+#profile_search_content {
+  overflow-y: scroll;
+  height: max(88vh, 40vw);
+}
+#filter_by {
+}
+#filter_input {
+}
+#list_select {
+  width : 50%;
+  border: 1px solid #6c757d;
+}
+#result-list {
+}
+#filter_submit {
+  margin: 14px;
+}
+#list_select {
+  width:80%;
+}
+#tool_btns_container button {
+  vertical-align: top;
+}
+.tool-seperator {
+  width:6%;
+}
+.tool-input {
+  width:6rem;
+}
+#title_input {
+  border: None;
+  font-family: Raleway, sans-serif;
+  font-size: 2rem;
+}
+#title_input:focus {
+  outline:0;
+}
+#list_title {
+  position:relative;
+  display:inline-block;
+}
+.input,
+.text {
+  margin: 0;
+  padding: 2px 10px;
+  line-height: 32px;
+  border: 1px solid #ccc;
+  box-radius: 3px;
+  height: 36px;
+  font-family: Raleway, sans-serif;
+  font-size: 2rem;
+}
+
+.text {
+  padding-right: 20px;
+  display: inline-block;
+  visibility: hidden;
+  white-space: pre;
+}
+
+.input {
+  position: absolute;
+  /*left:50%;
+  transform:translate(-50%,0);*/
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+}

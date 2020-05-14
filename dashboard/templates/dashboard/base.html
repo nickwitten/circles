@@ -28,16 +28,18 @@
     <header>
 
       <div id='cssmenu' class="contents-blurred">
-        <ul>
+        <ul class="d-inline-block">
           {% block tabs %}
           {% endblock tabs %}
         </ul>
-        {% if user.is_authenticated %}
-        <a class='nav-right' href="{% url 'logout' %}">Logout</a>
-        {% else %}
-        <a class='nav-right' href="{% url 'login' %}">Login</a>
-        {% endif %}
-        <h2>Circles</h2>
+        <div class="nav-right">
+          {% if user.is_authenticated %}
+          <a id="logout_btn" class=""" href="{% url 'logout' %}">Logout</a>
+          {% else %}
+          <a id="logout_btn" class="" href="{% url 'login' %}">Login</a>
+          {% endif %}
+          <h1 id="app_title" class="bottom mr-2">Circles</h1>
+        </div>
       </div>
       {% block app_tabs %}
       {% endblock app_tabs %}

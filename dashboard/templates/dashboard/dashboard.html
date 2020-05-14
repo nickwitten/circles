@@ -5,22 +5,20 @@
 
 {% block tabs %}
   {% if user.is_authenticated %}
-    <li class='active'><a href="{% url 'dashboard' %}">Dashboard</a></li>
-    <li><a href="{% url 'profiles' %}">Members</a></li>
-    <li><a href="{% url 'meetings' %}">Meetings</a></li>
-    <li><a href="#">Training</a></li>
-    <li><a href="#">Progress</a></li>
+    <li class='active'><a href="{% url 'dashboard' %}"><p>Dashboard</p></a></li>
+    <li><a href="{% url 'profiles' %}"><p>Members</p></a></li>
+    <li><a href="{% url 'meetings' %}"><p>Meetings</p></a></li>
+    <li><a href="#"><p>Training</p></a></li>
+    <li><a href="#"><p>Progress</p></a></li>
   {% else %}
     <li class='active'><a href="{% url 'dashboard' %}">Dashboard</a></li>
   {% endif %}
 {% endblock tabs %}
 
 {% block app_tabs %}
-  <div class="bg-red">
-    <ul class="sub_tags">
-      <li><a class='text-white sub_tabs' href="#">Dashboard</a></li>
-    </ul>
-  </div>
+  <ul class="sub_tags bg-blue">
+    <li><a class='text-white sub_tabs' href="#">Dashboard</a></li>
+  </ul>
 {% endblock app_tabs %}
 
 <!------------------------------------------->

@@ -5,12 +5,10 @@
 
 {% block app_tabs %}
 
-  <div class="bg-red contents-blurred">
-    <ul class="sub_tags">
-      <li><a class='text-white sub_tabs' href="{% url 'profiles' %}">Profiles</a></li>
-      <li><a class='blacklink sub_tabs' href="">Profile Info</a></li>
-    </ul>
-  </div>
+  <ul class="sub_tags bg-blue contents-blurred">
+    <li><a class='text-white sub_tabs' href="{% url 'profiles' %}">Profiles</a></li>
+    <li><a class='blacklink sub_tabs' href="">Profile Info</a></li>
+  </ul>
 
 {% endblock app_tabs %}
 

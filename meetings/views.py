@@ -1,31 +1,12 @@
 from django.http import JsonResponse
 from django.shortcuts import render
 import datetime
-import calendar
 from . import models
+from . import forms
 
 def meetings(request):
-    months = [
-        'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October',
-        'November', 'December'
-    ]
-    current_date = datetime.datetime.now()
-    cal = calendar.Calendar()
-    month_iter = cal.itermonthdates(year=current_date.year, month=current_date.month)
-    days = []
-    try:
-        while True:
-            date_obj = next(month_iter)
-            days += [date_obj.day]
-    except:
-        pass
-    # TODO: Query events from database
     context = {
-        'year': current_date.year,
-        'month': months[current_date.month-1],
-        'day': current_date.day,
-        'days': days,
-        'events': [],
+        'form': forms.MeetingCreationForm
     }
     return render(request, 'meetings/meetings.html', context)
 
@@ -44,3 +25,26 @@ def get_meetings(request):
         'meetings': list(meetings),
     }
     return JsonResponse(data)
+
+def get_meeting_info(request):
+    pk = request.GET.get('pk')
+    meeting = models.Meeting.objects.get(pk=pk)
+    data = {
+        'pk': meeting.pk,
+        'title': meeting.title,
+        'start_time': meeting.start_time,
+        'end_time': meeting.end_time,
+    }
+    return JsonResponse(data)
+
+def post_meeting_info(request, pk):
+    if request.method == 'POST':
+        if pk:
+            meeting = models.Meeting.objects.get(pk=pk)
+            form = forms.MeetingCreationForm(request.POST, instance=meeting)
+        else:
+            form = forms.MeetingCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+        data = {}
+        return JsonResponse(data)

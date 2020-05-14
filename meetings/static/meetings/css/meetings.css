@@ -1,27 +1,47 @@
+#content_container {
+    position: relative;
+    overflow: auto;
+    height: calc(100vh - max(8vh, 4vw));
+}
+
 #calendar_content {
     padding: 0 2rem 0 0;
+    height: 95%;
 }
-
+#calendar_header {
+    height: 15%;
+}
 #month_container {
-    width: calc(30% - 5vw);
+    width: max(20vw, 130px);
 }
-
+#month_selector_container {
+    display: flex;
+}
+#month_selector {
+    margin: auto auto 0 auto;
+}
 #month_container h3 {
-    font-size: calc(80% + 0.5vh);
+    font-size: max(3vw, 25px);
+}
+#year_container {
+    position: relative;
 }
 #year_container p {
-    font-size: calc(50% + 0.5vh);
+    position: relative;
+    margin: 0;
+    font-size: 16px;
+    top: 30%;
 }
-
-p,
 #day_labels li {
     color: #979797;
+    margin: auto;
+    line-height: 230%;
 }
-
 #day_labels {
     text-align: center;
-    padding: 1.5vh 0px;
+    padding: 0;
     margin: 0;
+    height: 5%;
 }
 
 .calendar-day,
@@ -31,10 +51,13 @@ p,
 }
 
 #day_labels li {
-    font-size: 0.85rem;
+    font-size: 12px;
 }
-
+#days_container {
+    height: 80%;
+}
 .calendar-week {
+    height: 16.666%;
     padding: 0;
     margin: 0;
     line-height: 1.0;
@@ -43,7 +66,7 @@ p,
 .calendar-day {
     position: relative;
     padding: 0;
-    height: 10vh;
+    height: 100%;
     outline: 1px solid #dee2e6;
 }
 .monthnum {
@@ -86,4 +109,24 @@ p,
 
 .spacer {
     visibility: hidden;
+}
+
+#meeting_info_container {
+    position: absolute;
+    left: -100%;
+    bottom: 0;
+    z-index: 1;
+    height: 100%;
+    width: 50vw;
+    background-color: white;
+    box-shadow: 0 0 0 999em rgba(0, 0, 0, 0.41);
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+}
+#meeting_info_container.show {
+    opacity: 1;
+    left: 0;
+}
+#meeting_back_btn {
+    float: right;
 }
