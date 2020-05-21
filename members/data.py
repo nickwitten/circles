@@ -152,7 +152,6 @@ def filter_profiles(profiles,filters):
             profile_ids = []
             for profile in profiles:
                 related_models = model.get_related(profile)
-                print(related_models)
                 if 'excurrent' in filterby:
                     related_models = related_models.exclude(end_date=None)
                 if 'not' in filterby and not related_models.filter(**query):

@@ -330,7 +330,8 @@ def GetFiltersets(request):
         data["filtersets"].append(
             {
                 "title": filterset.title,
-                "filters": filterset.filterset
+                "filters": filterset.filterset,
+                "pk": filterset.pk,
             }
         )
 

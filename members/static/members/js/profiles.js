@@ -172,10 +172,10 @@ function addListTitleInputHTML(title) {
   }
   $("#list_title").append(
     $('<span/>')
-      .addClass("text")
+      .addClass("expanding_size")
       .text(text),
     $('<input/>')
-      .addClass("input")
+      .addClass("expanding_input")
       .attr("id","title_input")
       .attr("type","text")
       .attr("placeholder","Title")
@@ -556,9 +556,9 @@ function hideFilters() {
 }
 
 function expandTitle() {
-  $('.text').text($('.input').val()); // Copy text to the span element
-  if ($('.input').val() == '') { // When input is empty
-    $('.text').text('Title'); // Expand to see the placeholder
+  $('.expanding_size').text($('.expanding_input').val()); // Copy text to the span element
+  if ($('.expanding_input').val() == '') { // When expanding_input is empty
+    $('.expanding_size').text('Title'); // Expand to see the placeholder
   }
 }
 

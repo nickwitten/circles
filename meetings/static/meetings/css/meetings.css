@@ -43,13 +43,11 @@
     margin: 0;
     height: 5%;
 }
-
 .calendar-day,
 #day_labels li {
     display: inline-block;
     width: 14.28%;
 }
-
 #day_labels li {
     font-size: 12px;
 }
@@ -68,6 +66,15 @@
     padding: 0;
     height: 100%;
     outline: 1px solid #dee2e6;
+}
+.add-meeting-btn {
+    font-size: calc(50% + 0.3vw);
+    padding: calc(0.25vh + 0.25vw);
+    float: left;
+    visibility: hidden;
+}
+.calendar-day:hover .add-meeting-btn {
+    visibility: visible;
 }
 .monthnum {
     margin: 0;
@@ -90,8 +97,12 @@
     width: calc(30% + 7.5vw);
     padding: 0.3vh;
     margin: 0.2vh 0.2vw;
-    background-color: hsla(360, 94%, 64%, 0.3);
     border-radius: 2px;
+}
+
+.meeting-description {
+    margin: 0;
+    font-size: calc(50% + 0.3vw);
 }
 
 .calendar-meeting:hover {
@@ -101,11 +112,6 @@
 
 }
 
-.meeting-description {
-    margin: 0;
-    font-size: calc(50% + 0.3vw);
-    color: hsla(0, 100%, 40%, 1.0);
-}
 
 .spacer {
     visibility: hidden;
@@ -115,18 +121,187 @@
     position: absolute;
     left: -100%;
     bottom: 0;
-    z-index: 1;
+    z-index: 2;
     height: 100%;
     width: 50vw;
     background-color: white;
-    box-shadow: 0 0 0 999em rgba(0, 0, 0, 0.41);
     opacity: 0;
     transition: all 0.3s ease-in-out;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
 }
 #meeting_info_container.show {
     opacity: 1;
     left: 0;
 }
-#meeting_back_btn {
+.fa-times {
+    position: absolute;
+    right: 0;
+    color: ##848484;
+}
+#meeting_submit_btn {
+    margin-left: auto;
+    margin-right: 6%;
+}
+#meeting_title_container {
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 22px;
+}
+.label {
+    font-size: max(12px, 1.3vw);
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: 5%;
+    margin-right: 5%;
+    width: 30%;
+}
+#id_start_time, #id_end_time, #id_attendance_lists,
+#id_attendees, #id_color {
+    display: none;
+}
+#datetime_container {
+    display: flex;
+    flex-flow: row wrap;
+    margin-left: auto;
+    margin-right: auto;
+}
+#date_container {
+    position: relative;
+    display: flex;
+    flex-flow: row wrap;
+    width: max(100px, 12vw);
+    border-radius: 5px;
+}
+#date_container:hover {
+    -webkit-box-shadow: 3px 3px 3px 3px #ccc;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+    -moz-box-shadow:   3px 3px 3px 3px #ccc;  /* Firefox 3.5 - 3.6 */
+    box-shadow:        3px 3px 3px 3px #ccc;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
+}
+#date_container:hover #date_select_btn,
+#date_container:hover #date_select {
+    visibility: visible;
+}
+#date_select_btn {
+    margin: auto 0.5em auto auto;
     float: right;
+}
+#date {
+    font-size: max(12px, 1.5vw);
+    display: inline-block;
+    margin: 0.5em;
+}
+#date_select {
+    display: none;
+    position: absolute;
+    top: 100%;
+    text-align: center;
+    width: 100%;
+    height: 500%;
+}
+#date_select .border {
+    position: relative;
+    display: flex;
+    flex-flow: row wrap;
+    background-color: white;
+    width: 100%;
+}
+#date_select_year, #date_select_month {
+    text-align: center;
+    margin: 3% auto;
+    color: #838587;
+    height: 5%;
+    width: auto
+}
+#date_select .previous {
+    position: absolute;
+    left: 0;
+    padding: 5%;
+    height: 15%;
+}
+#date_select .next {
+    position: absolute;
+    right: 0;
+    padding: 3%;
+    float: right;
+    height: 15%;
+}
+#date_select_month {
+    font-size: 18px;
+    height: 10%;
+}
+#date_select .container {
+    height: 20%;
+}
+#date_select .container .calendar-week {
+    display: flex;
+    height: 100%;
+}
+
+#date_select .container .calendar-week .calendar-day {
+    display: flex;
+}
+
+#date_select .container .calendar-week .calendar-day:hover {
+  -webkit-box-shadow: 3px 3px 3px 3px #ccc;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+  -moz-box-shadow:   3px 3px 3px 3px #ccc;  /* Firefox 3.5 - 3.6 */
+  box-shadow:        3px 3px 3px 3px #ccc;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
+}
+
+#date_select .container .calendar-week .inactive {
+    opacity: 0.3;
+}
+#date_select .container .calendar-week .calendar-day .monthnum {
+    padding: 0;
+    margin: auto;
+}
+.time-container {
+    width: 50%;
+}
+#color_select {
+    width: 30%;
+}
+
+#attendance_container {
+    position: absolute;
+    background-color: white;
+    height: 100%;
+    width: max(25%, 187px);
+    left: -100%;
+    z-index: 1;
+    transition: all 0.2s ease-in-out;
+    border-radius: 5px;
+}
+#attendance_container > div {
+    position: relative;
+    margin: 22px auto 0 auto;
+    width: 80%;
+}
+#attendance_container .list_select {
+    position: relative;
+}
+#attendance_container .lists {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    border-top: 1px solid #dee2e6;
+    border-radius: 2px;
+}
+#attendance_container .list_container {
+    display: flex;
+    flex-flow: row nowrap;
+    border-left: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
+    border-right: 1px solid #dee2e6;
+    align-content: center;
+    padding: 5px 0;
+}
+#attendance_container .list {
+    display: flex;
+    margin: 0;
+    color: black;
 }

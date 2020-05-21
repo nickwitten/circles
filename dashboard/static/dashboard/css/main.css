@@ -24,6 +24,9 @@ h1 {
 a {
   font-size: max(12px,1.2vw);
 }
+p {
+  font-size: clamp(10px, 1.1vw, 13px);
+}
 a:hover{
   text-decoration: none;
   color: #444444;
@@ -283,4 +286,45 @@ header a{
 .d-inline-block-notimportant {
   display: inline-block;
 }
+.break {
+  width: 100%;
+  height: 0;
+}
+.expanding_input,
+.expanding_size {
+  margin: 0;
+  padding: 1vw;
+  border: 1px solid #ccc;
+  box-radius: 3px;
+  font-family: Raleway, sans-serif;
+  font-size: max(20px,3vw);
+}
 
+.expanding_size {
+  display: inline-block;
+  visibility: hidden;
+  white-space: pre;
+}
+
+.expanding_input {
+  border: None;
+  font-family: Raleway, sans-serif;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+}
+.expanding_input:focus {
+  outline: none;
+}
+.flex {
+    display: flex;
+    flex-flow: row wrap;
+}
+.flex-center {
+    margin: auto;
+}
+.rounded {
+    border-radius: 2px;
+}

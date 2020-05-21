@@ -1,7 +1,6 @@
 {% extends "meetings/base.html" %}
 
 {% block app_tabs %}
-
   <ul class="sub_tags bg-blue">
     <li><a class='blacklink sub_tabs' href="{% url 'meetings' %}">Meetings</a></li>
   </ul>
@@ -9,6 +8,81 @@
 
 {% block content %}
 <div id="content_container">
+  <div id="meeting_info_container">
+    <form id="meeting_form" class="flex" action="post">
+      {% csrf_token %}
+      {{ form.start_time }}
+      {{ form.end_time }}
+      {{ form.attendance_lists }}
+      {{ form.attendees }}
+      {{ form.color }}
+      <i id="meeting_back_btn" class="fas fa-times p-2"></i>
+      <div class="break"></div>
+      <div id="meeting_title_container" class="border-bottom">
+        <span class="expanding_size">Title</span>
+        {{ form.title }}
+      </div>
+      <div class="break mb-4"></div>
+        <div id="datetime_container">
+          <div id="date_container" class="">
+            <p id="date">
+            </p>
+            <i id="date_select_btn" class="far fa-calendar-alt hidden" data-month_offset="0"></i>
+            <div class="break"></div>
+            <div id="date_select">
+              <i class="previous">x</i>
+              <i class="next">x</i>
+            </div>
+          </div>
+        </div>
+      <div class="break mb-4"></div>
+      <p class="label">Start Time: </p>
+      <div class="time-container">
+        <select name="" id="start_time">
+          {% for time in times %}
+          <option value="{{ time }}">{{ time }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="break"></div>
+      <div class="break mb-4"></div>
+      <p class="label">End Time: </p>
+      <div class="time-container">
+        <select name="" id="end_time">
+          {% for time in times %}
+          <option value="{{ time }}">{{ time }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="break mb-4"></div>
+        <p class="label">Color: </p>
+        <select name="" id="color_select">
+          <option value="hsla(0.0, 93%, 64%, 0.3)">Red</option>
+          <option value="hsla(033, 93%, 64%, 0.3)">Orange</option>
+          <option value="hsla(102, 93%, 64%, 0.3)">Green</option>
+          <option value="hsla(211, 60%, 58%, 0.4)">Blue</option>
+          <option value="hsla(277, 93%, 64%, 0.3)">Purple</option>
+          <option value="hsla(318, 93%, 64%, 0.3)">Pink</option>
+        </select>
+      <div class="break mb-4"></div>
+      <button id="attendance_btn">Attendance</button>
+      <button id="meeting_submit_btn" data-pk="null">Save</button>
+    </form>
+  </div>
+  <div id="attendance_container">
+        <i id="attendance_back_btn" class="fas fa-times p-2"></i>
+    <div>
+      <div class="list_select custom-select flex">
+        <p class="flex-center">Select Lists</p>
+      </div>
+      <div class="lists">
+      </div>
+    </div>
+    <div class="break mb-4"></div>
+    <p class="label">Attendance: </p>
+    <select name="" id="people_select" multiple></select>
+  </div>
+
   <div id="calendar_content" class="content-section shadow p-0 pt-2 mb-4">
     <div id="calendar_header" class="text-center pt-2">
       <div id="month_selector_container" class="half">
@@ -32,21 +106,6 @@
     </ul>
     <div id="days_container">
     </div>
-  </div>
-
-  <div id="meeting_info_container">
-    <form id="meeting_form" action="post">
-      {% csrf_token %}
-      <div id="meeting_info_header">
-        <i id="meeting_back_btn" class="fas fa-times p-2"></i>
-      </div>
-      <h5>MEETING</h5>
-      {% for field in form %}
-      {{ field.label }}
-      {{ field }}
-      {% endfor %}
-    </form>
-    <button id="meeting_submit_btn" data-pk="null"></button>
   </div>
 </div>
 {% endblock content %}
