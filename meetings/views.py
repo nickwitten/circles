@@ -10,7 +10,6 @@ from members.models import Profile, FilterSet
 def meetings(request):
     context = {
         'form': forms.MeetingCreationForm,
-        'times': [str(time).zfill(2) for time in range(1,25)],
     }
     return render(request, 'meetings/meetings.html', context)
 

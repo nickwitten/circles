@@ -6,7 +6,6 @@ body {
   background: #fafafa;
   color: #333333;
   line-height: 1;
-  height: 100%;
 }
 header {
   display: flex;
@@ -289,6 +288,10 @@ header a{
 .break {
   width: 100%;
   height: 0;
+}
+.vertical-break {
+  height: 100%;
+  width: 0;
 }
 .expanding_input,
 .expanding_size {

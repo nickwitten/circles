@@ -34,26 +34,28 @@
               <i class="next">x</i>
             </div>
           </div>
+          <div id="time_select">
+            <i class="fas fa-angle-up"></i>
+            <p id="start_hour">00</p>
+            <i class="fas fa-angle-down"></i>
+            <p class="time-break">:</p>
+            <i class="fas fa-angle-up"></i>
+            <p id="start_minute">00</p>
+            <i class="fas fa-angle-down"></i>
+            <p class="start period">a.m.</p>
+
+            <p class="time-break">-</p>
+
+            <i class="fas fa-angle-up"></i>
+            <p id="end_hour">00</p>
+            <i class="fas fa-angle-down"></i>
+            <p class="time-break">:</p>
+            <i class="fas fa-angle-up"></i>
+            <p id="end_minute">00</p>
+            <i class="fas fa-angle-down"></i>
+            <p class="end period">a.m.</p>
+          </div>
         </div>
-      <div class="break mb-4"></div>
-      <p class="label">Start Time: </p>
-      <div class="time-container">
-        <select name="" id="start_time">
-          {% for time in times %}
-          <option value="{{ time }}">{{ time }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="break"></div>
-      <div class="break mb-4"></div>
-      <p class="label">End Time: </p>
-      <div class="time-container">
-        <select name="" id="end_time">
-          {% for time in times %}
-          <option value="{{ time }}">{{ time }}</option>
-          {% endfor %}
-        </select>
-      </div>
       <div class="break mb-4"></div>
         <p class="label">Color: </p>
         <select name="" id="color_select">
