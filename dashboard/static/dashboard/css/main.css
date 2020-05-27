@@ -40,6 +40,7 @@ a:hover{
 ::-webkit-scrollbar
 {
     width: 3px;
+    height: 5px;
     background-color: #F5F5F5;
 }
 
@@ -311,6 +312,7 @@ header a{
 
 .expanding_input {
   border: None;
+  border-bottom: 1px solid #dee2e6;
   font-family: Raleway, sans-serif;
   position: absolute;
   top: 0;

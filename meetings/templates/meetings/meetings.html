@@ -18,71 +18,90 @@
       {{ form.color }}
       <i id="meeting_back_btn" class="fas fa-times p-2"></i>
       <div class="break"></div>
-      <div id="meeting_title_container" class="border-bottom">
-        <span class="expanding_size">Title</span>
-        {{ form.title }}
-      </div>
-      <div class="break mb-4"></div>
-        <div id="datetime_container">
-          <div id="date_container" class="">
-            <p id="date">
-            </p>
-            <i id="date_select_btn" class="far fa-calendar-alt hidden" data-month_offset="0"></i>
-            <div class="break"></div>
-            <div id="date_select">
-              <i class="previous">x</i>
-              <i class="next">x</i>
-            </div>
-          </div>
-          <div id="time_select">
-            <i class="fas fa-angle-up"></i>
-            <p id="start_hour">00</p>
-            <i class="fas fa-angle-down"></i>
-            <p class="time-break">:</p>
-            <i class="fas fa-angle-up"></i>
-            <p id="start_minute">00</p>
-            <i class="fas fa-angle-down"></i>
-            <p class="start period">a.m.</p>
-
-            <p class="time-break">-</p>
-
-            <i class="fas fa-angle-up"></i>
-            <p id="end_hour">00</p>
-            <i class="fas fa-angle-down"></i>
-            <p class="time-break">:</p>
-            <i class="fas fa-angle-up"></i>
-            <p id="end_minute">00</p>
-            <i class="fas fa-angle-down"></i>
-            <p class="end period">a.m.</p>
+      <div id="meeting_header">
+        <div id="meeting_title_container">
+          <div>
+            <span class="expanding_size">Title</span>
+            {{ form.title }}
           </div>
         </div>
-      <div class="break mb-4"></div>
-        <p class="label">Color: </p>
-        <select name="" id="color_select">
-          <option value="hsla(0.0, 93%, 64%, 0.3)">Red</option>
-          <option value="hsla(033, 93%, 64%, 0.3)">Orange</option>
-          <option value="hsla(102, 93%, 64%, 0.3)">Green</option>
-          <option value="hsla(211, 60%, 58%, 0.4)">Blue</option>
-          <option value="hsla(277, 93%, 64%, 0.3)">Purple</option>
-          <option value="hsla(318, 93%, 64%, 0.3)">Pink</option>
-        </select>
-      <div class="break mb-4"></div>
-      <button id="attendance_btn">Attendance</button>
-      <button id="meeting_submit_btn" data-pk="null">Save</button>
+        <i id="meeting_delete_btn" class="far fa-trash-alt text-small d-inline-block"></i>
+        <div id="color_select">
+          <div id="colors" style="display:none">
+            <div class="color" data-color="hsla(0.0, 93%, 64%, 0.3)"></div>
+            <div class="color" data-color="hsla(033, 93%, 64%, 0.3)"></div>
+            <div class="color" data-color="hsla(102, 93%, 64%, 0.3)"></div>
+            <div class="color" data-color="hsla(211, 60%, 58%, 0.4)"></div>
+            <div class="color" data-color="hsla(277, 93%, 64%, 0.3)"></div>
+            <div class="color" data-color="hsla(318, 93%, 64%, 0.3)"></div>
+          </div>
+        </div>
+      </div>
+      <div class="break"></div>
+      <div id="datetime_container">
+        <div id="date_container" class="">
+          <p id="date">
+            </p>
+          <i id="date_select_btn" class="far fa-calendar-alt hidden" data-month_offset="0"></i>
+          <div class="break"></div>
+          <div id="date_select">
+            <i class="previous">x</i>
+            <i class="next">x</i>
+          </div>
+        </div>
+        <div id="time_select">
+          <i class="start-hour fas fa-angle-up"></i>
+          <p id="start_hour">00</p>
+          <i class="start-hour fas fa-angle-down"></i>
+          <p class="time-break">:</p>
+          <i class="start-minute fas fa-angle-up"></i>
+          <p id="start_minute">00</p>
+          <i class="start-minute fas fa-angle-down"></i>
+          <span class="time-break"></span>
+          <i class="start-period fas fa-angle-up"></i>
+          <p id="start_period">p.m.</p>
+          <i class="start-period fas fa-angle-down"></i>
+
+          <span class="time-break"></span>
+          <p class="time-break">-</p>
+          <span class="time-break"></span>
+
+          <i class="end-hour fas fa-angle-up"></i>
+          <p id="end_hour">00</p>
+          <i class="end-hour fas fa-angle-down"></i>
+          <p class="time-break">:</p>
+          <i class="end-minute fas fa-angle-up"></i>
+          <p id="end_minute">00</p>
+          <i class="end-minute fas fa-angle-down"></i>
+          <span class="time-break"></span>
+          <i class="end-period fas fa-angle-up"></i>
+          <p id="end_period">p.m.</p>
+          <i class="end-period fas fa-angle-down"></i>
+        </div>
+      </div>
+      <div class="break"></div>
+      <button id="attendance_btn" class="btn">Attendance</button>
+      <button id="meeting_submit_btn" class="btn" data-pk="0">Save</button>
     </form>
   </div>
+  <div id="meeting_confirm_delete" class="shadow" style="display:none">
+    <h5>Delete Meeting</h5>
+    <button class="delete-btn btn btn-danger text-small">Delete</button>
+    <button class="cancel-btn btn btn-secondary text-small">Cancel</button>
+  </div>
   <div id="attendance_container">
-        <i id="attendance_back_btn" class="fas fa-times p-2"></i>
-    <div>
+    <i id="attendance_back_btn" class="fas fa-times p-2"></i>
+    <div class="container">
       <div class="list_select custom-select flex">
         <p class="flex-center">Select Lists</p>
       </div>
-      <div class="lists">
+      <div class="lists shadow">
       </div>
     </div>
     <div class="break mb-4"></div>
-    <p class="label">Attendance: </p>
-    <select name="" id="people_select" multiple></select>
+    <div id="people_select">
+
+    </div>
   </div>
 
   <div id="calendar_content" class="content-section shadow p-0 pt-2 mb-4">

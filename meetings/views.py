@@ -88,6 +88,13 @@ def post_meeting_info(request, pk):
         else:
             form = forms.MeetingCreationForm(request.POST)
         if form.is_valid():
-            form.save()
-        data = {}
+            meeting = form.save()
+        print(meeting.pk)
+        data = {'pk':meeting.pk}
         return JsonResponse(data)
+
+def delete_meeting(request, pk):
+    if request.method == 'POST':
+        models.Meeting.objects.get(pk=pk).delete()
+        data = {}
+    return JsonResponse(data)
