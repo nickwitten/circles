@@ -43,18 +43,21 @@ function addWeekHTML(days) {
     $('#days_container').append(week);
 }
 
-function addSelectorWeekHTML(days, first, last) {
+function addSelectorWeekHTML(days, selected, inactive) {
     var container = $('<div/>').addClass('container');
     var week = $('<ul/>')
         .addClass('calendar-week');
     for (var i=0; i<days.length; i++) {
         /////// Day Box HTML /////////
         var day = $('<li/>')
-        if ((first && days[i] > 7) || (last && days[i] < 7)) {
+        if (inactive.includes(i)) {
             var classlist = 'calendar-day inactive';
         } else {
             var classlist = 'calendar-day';
-            day.on("click", function() {selectDate($(this).children().text());});
+            day.on("click", function() {selectDate($(this))});
+        }
+        if (selected.includes(i)) {
+            classlist += ' selected';
         }
         day = day.addClass(classlist);
         ///// Month Number HTML //////
@@ -142,7 +145,7 @@ function addPeopleHTML(people, people_pks) {
 
 var meetings;
 var monthOffset = 0;
-var datePickerSelectedDates = {};
+var datePickerSelectedDates = [];
 
 ////////////////////////// Top Level Functions ///////////////////////////////////
 
@@ -208,14 +211,12 @@ function submitMeeting(pk) {
         type: 'post',
         success: function(data) {
             buildCalendar(monthOffset, 0);
-            console.log(data.pk);
             $('#meeting_submit_btn').attr('data-pk', data.pk);
         }
     })
 }
 
 function deleteMeeting(pk) {
-    console.log(pk);
     form = $('#meeting_form').serialize();
     $.ajax({
         url: 'delete/' + pk,
@@ -224,7 +225,6 @@ function deleteMeeting(pk) {
         success: function() {
             hideMeetingInfo();
             buildCalendar();
-            console.log('deleted');
         }
     });
 }
@@ -375,6 +375,7 @@ function initializeForm(meeting, update_only_people_select) {
     if (!update_only_people_select) {
         $('#id_title').val(meeting.title);
         $('#date').text(meeting.start_date)
+        datePickerSelectedDates.push(meeting.start_date)
         setListSelectValue(meeting.attendance_lists);
         setTimeSelectValue(meeting.start_time, meeting.end_time);
         setColorSelect(meeting.color);
@@ -397,6 +398,9 @@ function hideMeetingInfo() {
     $('#attendance_container').css('left','-100%');
     $('#id_title').val('');
     $('#id_start_time').val('');
+    datePickerSelectedDates = [];
+    $('#date_select').hide();
+    $('#date_container').removeClass('shadow');
     $('#id_end_time').val('');
     $('#start_hour').text('00');
     $('#start_minute').text('00');
@@ -474,7 +478,26 @@ function buildDatePicker(month_offset) {
     dates = dates[0];
     addSelectorHeaderHTML(month_v, month, year);
     for (var i=0; i<(dates.length/7); i++) {
-        addSelectorWeekHTML(dates.slice(i*7,i*7+7), i==0, i+1==dates.length/7);
+        // check if the date has been selected
+        selected = []
+        inactive = []
+        month_str = month;
+        for (var j=0; j<7; j++) {
+            day = dates[i*7+j].toString();
+            day = (day.length == 1) ? '0'+day : day;
+            if (i==0 && parseInt(day) > 7) {
+                month_str = (parseInt(month)-1).toString();
+                inactive.push(j);
+            } else if (i==(dates.length/7-1) && parseInt(day) < 7) {
+                month_str = (parseInt(month)+1).toString();
+                inactive.push(j);
+            }
+            date = month_str + '/' + day + '/' + year;
+            if (datePickerSelectedDates.includes(date)) {
+                selected.push(j)
+            };
+        }
+        addSelectorWeekHTML(dates.slice(i*7,i*7+7), selected, inactive);
     }
 }
 
@@ -485,11 +508,27 @@ function toggleDatePicker(month_offset) {
     buildDatePicker(month_offset);
 }
 
-function selectDate(day) {
+function selectDate(dayHTML) {
+    var day = dayHTML.children().text()
+    day = (day.length < 2) ? '0'+day : day;
     var month = $('#date_select_month').attr('data-number');
     var year = $('#date_select_year').text();
-    $('#date').text(month + '/' + day + '/' + year);
-    toggleDatePicker($('date_select_btn').attr('data-month_offset'));
+    var date = [month, day, year].join('/');
+    if (dayHTML.hasClass('selected')) {
+        dayHTML.removeClass('selected');
+        datePickerSelectedDates.splice(datePickerSelectedDates.indexOf(date), 1);
+    } else  {
+        datePickerSelectedDates.push(date);
+    }
+    buildDatePicker($('date_select_btn').attr('data-month_offset'));
+    if (datePickerSelectedDates.length > 1) {
+        $('#date').text('multiple');
+    } if (datePickerSelectedDates.length == 1) {
+        buildDatePicker($('date_select_btn').attr('data-month_offset'));
+        day = $('#date_select').find('.selected').children().text();
+        day = (day.length < 2) ? '0'+day : day;
+        $('#date').text([month, day, year].join('/'));
+    }
 }
 
 function updateTimeSelect(classList) {
@@ -526,8 +565,6 @@ function getDatetimes() {
     end_hour = (end_period == 'p.m.') ? parseInt(end_hour) + 12 : end_hour;
     end_minute = $('#end_minute').text();
     end_datetime = start_date + ' ' + end_hour + ':' + end_minute + ':00';
-    console.log(start_datetime);
-    console.log(end_datetime);
     return [start_datetime, end_datetime]
 }
 

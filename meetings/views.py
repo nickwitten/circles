@@ -37,7 +37,7 @@ def get_meeting_info(request):
         meeting = None
         print('No Meeting')
     if meeting:
-        start_date = meeting.start_time.date().strftime('%m/%d/%Y ')
+        start_date = meeting.start_time.date().strftime('%m/%d/%Y')
         start_time = meeting.start_time.time().strftime('%H:%M:%S')
         end_time = meeting.end_time.time().strftime('%H:%M:%S')
         saved_lists = meeting.attendance_lists.all()
