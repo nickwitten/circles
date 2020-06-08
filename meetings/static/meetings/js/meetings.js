@@ -190,7 +190,10 @@ function buildMeetingInfo (pk, day=null) {
         month = $('#month_container h3').attr('data-number');
         day = (day.length == 2) ? day : '0' + day;
         year = $('#year_container p').text();
-        $('#date').text(month + '/' + day + '/' + year);
+        date = month + '/' + day + '/' + year
+        $('#date').text(date);
+        datePickerSelectedDates.push(date);
+        $('#date_select_btn').attr('data-month_offset',monthOffset);
     }
 }
 
@@ -204,14 +207,28 @@ function submitMeeting(pk) {
     $('#id_attendees').val(getPeopleSelectValue());
     $('#id_start_time').val(start_datetime);
     $('#id_end_time').val(end_datetime);
-    form = $("#meeting_form").serialize();
+    $('#date_select').hide();
+    var form = $("#meeting_form").serialize();
+    var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
+    dates = JSON.stringify(datePickerSelectedDates);
     $.ajax({
         url: 'post-meeting-info/' + pk,
-        data: form,
+        headers: {
+            'X-CSRFToken': csrftoken,
+        },
+        data: {
+            'form':form,
+            'dates':dates,
+        },
         type: 'post',
         success: function(data) {
             buildCalendar(monthOffset, 0);
             $('#meeting_submit_btn').attr('data-pk', data.pk);
+            // if multiple meetings were created display the first
+            if (datePickerSelectedDates.length > 1) {
+                datePickerSelectedDates = datePickerSelectedDates.slice(0,1);
+                $('#date').text(datePickerSelectedDates[0]);
+            }
         }
     })
 }
@@ -348,7 +365,7 @@ function addDays(dates, view) {
 
 //// Building Meeting Info
 
-
+// If lists is provided only update people select
 function getMeetingInfo(pk, lists=null) {
     if (lists) {
         lists = JSON.stringify(lists);
@@ -374,8 +391,9 @@ function initializeForm(meeting, update_only_people_select) {
     setPeopleSelectValue(meeting.attendees);
     if (!update_only_people_select) {
         $('#id_title').val(meeting.title);
-        $('#date').text(meeting.start_date)
-        datePickerSelectedDates.push(meeting.start_date)
+        $('#date').text(meeting.start_date);
+        datePickerSelectedDates.push(meeting.start_date);
+        $('#date_select_btn').attr('data-month_offset', monthOffset);
         setListSelectValue(meeting.attendance_lists);
         setTimeSelectValue(meeting.start_time, meeting.end_time);
         setColorSelect(meeting.color);
@@ -481,8 +499,8 @@ function buildDatePicker(month_offset) {
         // check if the date has been selected
         selected = []
         inactive = []
-        month_str = month;
         for (var j=0; j<7; j++) {
+            month_str = month;
             day = dates[i*7+j].toString();
             day = (day.length == 1) ? '0'+day : day;
             if (i==0 && parseInt(day) > 7) {
@@ -510,21 +528,24 @@ function toggleDatePicker(month_offset) {
 
 function selectDate(dayHTML) {
     var day = dayHTML.children().text()
-    day = (day.length < 2) ? '0'+day : day;
+    day = (day.length < 2) ? '0'+day : day; // zero pad
     var month = $('#date_select_month').attr('data-number');
     var year = $('#date_select_year').text();
     var date = [month, day, year].join('/');
+
     if (dayHTML.hasClass('selected')) {
         dayHTML.removeClass('selected');
         datePickerSelectedDates.splice(datePickerSelectedDates.indexOf(date), 1);
     } else  {
         datePickerSelectedDates.push(date);
     }
-    buildDatePicker($('date_select_btn').attr('data-month_offset'));
+    console.log($('#date_select_btn').attr('data-month_offset'));
+    buildDatePicker($('#date_select_btn').attr('data-month_offset'));
+
+    // Update date displayed
     if (datePickerSelectedDates.length > 1) {
         $('#date').text('multiple');
-    } if (datePickerSelectedDates.length == 1) {
-        buildDatePicker($('date_select_btn').attr('data-month_offset'));
+    } else if (datePickerSelectedDates.length == 1) {
         day = $('#date_select').find('.selected').children().text();
         day = (day.length < 2) ? '0'+day : day;
         $('#date').text([month, day, year].join('/'));
@@ -554,7 +575,7 @@ function updateTimeSelect(classList) {
 }
 
 function getDatetimes() {
-    start_date = $('#date').text();
+    start_date = (datePickerSelectedDates.length <= 1) ? $('#date').text() : datePickerSelectedDates[0];
     start_period = $('#start_period').text();
     start_hour = $("#start_hour").text();
     start_hour = (start_period == 'p.m.') ? parseInt(start_hour) + 12 : start_hour;

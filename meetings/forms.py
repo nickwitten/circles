@@ -3,14 +3,14 @@ from . import models
 
 
 class MeetingCreationForm(forms.ModelForm):
+    files = forms.FileField(required=False, widget=forms.ClearableFileInput(attrs={'multiple':True}))
+
     class Meta:
         model = models.Meeting
         fields = '__all__'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for visible in self.visible_fields():
-            visible.field.widget.attrs['class'] = ''
         self.fields['title'].widget.attrs['oninput'] = 'expandTitle();'
         self.fields['title'].widget.attrs['class'] = 'expanding_input'
         self.fields['title'].widget.attrs['placeholder'] = 'Title'

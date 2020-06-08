@@ -381,6 +381,7 @@
 #time_select i {
     visibility: hidden;
     color: #a7a8ab;
+    font-size: small;
 }
 #time_select:hover {
     -webkit-box-shadow: 3px 3px 3px 3px #ccc;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */

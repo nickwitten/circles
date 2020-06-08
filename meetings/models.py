@@ -11,3 +11,7 @@ class Meeting(models.Model):
 
     def __str__(self):
         return f'{self.title}'
+
+class MeetingFile(models.Model):
+    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE)
+    file = models.FileField(upload_to='meeting_files/')
