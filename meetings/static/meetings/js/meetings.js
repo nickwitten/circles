@@ -141,6 +141,26 @@ function addPeopleHTML(people, people_pks) {
         $('#people_select').append(item);
     }
 }
+
+// (file title, file object pk, file location)
+function addFileHTML(files) {
+    for (var i=0; i<files.length; i++) {
+        file = $('<div/>')
+            .addClass('file')
+            .attr('data-pk', files[i][1]);
+        title = $('<a/>')
+            .text(files[i][0])
+            .attr('href', files[i][2])
+            .attr('target', '_blank')
+            .addClass('blacklink');
+        delete_btn = $('<i/>')
+            .addClass('fas fa-times delete')
+            .on("click", function() {confirmFileDelete($(this).parent().attr('data-pk'))})
+        file.append(title);
+        file.append(delete_btn);
+        $('#files').append(file);
+    }
+}
 /////////////////////////////// Globals //////////////////////////////////////////
 
 var meetings;
@@ -334,6 +354,53 @@ function queryMeetingsDb(baseyear, basemonth, endyear, endmonth, dates, view) {
     });
 }
 
+function uploadMeetingFiles(pk, files) {
+    var data = new FormData();
+    for (var i=0; i<files.length; i++) {
+        data.append(files[i].name, files[i]);
+    }
+    var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
+    $.ajax({
+        url: "meeting-files/" + pk,
+        headers: {
+            'X-CSRFToken': csrftoken,
+        },
+        data: data,
+        method: 'POST',
+        processData: false,
+        contentType: false,
+        success: function(data) {
+            addFileHTML(data.files);
+        }
+    })
+}
+
+function confirmFileDelete(pk) {
+    $('#file_confirm_delete .delete-btn').attr('data-pk', pk);
+    $('#file_confirm_delete').show();
+}
+
+function deleteMeetingFile(pk) {
+    var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
+    $.ajax({
+        url: "meeting-files/0",
+        headers: {
+            'X-CSRFToken': csrftoken,
+        },
+        data: {
+            'file_pk': pk,
+        },
+        method: 'POST',
+        success: function(data) {
+            $('#files').children().each(function() {
+                if ($(this).attr('data-pk') == pk.toString()) {
+                    $(this).remove();
+                }
+            })
+        }
+    })
+}
+
 function addDays(dates, view) {
     var i = 0;
     for (i; i<(dates.length/7); i++) {
@@ -399,6 +466,7 @@ function initializeForm(meeting, update_only_people_select) {
         setColorSelect(meeting.color);
         $('#start_time').val(meeting.start_time.slice(0,2));
         $('#end_time').val(meeting.end_time.slice(0,2));
+        addFileHTML(meeting.files);
         $('#meeting_submit_btn').attr('data-pk', meeting.pk);
         expandTitle();
     }
@@ -432,6 +500,7 @@ function hideMeetingInfo() {
     $('#id_attendees').val('');
     $('.lists').html(null);
     $('#people_select').html(null);
+    $('#files').html(null);
     $('#meeting_submit_btn').attr('data-pk', 0);
     $('.lists').hide()
     expandTitle();
@@ -539,7 +608,6 @@ function selectDate(dayHTML) {
     } else  {
         datePickerSelectedDates.push(date);
     }
-    console.log($('#date_select_btn').attr('data-month_offset'));
     buildDatePicker($('#date_select_btn').attr('data-month_offset'));
 
     // Update date displayed
@@ -676,7 +744,7 @@ function startListeners() {
     $('#attendance_btn').on("click", function() {
         event.preventDefault();
         addAttendance();
-    })
+    });
     $('.list_select').on("click", function() {
         $('.lists').toggle();
     });
@@ -686,13 +754,13 @@ function startListeners() {
     });
     $('#time_select i').on("click", function() {
         updateTimeSelect(this.classList);
-    })
+    });
     $('#color_select').on("click", function() {
         $('#colors').toggle();
-    })
+    });
     $('#color_select .color').on("click", function() {
         setColorSelect($(this).attr('data-color'));
-    })
+    });
     $('#meeting_delete_btn').on("click", function() {
         $('#meeting_confirm_delete').show();
     });
@@ -700,7 +768,14 @@ function startListeners() {
         deleteMeeting($('#meeting_submit_btn').attr('data-pk'));
         $('#meeting_confirm_delete').hide();
     });
-    $('#meeting_confirm_delete .cancel-btn').on("click", function() {
-        $('#meeting_confirm_delete').hide();
+    $('.confirm-delete .cancel-btn').on("click", function() {
+        $('.confirm-delete').hide();
+    });
+    $('#file_upload').change(function() {
+        uploadMeetingFiles($('#meeting_submit_btn').attr('data-pk'), $(this)[0].files);
+    });
+    $('#file_confirm_delete .delete-btn').on("click", function() {
+        deleteMeetingFile($(this).attr('data-pk'));
+        $('#file_confirm_delete').hide();
     });
 }

@@ -16,8 +16,7 @@
       {{ form.attendance_lists }}
       {{ form.attendees }}
       {{ form.color }}
-      {{ form.files }}
-      <i id="meeting_back_btn" class="fas fa-times p-2"></i>
+      <i id="meeting_back_btn" class="fas fa-times back p-2"></i>
       <div class="break"></div>
       <div id="meeting_header">
         <div id="meeting_title_container">
@@ -85,17 +84,30 @@
         </div>
       </div>
       <div class="break"></div>
+      <div id="meeting_content">
+        <div id="file_input">
+          <input multiple id="file_upload" type="file">
+          <label for="file_upload" class="fas fa-file-upload"></label>
+          <div id="files">
+          </div>
+        </div>
+      </div>
       <button id="attendance_btn" class="btn">Attendance</button>
       <button id="meeting_submit_btn" class="btn" data-pk="0">Save</button>
     </form>
   </div>
-  <div id="meeting_confirm_delete" class="shadow" style="display:none">
+  <div id="meeting_confirm_delete" class="shadow confirm-delete" style="display:none">
     <h5>Delete Meeting</h5>
     <button class="delete-btn btn btn-danger text-small">Delete</button>
     <button class="cancel-btn btn btn-secondary text-small">Cancel</button>
   </div>
+  <div id="file_confirm_delete" class="shadow confirm-delete" style="display:none">
+    <h5>Delete File</h5>
+    <button class="delete-btn btn btn-danger text-small" data-pk="0">Delete</button>
+    <button class="cancel-btn btn btn-secondary text-small">Cancel</button>
+  </div>
   <div id="attendance_container">
-    <i id="attendance_back_btn" class="fas fa-times p-2"></i>
+    <i id="attendance_back_btn" class="fas fa-times back p-2"></i>
     <div class="container">
       <div class="list_select custom-select flex">
         <p class="flex-center">Select Lists</p>

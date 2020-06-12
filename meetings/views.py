@@ -1,3 +1,5 @@
+import os
+
 from django.http import JsonResponse
 import json
 from django.shortcuts import render
@@ -7,6 +9,8 @@ from . import forms
 from members.data import filter_profiles
 from members.models import Profile, FilterSet
 from django.http import QueryDict
+from django.http import FileResponse
+from circles import settings
 
 def meetings(request):
     context = {
@@ -42,9 +46,10 @@ def get_meeting_info(request):
         attendees = [attendee.pk for attendee in meeting.attendees.all()]
         title = meeting.title
         color = meeting.color
+        files = [(MeetingFile.title, MeetingFile.pk, settings.MEDIA_URL + MeetingFile.file.name) for MeetingFile in meeting.files.all()]
     else:
         attendees = []
-        pk = title = start_date = start_time = end_time = list_pks = color = None
+        pk = title = start_date = start_time = end_time = list_pks = color = files = None
     if not lists:
         lists = [list.filterset for list in saved_lists]
     else:
@@ -66,6 +71,7 @@ def get_meeting_info(request):
         'people': people,
         'people_pks': people_pks,
         'color': color,
+        'files': files,
     }
     return JsonResponse(data)
 
@@ -103,6 +109,35 @@ def post_meeting_info(request, pk):
                 meeting = form.save()
         data = {'pk':meeting.pk} if meeting else {}
         return JsonResponse(data)
+
+def meeting_files(request, pk):
+    if request.method == 'POST':
+        file_pk = request.POST.get('file_pk')
+        # Delete file if pk in data
+        if file_pk:
+            MeetingFile = models.MeetingFile.objects.get(pk=file_pk)
+            os.remove('/'.join([settings.MEDIA_ROOT, MeetingFile.file.name]))
+            MeetingFile.delete()
+            data = {
+                'message': 'Deleted'
+            }
+        # Create new file otherwise
+        else:
+            files = request.FILES
+            meeting = models.Meeting.objects.get(pk=pk)
+            created_files = []
+            for title, file in files.items():
+                meeting_file = models.MeetingFile(meeting=meeting, file=file, title=title)
+                meeting_file.save()
+                print(meeting_file.file.name)
+                created_files += [(title, meeting_file.pk, settings.MEDIA_URL + meeting_file.file.name)]
+            data = {
+                'files': created_files
+            }
+        return JsonResponse(data)
+    # Serve file to client
+    else:
+        print('serve')
 
 def delete_meeting(request, pk):
     if request.method == 'POST':

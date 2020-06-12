@@ -134,10 +134,15 @@
     opacity: 1;
     left: 0;
 }
-.fa-times {
+
+#meeting_form {
+    justify-content: center;
+}
+
+.back {
     position: absolute;
     right: 0;
-    color: ##848484;
+    color: #848484;
 }
 #meeting_submit_btn {
     margin-left: auto;
@@ -165,7 +170,7 @@
     right: 0px;
     bottom: 1.5vw;
 }
-#meeting_confirm_delete {
+.confirm-delete {
     position: absolute;
     display: flex;
     flex-flow: row wrap;
@@ -179,18 +184,18 @@
     -moz-box-shadow: 3px 5px 12px 0px #585454;
     box-shadow: 3px 5px 12px 0px #585454;
 }
-#meeting_confirm_delete h5 {
+.confirm-delete h5 {
     text-align: center;
     width: 100%;
     padding: 1em 0.5em;
 }
-#meeting_confirm_delete .delete-btn {
+.confirm-delete .delete-btn {
     position: absolute;
     bottom: 0.5em;
     right: 3em;
     margin: 0.5em auto;
 }
-#meeting_confirm_delete .cancel-btn {
+.confirm-delete .cancel-btn {
     position: absolute;
     bottom: 0.5em;
     left: 3em;
@@ -245,7 +250,7 @@
     align-content: center;
     align-items: center;
     justify-content: center;
-    margin: 1em 0;
+    margin: 0.25em 0;
     width: 100%;
 }
 #date_container {
@@ -391,6 +396,48 @@
 #time_select:hover i {
     visibility: visible;
 }
+
+#meeting_content {
+    width: 90%;
+    display: flex;
+    flex-flow: row wrap;
+}
+
+#file_input {
+    display: flex;
+}
+#file_input input {
+    position: absolute;
+    visibility: hidden;
+}
+#file_input .fa-file-upload {
+    margin-top: 8px;
+}
+#files {
+    display: flex;
+    flex-flow: row wrap;
+}
+#files label {
+    margin: 0;
+}
+#files .file {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    margin: 0.2em 0.5em;
+    padding: 0.1em 0.5em;
+    border: solid 1px #dee2e6;
+    border-radius: 3px;
+}
+#files a {
+    font-size: 10px;
+}
+#files .delete {
+    color: #848484;
+    font-size: small;
+    margin: 5px 0px 3px 10px;
+}
+
 #meeting_submit_btn {
     position: absolute;
     bottom: 2%;

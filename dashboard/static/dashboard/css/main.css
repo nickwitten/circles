@@ -25,6 +25,7 @@ a {
 }
 p {
   font-size: clamp(10px, 1.1vw, 13px);
+  margin: 0;
 }
 a:hover{
   text-decoration: none;

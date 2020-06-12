@@ -7,5 +7,6 @@ urlpatterns = [
     path('get-meetings', views.get_meetings, name='get-meetings'),
     path('get-meeting-info', views.get_meeting_info, name='get-meeting-info'),
     path('post-meeting-info/<int:pk>', views.post_meeting_info, name='post-meeting-info'),
-    path('delete/<int:pk>', views.delete_meeting, name='delete-meeting'),
+    path('meeting-files/<int:pk>', views.meeting_files, name='meeting-files'),
+    path('delete/<int:pk>', views.delete_meeting, name='delete-meeting')
 ]

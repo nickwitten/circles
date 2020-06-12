@@ -13,5 +13,6 @@ class Meeting(models.Model):
         return f'{self.title}'
 
 class MeetingFile(models.Model):
-    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE)
+    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name='files')
     file = models.FileField(upload_to='meeting_files/')
+    title = models.CharField(max_length=128)
