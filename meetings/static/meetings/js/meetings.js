@@ -142,8 +142,9 @@ function addPeopleHTML(people, people_pks) {
     }
 }
 
-// (file title, file object pk, file location)
-function addFileHTML(files) {
+// files: (file title, file object pk, file location)
+// dlt_btn: boolean to include delete button on file
+function addFileHTML(files, dlt_btn) {
     for (var i=0; i<files.length; i++) {
         file = $('<div/>')
             .addClass('file')
@@ -151,15 +152,31 @@ function addFileHTML(files) {
         title = $('<a/>')
             .text(files[i][0])
             .attr('href', files[i][2])
-            .attr('target', '_blank')
             .addClass('blacklink');
         delete_btn = $('<i/>')
             .addClass('fas fa-times delete')
             .on("click", function() {confirmFileDelete($(this).parent().attr('data-pk'))})
         file.append(title);
-        file.append(delete_btn);
+        if (dlt_btn) {
+            file.append(delete_btn);
+            // Only open new tab if dlt_btn
+            title.attr('target', '_blank');
+        }
         $('#files').append(file);
     }
+}
+
+function addAlertHTML(message) {
+    alert = $('<div/>')
+        .addClass('alert alert-danger')
+        .text(message);
+    close_btn = $('<a/>')
+        .attr('href','#')
+        .addClass('close fas fa-times')
+        .attr('data-dismiss', 'alert')
+        .attr('aria-label','close');
+    alert.append(close_btn);
+    $('.alert-container').append(alert);
 }
 /////////////////////////////// Globals //////////////////////////////////////////
 
@@ -242,22 +259,40 @@ function submitMeeting(pk) {
         },
         type: 'post',
         success: function(data) {
-            buildCalendar(monthOffset, 0);
-            $('#meeting_submit_btn').attr('data-pk', data.pk);
-            // if multiple meetings were created display the first
-            if (datePickerSelectedDates.length > 1) {
-                datePickerSelectedDates = datePickerSelectedDates.slice(0,1);
-                $('#date').text(datePickerSelectedDates[0]);
+            $('#meeting_submit_btn').attr('data-pk', data.pks[0]);
+            // If new meeting(s) created handle files
+            if (pk == 0) {
+                // upload new files to each created meeting
+                // first clear temporary file html elements
+                $('#files').html(null);
+                for (var i=0; i<data.pks.length; i++) {
+                    uploadMeetingFiles(data.pks[i], $('#file_upload')[0].files);
+                }
             }
+            // Form was invalid
+            if (data.pks[0] == 0) {
+                addAlertHTML('Invalid meeting input')
+            }
+            // Update Calendar
+            buildCalendar(monthOffset, 0);
+            // Update Date on Meeting
+            datePickerSelectedDates = datePickerSelectedDates.slice(0,1);
+            $('#date').text(datePickerSelectedDates[0]);
         }
     })
 }
 
 function deleteMeeting(pk) {
-    form = $('#meeting_form').serialize();
+    if ($('#meeting_submit_btn').attr('data-pk') == 0) {
+        hideMeetingInfo();
+        return
+    }
+    var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
     $.ajax({
         url: 'delete/' + pk,
-        data: form,
+        headers: {
+            'X-CSRFToken': csrftoken,
+        },
         method: 'POST',
         success: function() {
             hideMeetingInfo();
@@ -355,6 +390,17 @@ function queryMeetingsDb(baseyear, basemonth, endyear, endmonth, dates, view) {
 }
 
 function uploadMeetingFiles(pk, files) {
+    if ($('#meeting_submit_btn').attr('data-pk') == 0) {
+        // Meeting hasn't been created.  Files will be uploaded on creation.
+        // In meantime add file html
+        files_info = []
+        for (var i=0; i<files.length; i++) {
+            files_info.push([files[i].name , 0, '#']);
+        }
+        $('#files').html(null);
+        addFileHTML(files_info, false);
+        return
+    }
     var data = new FormData();
     for (var i=0; i<files.length; i++) {
         data.append(files[i].name, files[i]);
@@ -370,7 +416,9 @@ function uploadMeetingFiles(pk, files) {
         processData: false,
         contentType: false,
         success: function(data) {
-            addFileHTML(data.files);
+            if ($('#meeting_submit_btn').attr('data-pk') == pk) {
+                addFileHTML(data.files.slice(0,files.length), true);
+            }
         }
     })
 }
@@ -466,7 +514,7 @@ function initializeForm(meeting, update_only_people_select) {
         setColorSelect(meeting.color);
         $('#start_time').val(meeting.start_time.slice(0,2));
         $('#end_time').val(meeting.end_time.slice(0,2));
-        addFileHTML(meeting.files);
+        addFileHTML(meeting.files, true);
         $('#meeting_submit_btn').attr('data-pk', meeting.pk);
         expandTitle();
     }

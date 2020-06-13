@@ -9,7 +9,7 @@ from . import forms
 from members.data import filter_profiles
 from members.models import Profile, FilterSet
 from django.http import QueryDict
-from django.http import FileResponse
+from django.core.files.base import ContentFile
 from circles import settings
 
 def meetings(request):
@@ -80,14 +80,19 @@ def post_meeting_info(request, pk):
         form_dict = QueryDict(request.POST.get('form'))
         dates = json.loads(request.POST.get('dates'))
         meeting = None
+        pks = []
         # Create on multiple dates
         if len(dates) > 1:
+            old_meeting = None
+            meeting_files = []
             if pk:
-                models.Meeting.objects.get(pk=pk).delete()
-            for date in dates:
+                old_meeting = models.Meeting.objects.get(pk=pk)
+                meeting_files = old_meeting.files.all()  # Get attached files
+            for i, date in enumerate(dates):
                 form = forms.MeetingCreationForm(form_dict)
                 if form.is_valid():
                     meeting = form.save(commit=False)
+                    # Change Date
                     month = int(date[0:2])
                     day = int(date[3:5])
                     year = int(date[6:])
@@ -96,6 +101,25 @@ def post_meeting_info(request, pk):
                     meeting.start_time = start_time
                     meeting.end_time = end_time
                     meeting.save()
+                    pks += [meeting.pk]
+                    # Copy over attached files
+                    for MeetingFile in meeting_files:
+                        if i:
+                            title = MeetingFile.title
+                            new_meeting_file = models.MeetingFile(meeting=meeting, title=title)
+                            MeetingFile.file.seek(0)
+                            file = ContentFile(MeetingFile.file.read())
+                            file.name = MeetingFile.file.name.split('/')[-1]
+                            new_meeting_file.file = file
+                            new_meeting_file.save()
+                        else:
+                            MeetingFile.meeting = meeting
+                            MeetingFile.save()
+                else:
+                    pks = [0]
+                    break
+            if old_meeting:
+                old_meeting.delete()
         else:
 
             # Update single meeting
@@ -107,7 +131,8 @@ def post_meeting_info(request, pk):
                 form = forms.MeetingCreationForm(form_dict)
             if form.is_valid():
                 meeting = form.save()
-        data = {'pk':meeting.pk} if meeting else {}
+            pks = [meeting.pk] if meeting else [0]
+        data = {'pks':pks}
         return JsonResponse(data)
 
 def meeting_files(request, pk):
@@ -116,7 +141,7 @@ def meeting_files(request, pk):
         # Delete file if pk in data
         if file_pk:
             MeetingFile = models.MeetingFile.objects.get(pk=file_pk)
-            os.remove('/'.join([settings.MEDIA_ROOT, MeetingFile.file.name]))
+            MeetingFile.delete_file()
             MeetingFile.delete()
             data = {
                 'message': 'Deleted'
@@ -135,12 +160,13 @@ def meeting_files(request, pk):
                 'files': created_files
             }
         return JsonResponse(data)
-    # Serve file to client
-    else:
-        print('serve')
 
 def delete_meeting(request, pk):
     if request.method == 'POST':
-        models.Meeting.objects.get(pk=pk).delete()
+        meeting = models.Meeting.objects.get(pk=pk)
+        for MeetingFile in meeting.files.all():
+            MeetingFile.delete_file()
+        meeting.delete()
         data = {}
     return JsonResponse(data)
+
