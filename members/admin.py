@@ -1,12 +1,13 @@
 from django.contrib import admin
-from .models import Profile, Site, Residence, Role, Child, ChildInfo, FilterSet
+from . import models
 
 # Register your models here.
 
-admin.site.register(Profile)
-admin.site.register(Site)
-admin.site.register(Residence)
-admin.site.register(Role)
-admin.site.register(Child)
-admin.site.register(ChildInfo)
-admin.site.register(FilterSet)
+admin.site.register(models.Profile)
+admin.site.register(models.Site)
+admin.site.register(models.Chapter)
+admin.site.register(models.Residence)
+admin.site.register(models.Role)
+admin.site.register(models.Child)
+admin.site.register(models.ChildInfo)
+admin.site.register(models.FilterSet)

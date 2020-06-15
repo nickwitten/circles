@@ -1,18 +1,21 @@
 from django.db import models
-from members.models import Profile, FilterSet
+from members.models import Profile, FilterSet, Site
 import os
 from circles import settings
 
 class Meeting(models.Model):
-    title = models.CharField(max_length=64)
+    type = models.CharField(max_length=64)
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, related_name='meetings', null=True)
+    location = models.CharField(max_length=128, blank=True)
     start_time = models.DateTimeField(verbose_name="Start Time", )
     end_time = models.DateTimeField(verbose_name="End Time")
     attendance_lists = models.ManyToManyField(FilterSet, blank=True)
     attendees = models.ManyToManyField(Profile, blank=True)
     color = models.CharField(max_length=32)
+    notes = models.CharField(max_length=2048, blank=True)
 
     def __str__(self):
-        return f'{self.title}'
+        return f'{self.site} - {self.type}'
 
 
 class MeetingFile(models.Model):

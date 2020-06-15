@@ -56,8 +56,15 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
     def order_children(self):
         return Child.objects.filter(child_info__profile=self)
 
+class Chapter(models.Model):
+    chapter = models.CharField(max_length=64)
+
+    def __str__(self):
+        return f'{self.chapter}'
+
 class Site(models.Model):
-    site = models.CharField(max_length=32)
+    site = models.CharField(max_length=64)
+    chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='sites', null=True)
 
     def __str__(self):
         return f'{self.site}'

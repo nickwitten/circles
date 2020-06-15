@@ -11,26 +11,38 @@ from members.models import Profile, FilterSet
 from django.http import QueryDict
 from django.core.files.base import ContentFile
 from circles import settings
+import json
 
 def meetings(request):
+    site_access = request.user.userinfo.user_site_access()
     context = {
         'form': forms.MeetingCreationForm,
+        'site_access': site_access,
     }
     return render(request, 'meetings/meetings.html', context)
 
 
 def get_meetings(request):
+    sites = json.loads(request.GET.get('site_pks'))
     baseyear = int(request.GET.get('baseyear'))
     basemonth = int(request.GET.get('basemonth'))
     endyear = int(request.GET.get('endyear'))
     endmonth = int(request.GET.get('endmonth'))
     start_date = datetime.date(baseyear, basemonth, 1)
     end_date = datetime.date(endyear, endmonth, 1)
-    meetings = models.Meeting.objects.filter(start_time__range=(start_date, end_date))
-    meetings = meetings.values('title', 'start_time', 'end_time', 'pk', 'color')
+    meetings = request.user.userinfo.user_meeting_access()
+    print(meetings)
+    meetings = meetings.filter(site__in=sites)
+    print(meetings)
+    meetings = meetings.filter(start_time__range=(start_date, end_date))
+    print(meetings)
+    meetings_info = list(meetings.values('type', 'start_time', 'end_time', 'pk', 'color'))
+    for meeting, meeting_info in zip(meetings, meetings_info):
+        meeting_info['site'] = meeting.site.site
     data = {
-        'meetings': list(meetings),
+        'meetings': meetings_info,
     }
+    print(data)
     return JsonResponse(data)
 
 def get_meeting_info(request):
@@ -44,12 +56,12 @@ def get_meeting_info(request):
         saved_lists = meeting.attendance_lists.all()
         list_pks = [list.pk for list in saved_lists]
         attendees = [attendee.pk for attendee in meeting.attendees.all()]
-        title = meeting.title
+        type = meeting.type
         color = meeting.color
         files = [(MeetingFile.title, MeetingFile.pk, settings.MEDIA_URL + MeetingFile.file.name) for MeetingFile in meeting.files.all()]
     else:
         attendees = []
-        pk = title = start_date = start_time = end_time = list_pks = color = files = None
+        pk = type = start_date = start_time = end_time = list_pks = color = files = None
     if not lists:
         lists = [list.filterset for list in saved_lists]
     else:
@@ -62,7 +74,7 @@ def get_meeting_info(request):
     people_pks = list(set([profile.pk for profile in people_objs]))
     data = {
         'pk': pk,
-        'title': title,
+        'type': type,
         'start_date': start_date,
         'start_time': start_time,
         'end_time': end_time,
@@ -121,7 +133,6 @@ def post_meeting_info(request, pk):
             if old_meeting:
                 old_meeting.delete()
         else:
-
             # Update single meeting
             if pk:
                 meeting = models.Meeting.objects.get(pk=pk)

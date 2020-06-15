@@ -16,13 +16,13 @@
       {{ form.attendance_lists }}
       {{ form.attendees }}
       {{ form.color }}
-      <i id="meeting_back_btn" class="fas fa-times back p-2"></i>
+      <a id="meeting_back_btn" class="fas fa-times back blacklink" href="#"></a>
       <div class="break"></div>
       <div id="meeting_header">
         <div id="meeting_title_container">
           <div>
             <span class="expanding_size">Title</span>
-            {{ form.title }}
+            {{ form.type }}
           </div>
         </div>
         <i id="meeting_delete_btn" class="far fa-trash-alt text-small d-inline-block"></i>
@@ -85,6 +85,9 @@
       </div>
       <div class="break"></div>
       <div id="meeting_content">
+        {{ form.site }}
+        {{ form.location }}
+        {{ form.notes }}
         <div id="file_input">
           <input multiple id="file_upload" type="file">
           <label for="file_upload" class="fas fa-file-upload"></label>
@@ -107,7 +110,7 @@
     <button class="cancel-btn btn btn-secondary text-small">Cancel</button>
   </div>
   <div id="attendance_container">
-    <i id="attendance_back_btn" class="fas fa-times back p-2"></i>
+    <a id="attendance_back_btn" class="fas fa-times back blacklink" href="#"></a>
     <div class="container">
       <div class="list_select custom-select flex">
         <p class="flex-center">Select Lists</p>
@@ -121,7 +124,32 @@
     </div>
   </div>
 
-  <div id="calendar_content" class="content-section shadow p-0 pt-2 mb-4">
+  <div id="calendar_content" class="content-section shadow p-0 mb-4">
+    <a id="calendar_menu_btn" class="fas fa-bars blacklink" href="#"></a>
+    <div id="calendar_menu" style="display: none;">
+      <a href="#" class="fas fa-times back blacklink"></a>
+      <h3>Sites</h3>
+      <div class="site_select">
+        <div class="all">
+          <input type="checkbox" checked>
+          <p>All</p>
+        </div>
+        {% for chapter in site_access %}
+        <div class="chapter">
+          <input type="checkbox" checked>
+          <a href="#" class="blacklink">{{ chapter.chapter }}</a>
+          <div class="sites" style="display: None;">
+            {% for site in chapter.sites %}
+            <div class="site">
+              <input type="checkbox" data-pk="{{ site.pk }}" checked>
+              <a href="#" class="blacklink">{{ site }}</a>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
     <div id="calendar_header" class="text-center pt-2">
       <div id="month_selector_container" class="half">
         <div id="month_selector">

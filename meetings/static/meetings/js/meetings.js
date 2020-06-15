@@ -21,14 +21,15 @@ function addWeekHTML(days) {
         var meetings_container = $('<div/>')
             .addClass('meetings-container');
         for (var j=0; j<days[i]['meetings'].length; j++) {
-            color = days[i]['meetings'][j][3]
+            meeting_info = days[i]['meetings'][j];
+            color = meeting_info['color'];
             text_color = make_text_color(color);
             meeting = $('<div/>')
                 .addClass('calendar-meeting')
                 .css('background-color', color)
-                .attr('data-pk', days[i]['meetings'][j][2]);
+                .attr('data-pk', meeting_info['pk']);
             meeting.append($('<p/>')
-                .text(days[i]['meetings'][j][0])
+                .text(meeting_info['site'] + ' - ' + meeting_info['type'])
                 .css('color', text_color)
                 .addClass('meeting-description'));
             meetings_container.append(meeting);
@@ -190,6 +191,7 @@ $(document).ready(function(){
     buildCalendar(monthOffset, null);
     startListeners();
     setColorSelect('hsla(0.0, 93%, 64%, 0.3)');
+    showSites($('#calendar_menu .site_select').children().eq(1));
 });
 
 // parameters:
@@ -301,6 +303,64 @@ function deleteMeeting(pk) {
     });
 }
 
+function selectSite(selected) {
+    // ALL was selected
+    if (selected.parent().hasClass('all')) {
+        if (selected.is(':checked')) {
+            $('#calendar_menu .site_select').children().each(function() {
+                $(this).find('input').prop('checked', true);
+            });
+        } else {
+            $('#calendar_menu .site_select').children().each(function() {
+                $(this).find('input').prop('checked', false);
+            });
+        }
+    }
+
+    // Full chapter was selected
+    if (selected.parent().hasClass('chapter')) {
+        if (selected.is(':checked')) {
+            selected.parent().children().each(function() {
+                $(this).find('input').prop('checked', true);
+            });
+        } else {
+            selected.parent().children().each(function() {
+                $(this).find('input').prop('checked', false);
+            });
+        }
+    }
+
+    // Site was selected
+    if (selected.parent().hasClass('site')) {
+        allChecked = true;
+        selected.parents('.sites').children().each(function() {
+            if (!($(this).find('input').is(':checked'))) {
+                allChecked = false;
+            }
+        });
+        if (allChecked) {
+            selected.parents('.chapter').children('input').prop('checked', true);
+        } else {
+            selected.parents('.chapter').children('input').prop('checked', false);
+        }
+    }
+
+    // Check to see if all chapters are selected
+    allChecked = true
+    $('#calendar_menu .site_select').children('.chapter').each(function() {
+        if (!($(this).find('input').is(':checked'))) {
+            allChecked = false;
+        }
+    })
+    if (allChecked) {
+        $('#calendar_menu .site_select').find('.all input').prop('checked', true);
+    } else {
+        $('#calendar_menu .site_select').find('.all input').prop('checked', false);
+    }
+
+    buildCalendar(monthOffset);
+}
+
 ///////////////////// Helper Functions /////////////////////////////
 
 //// Building Calendar
@@ -360,7 +420,15 @@ function checkMeetingQuery(month_offset, step, current_year, current_month, date
 }
 
 function queryMeetingsDb(baseyear, basemonth, endyear, endmonth, dates, view) {
+    var sites = []
+    $('#calendar_menu .site_select').find('.site input').each(function() {
+        if ($(this).is(':checked')) {
+            sites.push($(this).attr('data-pk'));
+        }
+    });
+    sites = JSON.stringify(sites);
     var data = {
+        'site_pks': sites,
         'baseyear': baseyear,
         'basemonth': basemonth,
         'endyear': endyear,
@@ -378,9 +446,9 @@ function queryMeetingsDb(baseyear, basemonth, endyear, endmonth, dates, view) {
                 date = obj.format('DD-MM-YYYY');
                 time = obj.format('HH-mm');
                 try {
-                    meetings[date].push([meeting['title'], time, meeting['pk'], meeting['color']]);
+                    meetings[date].push(meeting);
                 } catch(err) {
-                    meetings[date] = [[meeting['title'], time, meeting['pk'], meeting['color']], ];
+                    meetings[date] = [meeting];
                 }
             }
             addDays(dates, view);
@@ -505,7 +573,7 @@ function initializeForm(meeting, update_only_people_select) {
     addPeopleHTML(meeting.people, meeting.people_pks);
     setPeopleSelectValue(meeting.attendees);
     if (!update_only_people_select) {
-        $('#id_title').val(meeting.title);
+        $('#id_type').val(meeting.type);
         $('#date').text(meeting.start_date);
         datePickerSelectedDates.push(meeting.start_date);
         $('#date_select_btn').attr('data-month_offset', monthOffset);
@@ -530,7 +598,7 @@ function hideMeetingInfo() {
     document.getElementById('meeting_info_container').classList.remove('show');
     $('#attendance_container').css('box-shadow','');
     $('#attendance_container').css('left','-100%');
-    $('#id_title').val('');
+    $('#id_type').val('');
     $('#id_start_time').val('');
     datePickerSelectedDates = [];
     $('#date_select').hide();
@@ -765,6 +833,15 @@ function getPeopleSelectValue() {
     return people
 }
 
+function showSites(chapter) {
+    $('#calendar_menu .site_select').children().each(function() {
+        $(this).find('.sites').hide();
+        $(this).removeClass('shadow')
+    })
+    chapter.addClass('shadow');
+    chapter.find('.sites').show();
+}
+
 //// Listeners
 
 function startCalendarListeners() {
@@ -826,4 +903,19 @@ function startListeners() {
         deleteMeetingFile($(this).attr('data-pk'));
         $('#file_confirm_delete').hide();
     });
+    $('#calendar_menu_btn').on("click", function() {
+        $('#calendar_menu').show();
+    })
+    $('#calendar_menu .back').on("click", function() {
+        $('#calendar_menu').hide();
+    });
+    $('#calendar_menu .chapter').on("click", function() {
+        showSites($(this));
+    });
+    $('#calendar_menu .chapter input').on("change", function() {
+        selectSite($(this));
+    })
+    $('#calendar_menu .all input').on("change", function() {
+        selectSite($(this));
+    })
 }

@@ -21,7 +21,7 @@ h1 {
   font-size: max(25px, 2vw);
 }
 a {
-  font-size: max(12px,1.2vw);
+  font-size: max(12px,1vw);
 }
 p {
   font-size: clamp(10px, 1.1vw, 13px);

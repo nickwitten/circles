@@ -5,9 +5,61 @@
 }
 
 #calendar_content {
+    position: relative;
     padding: 0 2rem 0 0;
     height: 95%;
 }
+
+#calendar_menu_btn {
+    position: absolute;
+    top: 6px;
+    left: 10px;
+}
+#calendar_menu {
+    position: absolute;
+    z-index: 1;
+    left: 0;
+    height: 100%;
+    width: max(35%, 358px);
+    background-color: white;
+    -webkit-box-shadow: 3px 3px 3px 3px #cccccc96;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+    -moz-box-shadow:   3px 3px 3px 3px #cccccc96;  /* Firefox 3.5 - 3.6 */
+    box-shadow:        3px 3px 3px 3px #cccccc96;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
+}
+#calendar_menu h3 {
+    margin: 0.25rem 0.5rem;
+}
+#calendar_menu .site_select {
+    position: relative;
+}
+#calendar_menu .site_select .chapter,
+#calendar_menu .site_select .all {
+    width: 50%;
+    outline: 1px solid #dee2e6;
+    font-size: max(12px,1vw);
+}
+#calendar_menu .site_select .all p {
+    font-size: max(12px,1vw);
+    display: inline;
+}
+#calendar_menu .site_select .chapter input,
+#calendar_menu .site_select .all input{
+    margin: 10px;
+}
+#calendar_menu .site_select .sites {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 50%;
+}
+#calendar_menu .site_select .sites .site {
+    width: 100%;
+    outline: 1px solid #dee2e6;
+}
+#calendar_menu .site_select .sites input {
+    margin: 5px;
+}
+
 #calendar_header {
     height: 15%;
 }
@@ -121,7 +173,7 @@
     position: absolute;
     left: -100%;
     bottom: 0;
-    z-index: 2;
+    z-index: 3;
     height: 100%;
     width: 50vw;
     background-color: white;
@@ -143,6 +195,7 @@
     position: absolute;
     right: 0;
     color: #848484;
+    padding: 5px;
 }
 #meeting_submit_btn {
     margin-left: auto;
@@ -174,7 +227,7 @@
     position: absolute;
     display: flex;
     flex-flow: row wrap;
-    z-index: 3;
+    z-index: 4;
     background-color: white;
     top: 40%;
     left: 38%;
@@ -400,7 +453,7 @@
 #meeting_content {
     width: 90%;
     display: flex;
-    flex-flow: row wrap;
+    flex-flow: column;
 }
 
 #file_input {
@@ -455,7 +508,7 @@
     height: 100%;
     width: max(25%, 187px);
     left: -100%;
-    z-index: 1;
+    z-index: 2;
     transition: all 0.2s ease-in-out;
     border-radius: 5px;
 }
