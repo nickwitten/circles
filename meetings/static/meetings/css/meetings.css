@@ -7,7 +7,7 @@
 #calendar_content {
     position: relative;
     padding: 0 2rem 0 0;
-    height: 95%;
+    height: max(95%, 500px);
 }
 
 #calendar_menu_btn {
@@ -119,6 +119,9 @@
     height: 100%;
     outline: 1px solid #dee2e6;
 }
+#days_container .inactive {
+    background-color: #0000001a;
+}
 .add-meeting-btn {
     font-size: calc(50% + 0.3vw);
     padding: calc(0.25vh + 0.25vw);
@@ -144,7 +147,6 @@
     max-height: 100%;
     overflow: auto;
 }
-
 .calendar-meeting {
     width: calc(30% + 7.5vw);
     padding: 0.3vh;
@@ -172,9 +174,8 @@
 #meeting_info_container {
     position: absolute;
     left: -100%;
-    bottom: 0;
     z-index: 3;
-    height: 100%;
+    height: max(100%, 667px);
     width: 50vw;
     background-color: white;
     opacity: 0;
@@ -188,7 +189,9 @@
 }
 
 #meeting_form {
-    justify-content: center;
+    align-items: center;
+    flex-flow: column;
+    height: 93%;
 }
 
 .back {
@@ -213,9 +216,37 @@
     max-width: 100%;
     overflow-x: auto;
 }
-#meeting_title_container div {
+#meeting_title_container .container {
     position: relative;
     width: fit-content;
+}
+#type_select {
+    position: absolute;
+    visibility: hidden;
+    z-index: 1;
+    top: 100%;
+    left: 50%;
+    right: 50%;
+    transform: translate(-50%, 0);
+    width: max(100%, 125px);
+    height: fit-content;
+    overflow: hidden;
+}
+#type_select .container {
+    position: relative;
+    bottom: 200px;
+    display: flex;
+    flex-flow: column nowrap;
+    background-color: white;
+    transition: all 0.2s ease-in-out;
+}
+#type_select .show {
+    bottom: 0;
+}
+#type_select .type {
+    border: 1px solid #dee2e6;
+    text-align: center;
+    padding: 0.5em;
 }
 
 #meeting_delete_btn {
@@ -223,16 +254,18 @@
     right: 0px;
     bottom: 1.5vw;
 }
-.confirm-delete {
+.confirm-delete,
+.modal {
     position: absolute;
     display: flex;
     flex-flow: row wrap;
     z-index: 4;
     background-color: white;
-    top: 40%;
-    left: 38%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     height: 20%;
-    width: 25%;
+    width: max(25%, 220px);
     -webkit-box-shadow: 3px 5px 12px 0px #585454;
     -moz-box-shadow: 3px 5px 12px 0px #585454;
     box-shadow: 3px 5px 12px 0px #585454;
@@ -293,7 +326,7 @@
     width: 30%;
 }
 #id_start_time, #id_end_time, #id_attendance_lists,
-#id_attendees, #id_color {
+#id_attendees, #id_color, #id_links {
     display: none;
 }
 
@@ -416,13 +449,16 @@
 
 #time_select {
     display: flex;
-    flex-flow: column wrap;
-    width: max(50%, 210px);
-    height: max(44px, 5.5vw);
+    flex-flow: row;
     align-items: center;
-    align-content: center;
-    justify-content: space-between;
     border-radius: 5px;
+    padding: 0 1em;
+}
+#time_select div {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-content: space-between;
 }
 #time_select .time-break {
     display: flex;
@@ -454,58 +490,125 @@
     width: 90%;
     display: flex;
     flex-flow: column;
+    flex-grow:1;
+}
+#meeting_content .form-inputs {
+    display: flex;
+    justify-content: space-between;
+}
+#meeting_content p {
+    font-size: max(12px, 1vw);
+    line-height: 30px;
+}
+#meeting_content .labels
+#meeting_content .fields {
+    display: block;
+}
+#meeting_content .labels > div {
+    height: 35px;
+    margin: 10px 0;
+    vertical-align: center;
+}
+#meeting_content .fields {
+    width: 85%
+}
+#id_site, #id_location {
+    display: block;
+    font-size: max(12px, 1vw);
+    margin: 8px;
+    width: 100%;
 }
 
-#file_input {
+#id_notes {
+    flex-grow: 1;
+    resize: none;
+}
+
+#file_input, #link_input {
     display: flex;
 }
 #file_input input {
     position: absolute;
     visibility: hidden;
 }
-#file_input .fa-file-upload {
+#file_input .fa-file-upload,
+#link_upload {
     margin-top: 8px;
 }
-#files {
+#files, #links {
     display: flex;
     flex-flow: row wrap;
+    max-height: 100px;
+    overflow-y: auto;
 }
 #files label {
     margin: 0;
 }
-#files .file {
+#files .file,
+#links .link {
     display: flex;
-    flex-flow: row wrap;
+    flex-flow: row;
     align-items: center;
     margin: 0.2em 0.5em;
     padding: 0.1em 0.5em;
     border: solid 1px #dee2e6;
     border-radius: 3px;
 }
-#files a {
+#files a,
+#links a {
     font-size: 10px;
 }
-#files .delete {
+#files .delete,
+#links .delete {
     color: #848484;
     font-size: small;
     margin: 5px 0px 3px 10px;
 }
 
+#link_modal {
+    align-content: flex-start;
+}
+#link_modal .container {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-around;
+    align-items: center;
+    height: 30%;
+    margin: 2px 0;
+}
+#link_modal .container input {
+    width: 50%;
+}
+#link_modal .container p {
+    width: 25%;
+}
+#link_modal button {
+    position: absolute;
+}
+#link_modal .upload-btn {
+    bottom: 0.5em;
+    right: 3em;
+}
+#link_modal .cancel-btn {
+    bottom: 0.5em;
+    left: 3em;
+}
+
 #meeting_submit_btn {
     position: absolute;
-    bottom: 2%;
+    bottom: 1%;
     left: 2%;
 }
 
 #attendance_btn {
     position: absolute;
-    bottom: 2%;
+    bottom: 1%;
     right: 2%;
 }
 #attendance_container {
     position: absolute;
     background-color: white;
-    height: 100%;
+    height: max(100%, 667px);
     width: max(25%, 187px);
     left: -100%;
     z-index: 2;

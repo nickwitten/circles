@@ -31,24 +31,21 @@ def get_meetings(request):
     start_date = datetime.date(baseyear, basemonth, 1)
     end_date = datetime.date(endyear, endmonth, 1)
     meetings = request.user.userinfo.user_meeting_access()
-    print(meetings)
     meetings = meetings.filter(site__in=sites)
-    print(meetings)
     meetings = meetings.filter(start_time__range=(start_date, end_date))
-    print(meetings)
     meetings_info = list(meetings.values('type', 'start_time', 'end_time', 'pk', 'color'))
     for meeting, meeting_info in zip(meetings, meetings_info):
-        meeting_info['site'] = meeting.site.site
+        meeting_info['site'] = str(meeting.site)
     data = {
         'meetings': meetings_info,
     }
-    print(data)
     return JsonResponse(data)
 
 def get_meeting_info(request):
     pk = request.GET.get('pk')
     lists = request.GET.get('lists')
-    meeting = models.Meeting.objects.filter(pk=pk).first()
+    meetings = request.user.userinfo.user_meeting_access()
+    meeting = meetings.filter(pk=pk).first()
     if meeting:
         start_date = meeting.start_time.date().strftime('%m/%d/%Y')
         start_time = meeting.start_time.time().strftime('%H:%M:%S')
@@ -58,10 +55,14 @@ def get_meeting_info(request):
         attendees = [attendee.pk for attendee in meeting.attendees.all()]
         type = meeting.type
         color = meeting.color
+        site = meeting.site.pk
+        location = meeting.location
+        notes = meeting.notes
         files = [(MeetingFile.title, MeetingFile.pk, settings.MEDIA_URL + MeetingFile.file.name) for MeetingFile in meeting.files.all()]
+        links = meeting.links
     else:
         attendees = []
-        pk = type = start_date = start_time = end_time = list_pks = color = files = None
+        pk = type = start_date = start_time = end_time = list_pks = color = site = location = notes = links = files = None
     if not lists:
         lists = [list.filterset for list in saved_lists]
     else:
@@ -83,6 +84,10 @@ def get_meeting_info(request):
         'people': people,
         'people_pks': people_pks,
         'color': color,
+        'site': site,
+        'location': location,
+        'notes': notes,
+        'links': links,
         'files': files,
     }
     return JsonResponse(data)
@@ -140,8 +145,7 @@ def post_meeting_info(request, pk):
             # Create single meeting
             else:
                 form = forms.MeetingCreationForm(form_dict)
-            if form.is_valid():
-                meeting = form.save()
+            meeting = form.save() if form.is_valid() else None
             pks = [meeting.pk] if meeting else [0]
         data = {'pks':pks}
         return JsonResponse(data)

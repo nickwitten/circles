@@ -1,6 +1,6 @@
 /////////////// HTML Elements ///////////////////
 
-function addWeekHTML(days) {
+function addWeekHTML(days, include_site) {
     ///// Calendar Week HTML ////////
     var week = $('<ul/>')
         .addClass('calendar-week');
@@ -8,10 +8,14 @@ function addWeekHTML(days) {
         /////// Day Box HTML /////////
         var day = $('<li/>')
             .addClass('calendar-day');
+        if (!days[i]['active']) {
+            day.addClass('inactive');
+        } else {
         ////// Add Meeting Button ////
-        var add_btn = $('<i/>')
-            .addClass('add-meeting-btn fas fa-plus')
-        day.append(add_btn);
+            var add_btn = $('<i/>')
+                .addClass('add-meeting-btn fas fa-plus')
+            day.append(add_btn);
+        }
         ///// Month Number HTML //////
         var day_monthnum = $('<p/>')
             .text(days[i]['monthnum'])
@@ -27,11 +31,17 @@ function addWeekHTML(days) {
             meeting = $('<div/>')
                 .addClass('calendar-meeting')
                 .css('background-color', color)
-                .attr('data-pk', meeting_info['pk']);
-            meeting.append($('<p/>')
-                .text(meeting_info['site'] + ' - ' + meeting_info['type'])
+                .attr('data-pk', meeting_info['pk'])
+                .attr('data-sitepk', meeting_info['site']);
+            title = $('<p/>')
                 .css('color', text_color)
-                .addClass('meeting-description'));
+                .addClass('meeting-description');
+            if (include_site) {
+                title.text(meeting_info['site'] + ' - ' + meeting_info['type'])
+            } else {
+                title.text(meeting_info['type']);
+            }
+            meeting.append(title)
             meetings_container.append(meeting);
         }
         day.append(meetings_container);
@@ -167,6 +177,22 @@ function addFileHTML(files, dlt_btn) {
     }
 }
 
+function addLinkHTML(name, url) {
+        var link = $('<div/>')
+            .addClass('link')
+        var name = $('<a/>')
+            .text(name)
+            .attr('href', url)
+            .attr('target', '_blank')
+            .addClass('blacklink');
+        var delete_btn = $('<i/>')
+            .addClass('fas fa-times delete')
+            .on("click", function() {deleteMeetingLink($(this).parent().find('a'))})
+        link.append(name);
+        link.append(delete_btn);
+        $('#links').append(link);
+}
+
 function addAlertHTML(message) {
     alert = $('<div/>')
         .addClass('alert alert-danger')
@@ -178,6 +204,15 @@ function addAlertHTML(message) {
         .attr('aria-label','close');
     alert.append(close_btn);
     $('.alert-container').append(alert);
+}
+
+function addMeetingSiteOptionHTML(site, site_pk) {
+    console.log(site);
+    console.log(site_pk);
+    option = $('<option/>')
+        .text(site)
+        .val(site_pk)
+    $('#id_site').append(option);
 }
 /////////////////////////////// Globals //////////////////////////////////////////
 
@@ -192,6 +227,8 @@ $(document).ready(function(){
     startListeners();
     setColorSelect('hsla(0.0, 93%, 64%, 0.3)');
     showSites($('#calendar_menu .site_select').children().eq(1));
+    $('#id_type').attr('readonly', 'readonly');
+    $('#id_links').val('[]');
 });
 
 // parameters:
@@ -272,6 +309,7 @@ function submitMeeting(pk) {
                 }
             }
             // Form was invalid
+            console.log(data.pks);
             if (data.pks[0] == 0) {
                 addAlertHTML('Invalid meeting input')
             }
@@ -538,10 +576,19 @@ function addDays(dates, view) {
             if (!found_meetings) {
                 found_meetings = [];
             }
-            var day = {monthnum: monthnum, meetings: found_meetings};
+            active = true;
+            if ((i==0 && monthnum>7) || (i==dates.length/7-1 && monthnum<7)) {
+                active = false;
+            }
+            var day = {monthnum: monthnum, meetings: found_meetings, active: active};
             days.push(day);
         }
-        addWeekHTML(days);
+        site_ct = 0;
+        $('#calendar_menu .site_select').find('input').each(function () {
+            site_ct += ($(this).is(':checked')) ? 1 : 0;
+        });
+        include_site = (site_ct > 1) ? true : false;
+        addWeekHTML(days, include_site);
     }
 }
 
@@ -582,6 +629,11 @@ function initializeForm(meeting, update_only_people_select) {
         setColorSelect(meeting.color);
         $('#start_time').val(meeting.start_time.slice(0,2));
         $('#end_time').val(meeting.end_time.slice(0,2));
+        $('#id_site').val(meeting.site);
+        $('#id_location').val(meeting.location);
+        $('#id_notes').val(meeting.notes);
+        $('#id_links').val(meeting.links);
+        setMeetingLinks(meeting.links);
         addFileHTML(meeting.files, true);
         $('#meeting_submit_btn').attr('data-pk', meeting.pk);
         expandTitle();
@@ -592,6 +644,15 @@ function showMeetingInfo() {
     document.getElementById('meeting_info_container').classList.add('show');
     $('#attendance_container').css('box-shadow', '0 0 0 999em rgba(0, 0, 0, 0.41)');
     getUserFilterSets();
+    // update meeting form's site select
+    $('#id_site').html(null);
+    $('#calendar_menu .site_select').find('.site').each(function() {
+        if ($(this).find('input').is(':checked')) {
+            site = $(this).find('.site-name');
+            console.log(site);
+            addMeetingSiteOptionHTML(site.text(), site.attr('data-pk'));
+        }
+    });
 }
 
 function hideMeetingInfo() {
@@ -599,6 +660,8 @@ function hideMeetingInfo() {
     $('#attendance_container').css('box-shadow','');
     $('#attendance_container').css('left','-100%');
     $('#id_type').val('');
+    $('#type_select').removeClass('visible');
+    $('#type_select .container').removeClass('show');
     $('#id_start_time').val('');
     datePickerSelectedDates = [];
     $('#date_select').hide();
@@ -610,6 +673,11 @@ function hideMeetingInfo() {
     $('#end_hour').text('00');
     $('#end_minute').text('00');
     $('#end_period').text('p.m.');
+    $('#id_site').val('');
+    $('#id_location').val('');
+    $('#id_notes').val('');
+    $('#id_links').val('[]');
+    $('#links').html(null);
     $('.time-container').children().val('');
     $('#colors').hide();
     $('#id_attendance_lists').val('');
@@ -649,7 +717,7 @@ function updatePeopleSelect() {
 function expandTitle() {
   $('.expanding_size').text($('.expanding_input').val()); // Copy text to the span element
   if ($('.expanding_input').val() == '') { // When expanding_input is empty
-    $('.expanding_size').text('Title'); // Expand to see the placeholder
+    $('.expanding_size').text('Type'); // Expand to see the placeholder
   }
 }
 
@@ -842,6 +910,61 @@ function showSites(chapter) {
     chapter.find('.sites').show();
 }
 
+function selectMeetingType(type) {
+    $('#id_type').val('');
+    if (type == 'Custom Type') {
+        $('#id_type').attr('readonly', false);
+        $('#id_type').focus();
+        expandTitle();
+    } else {
+        $('#id_type').val(type);
+        expandTitle();
+    }
+    $('#type_select .container').removeClass('show');
+    $('#type_select').toggleClass('visible');
+}
+
+function setMeetingLinks(links) {
+    links = JSON.parse(links);
+    for (var i=0; i<links.length; i++) {
+        addLinkHTML(links[i]['name'], links[i]['url']);
+    }
+}
+
+function attachMeetingLink(name, url) {
+    if (url.slice(0,8) != 'https://') {
+        url = 'https://' + url;
+    }
+    var link = {'name': name, 'url': url};
+    link = JSON.stringify(link);
+    var current_links = $('#id_links').val()
+    console.log(current_links);
+    current_links = current_links.slice(0,-1)
+    if (current_links.length > 1) {
+        var links = current_links + ', ' + link + ']';
+    } else {
+        var links = current_links + link + ']';
+    }
+    $('#id_links').val(links);
+    addLinkHTML(name, url);
+}
+
+function deleteMeetingLink(link) {
+    var name = link.text();
+    var url = link.attr('href');
+    link.parents('.link').remove();
+    var current_links = $('#id_links').val();
+    current_links = JSON.parse(current_links);
+    console.log(current_links);
+    for (var i=0; i<current_links.length; i++) {
+        if (current_links[i]['name'] == name && current_links[i]['url'] == url) {
+            current_links.splice(i, 1);
+            $('#id_links').val(JSON.stringify(current_links));
+            return
+        }
+    }
+}
+
 //// Listeners
 
 function startCalendarListeners() {
@@ -877,6 +1000,16 @@ function startListeners() {
         $('#attendance_container').css('left','-100%');
         $('.lists').hide();
     });
+    $('#id_type').on("click", function(event) {
+        $('#type_select').toggleClass('visible');
+        $('#type_select .container').toggleClass('show');
+    });
+    $('#id_type').on("blur", function() {
+        $('#id_type').attr("readonly", "readonly");
+    })
+    $('#type_select .type').on("click", function() {
+        selectMeetingType($(this).find('a').text());
+    });
     $('#time_select i').on("click", function() {
         updateTimeSelect(this.classList);
     });
@@ -902,6 +1035,20 @@ function startListeners() {
     $('#file_confirm_delete .delete-btn').on("click", function() {
         deleteMeetingFile($(this).attr('data-pk'));
         $('#file_confirm_delete').hide();
+    });
+    $('#link_upload').on("click", function() {
+        $('#link_modal').show();
+    });
+    $('#link_modal .cancel-btn').on("click", function() {
+        $('#link_name').val('');
+        $('#link_url').val('');
+        $('#link_modal').hide();
+    });
+    $('#link_modal .upload-btn').on("click", function() {
+        attachMeetingLink($('#link_name').val(), $('#link_url').val());
+        $('#link_name').val('');
+        $('#link_url').val('');
+        $('#link_modal').hide();
     });
     $('#calendar_menu_btn').on("click", function() {
         $('#calendar_menu').show();

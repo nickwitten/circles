@@ -16,13 +16,24 @@
       {{ form.attendance_lists }}
       {{ form.attendees }}
       {{ form.color }}
+      {{ form.links }}
       <a id="meeting_back_btn" class="fas fa-times back blacklink" href="#"></a>
-      <div class="break"></div>
       <div id="meeting_header">
-        <div id="meeting_title_container">
-          <div>
-            <span class="expanding_size">Title</span>
-            {{ form.type }}
+        <div class="relative">
+          <div id="meeting_title_container">
+            <div class="container">
+              <span class="expanding_size">Title</span>
+              {{ form.type }}
+            </div>
+          </div>
+          <div id="type_select">
+            <div class="container">
+              {% for type in form.type_choices %}
+              <div class="type">
+                <a href="#" class="blacklink">{{ type }}</a>
+              </div>
+              {% endfor %}
+            </div>
           </div>
         </div>
         <i id="meeting_delete_btn" class="far fa-trash-alt text-small d-inline-block"></i>
@@ -37,7 +48,6 @@
           </div>
         </div>
       </div>
-      <div class="break"></div>
       <div id="datetime_container">
         <div id="date_container" class="">
           <div style="position:relative">
@@ -54,44 +64,72 @@
           </div>
         </div>
         <div id="time_select">
-          <i class="start-hour fas fa-angle-up"></i>
-          <p id="start_hour">00</p>
-          <i class="start-hour fas fa-angle-down"></i>
+          <div>
+            <i class="start-hour fas fa-angle-up"></i>
+            <p id="start_hour">00</p>
+            <i class="start-hour fas fa-angle-down"></i>
+          </div>
           <p class="time-break">:</p>
-          <i class="start-minute fas fa-angle-up"></i>
-          <p id="start_minute">00</p>
-          <i class="start-minute fas fa-angle-down"></i>
+          <div>
+            <i class="start-minute fas fa-angle-up"></i>
+            <p id="start_minute">00</p>
+            <i class="start-minute fas fa-angle-down"></i>
+          </div>
           <span class="time-break"></span>
-          <i class="start-period fas fa-angle-up"></i>
-          <p id="start_period">p.m.</p>
-          <i class="start-period fas fa-angle-down"></i>
+          <div>
+            <i class="start-period fas fa-angle-up"></i>
+            <p id="start_period">p.m.</p>
+            <i class="start-period fas fa-angle-down"></i>
+          </div>
 
           <span class="time-break"></span>
           <p class="time-break">-</p>
           <span class="time-break"></span>
 
-          <i class="end-hour fas fa-angle-up"></i>
-          <p id="end_hour">00</p>
-          <i class="end-hour fas fa-angle-down"></i>
+          <div>
+            <i class="end-hour fas fa-angle-up"></i>
+            <p id="end_hour">00</p>
+            <i class="end-hour fas fa-angle-down"></i>
+          </div>
           <p class="time-break">:</p>
-          <i class="end-minute fas fa-angle-up"></i>
-          <p id="end_minute">00</p>
-          <i class="end-minute fas fa-angle-down"></i>
+          <div>
+            <i class="end-minute fas fa-angle-up"></i>
+            <p id="end_minute">00</p>
+            <i class="end-minute fas fa-angle-down"></i>
+          </div>
           <span class="time-break"></span>
-          <i class="end-period fas fa-angle-up"></i>
-          <p id="end_period">p.m.</p>
-          <i class="end-period fas fa-angle-down"></i>
+          <div>
+            <i class="end-period fas fa-angle-up"></i>
+            <p id="end_period">p.m.</p>
+            <i class="end-period fas fa-angle-down"></i>
+          </div>
         </div>
       </div>
-      <div class="break"></div>
       <div id="meeting_content">
-        {{ form.site }}
-        {{ form.location }}
+        <div class="m-2 form-inputs">
+          <div class="labels">
+            <div>
+              <p>Site: </p>
+            </div>
+            <div>
+              <p>Address: </p>
+            </div>
+          </div>
+          <div class="fields">
+            {{ form.site }}
+            {{ form.location }}
+          </div>
+        </div>
         {{ form.notes }}
         <div id="file_input">
           <input multiple id="file_upload" type="file">
           <label for="file_upload" class="fas fa-file-upload"></label>
           <div id="files">
+          </div>
+        </div>
+        <div id="link_input">
+          <i id="link_upload" class="fas fa-link"></i>
+          <div id="links">
           </div>
         </div>
       </div>
@@ -107,6 +145,18 @@
   <div id="file_confirm_delete" class="shadow confirm-delete" style="display:none">
     <h5>Delete File</h5>
     <button class="delete-btn btn btn-danger text-small" data-pk="0">Delete</button>
+    <button class="cancel-btn btn btn-secondary text-small">Cancel</button>
+  </div>
+  <div id="link_modal" class="shadow modal" style="display:none">
+    <div class="container">
+      <p>Name:</p>
+      <input id="link_name" type="text" class="form-control">
+    </div>
+    <div class="container">
+      <p>URL:</p>
+      <input id="link_url" type="text" class="form-control">
+    </div>
+    <button class="upload-btn btn btn-primary text-small">Attach</button>
     <button class="cancel-btn btn btn-secondary text-small">Cancel</button>
   </div>
   <div id="attendance_container">
@@ -142,7 +192,7 @@
             {% for site in chapter.sites %}
             <div class="site">
               <input type="checkbox" data-pk="{{ site.pk }}" checked>
-              <a href="#" class="blacklink">{{ site }}</a>
+              <a href="#" class="blacklink site-name" data-pk="{{site.pk}}">{{ site }}</a>
             </div>
             {% endfor %}
           </div>

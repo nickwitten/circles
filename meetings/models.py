@@ -12,7 +12,8 @@ class Meeting(models.Model):
     attendance_lists = models.ManyToManyField(FilterSet, blank=True)
     attendees = models.ManyToManyField(Profile, blank=True)
     color = models.CharField(max_length=32)
-    notes = models.CharField(max_length=2048, blank=True)
+    notes = models.TextField(max_length=2048, blank=True)
+    links = models.CharField(max_length=1024)
 
     def __str__(self):
         return f'{self.site} - {self.type}'
