@@ -50,7 +50,7 @@
       </div>
       <div id="datetime_container">
         <div id="date_container" class="">
-          <div style="position:relative">
+          <div style="position:relative; height:fit-content">
             <div class="date-spacer">
               <p>00/00/0000</p>
             </div>
@@ -58,9 +58,11 @@
           </div>
           <i id="date_select_btn" class="far fa-calendar-alt hidden" data-month_offset="0"></i>
           <div class="break"></div>
-          <div id="date_select">
-            <i class="previous">x</i>
-            <i class="next">x</i>
+          <div class="select-container">
+            <div id="date_select">
+              <i class="previous">x</i>
+              <i class="next">x</i>
+            </div>
           </div>
         </div>
         <div id="time_select">
@@ -176,7 +178,7 @@
 
   <div id="calendar_content" class="content-section shadow p-0 mb-4">
     <a id="calendar_menu_btn" class="fas fa-bars blacklink" href="#"></a>
-    <div id="calendar_menu" style="display: none;">
+    <div id="calendar_menu">
       <a href="#" class="fas fa-times back blacklink"></a>
       <h3>Sites</h3>
       <div class="site_select">

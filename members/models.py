@@ -5,10 +5,24 @@ from phonenumber_field.modelfields import PhoneNumberField
 from PIL import Image
 from datetime import date
 
+class Chapter(models.Model):
+    chapter = models.CharField(max_length=64)
+
+    def __str__(self):
+        return f'{self.chapter}'
+
+class Site(models.Model):
+    site = models.CharField(max_length=64)
+    chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='sites', null=True)
+
+    def __str__(self):
+        return f'{self.site}'
+
 class Profile(models.Model): # ForeignKey field must have same name as related model
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
     circles_id = models.CharField(blank=True,null=True,max_length = 6)
+    site = models.ForeignKey(Site, on_delete=models.SET_NULL, null=True)
     birthdate = models.DateField(blank=True,null=True)
     race = models.CharField(blank=True,null=True,max_length=10,choices=[('white','White',),('black','Black'),('other','Other')])
     gender = models.CharField(blank=True,null=True,max_length=8,choices=[('male','Male'),('female','Female'),('other','Other')])
@@ -55,19 +69,6 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
     # Get all Children
     def order_children(self):
         return Child.objects.filter(child_info__profile=self)
-
-class Chapter(models.Model):
-    chapter = models.CharField(max_length=64)
-
-    def __str__(self):
-        return f'{self.chapter}'
-
-class Site(models.Model):
-    site = models.CharField(max_length=64)
-    chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='sites', null=True)
-
-    def __str__(self):
-        return f'{self.site}'
 
 class Residence(models.Model):
     profile = models.ForeignKey(Profile,on_delete=models.CASCADE,related_name='residences')

@@ -283,7 +283,8 @@ function submitMeeting(pk) {
     $('#id_attendees').val(getPeopleSelectValue());
     $('#id_start_time').val(start_datetime);
     $('#id_end_time').val(end_datetime);
-    $('#date_select').hide();
+    $('#date_container .select-container').removeClass('visible');
+    $('#date_select').removeClass('show');
     var form = $("#meeting_form").serialize();
     var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
     dates = JSON.stringify(datePickerSelectedDates);
@@ -664,7 +665,8 @@ function hideMeetingInfo() {
     $('#type_select .container').removeClass('show');
     $('#id_start_time').val('');
     datePickerSelectedDates = [];
-    $('#date_select').hide();
+    $('#date_select').removeClass('show');
+    $('#date_container .select-container').removeClass('visible');
     $('#date_container').removeClass('shadow');
     $('#id_end_time').val('');
     $('#start_hour').text('00');
@@ -773,7 +775,8 @@ function buildDatePicker(month_offset) {
 }
 
 function toggleDatePicker(month_offset) {
-    $('#date_select').toggle();
+    $('#date_container .select-container').toggleClass('visible');
+    $('#date_select').toggleClass('show');
     $('#date_container').toggleClass('shadow');
     $('#date_select_btn').toggleClass('hidden');
     buildDatePicker(month_offset);
@@ -1051,10 +1054,10 @@ function startListeners() {
         $('#link_modal').hide();
     });
     $('#calendar_menu_btn').on("click", function() {
-        $('#calendar_menu').show();
+        $('#calendar_menu').toggleClass('show');
     })
     $('#calendar_menu .back').on("click", function() {
-        $('#calendar_menu').hide();
+        $('#calendar_menu').removeClass('show');
     });
     $('#calendar_menu .chapter').on("click", function() {
         showSites($(this));

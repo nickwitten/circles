@@ -10,7 +10,14 @@ body {
 header {
   display: flex;
   flex-flow: column wrap;
-  height: max(8vh, 4vw);
+  height: 8vh;
+  min-height: 50px;
+  min-width: 350px;
+}
+#content_container {
+  height: 92vh;
+  min-height: 610px;
+  min-width: 350px;
 }
 h1, h2, h3, h4, h5, h6{
   font-family: Raleway, sans-serif;
@@ -18,13 +25,13 @@ h1, h2, h3, h4, h5, h6{
   padding: 0;
 }
 h1 {
-  font-size: max(25px, 2vw);
+  font-size: 25px;
 }
 a {
-  font-size: max(12px,1vw);
+  font-size: 12px;
 }
 p {
-  font-size: clamp(10px, 1.1vw, 13px);
+  font-size: calc(8px + 0.3vw);
   margin: 0;
 }
 a:hover{
@@ -52,7 +59,6 @@ a:hover{
     background-color: #b6b6b6;
 }
 header a{
-  font-size: clamp(10px, 1.1vw, 13px);
   font-family: Raleway, sans-serif;
   z-index: 2;
   font-weight: 400;
@@ -124,7 +130,8 @@ header a{
 #cssmenu > ul > li {
   float: left;
   height: 100%;
-  width: max(8vw, 63px);
+  width: 12vw;
+  min-width: 60px;
   text-align: center;
   display: flex;
 }
@@ -193,12 +200,10 @@ header a{
   flex-flow: row wrap;
 }
 #logout_btn {
-    margin-right: 1vw;
-    height: 50%;
-    position: relative;
-    top: 40%;
+    margin: auto 1vw auto 0;
+    font-size: calc(8px + 0.3vw);
 }
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 550px) {
     #app_title {
         display: none;
     }
@@ -245,10 +250,12 @@ header a{
   align-items: center;
   }
 .sub_tags li{
-  display: inline-block;
-  font-size: calc(50% + 0.5vw);
   padding: 0;
   margin: 0 1.0vw;
+  display: flex;
+}
+.sub_tags a {
+  font-size: calc(8px + 0.2vw);
 }
 .profile-container{
   padding:1rem;
@@ -308,7 +315,7 @@ header a{
   border: 1px solid #ccc;
   box-radius: 3px;
   font-family: Raleway, sans-serif;
-  font-size: max(20px,3vw);
+  font-size: calc(20px + 1vw);
 }
 
 .expanding_size {
