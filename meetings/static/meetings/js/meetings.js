@@ -207,8 +207,6 @@ function addAlertHTML(message) {
 }
 
 function addMeetingSiteOptionHTML(site, site_pk) {
-    console.log(site);
-    console.log(site_pk);
     option = $('<option/>')
         .text(site)
         .val(site_pk)
@@ -219,6 +217,27 @@ function addMeetingSiteOptionHTML(site, site_pk) {
 var meetings;
 var monthOffset = 0;
 var datePickerSelectedDates = [];
+var closeFunctions = {
+    'id_type': function() {
+        $('#type_select').removeClass('visible');
+        $('#type_select .container').removeClass('show');
+    },
+    'color_select': function() {
+        $('#colors').hide();
+    },
+    'date_container': function() {
+        $('#date_container').removeClass('shadow');
+        $('#date_select_btn').addClass('hidden');
+        $('#date_select').removeClass('show');
+        $('#date_container .select-container').removeClass('visible');
+    },
+    'lists_container': function() {
+        $('#attendance_container .lists').hide();
+    },
+    'calendar_menu': function() {
+        $('#calendar_menu').removeClass('show');
+    }
+}
 
 ////////////////////////// Top Level Functions ///////////////////////////////////
 
@@ -229,6 +248,13 @@ $(document).ready(function(){
     showSites($('#calendar_menu .site_select').children().eq(1));
     $('#id_type').attr('readonly', 'readonly');
     $('#id_links').val('[]');
+    document.addEventListener("click", function(e) {
+        for (const id in closeFunctions) {
+            if ($(e.target).parents('#' + id).length == 0 && e.target.id != id) {
+                closeFunctions[id]();
+            }
+        }
+    }, true);
 });
 
 // parameters:
@@ -283,8 +309,6 @@ function submitMeeting(pk) {
     $('#id_attendees').val(getPeopleSelectValue());
     $('#id_start_time').val(start_datetime);
     $('#id_end_time').val(end_datetime);
-    $('#date_container .select-container').removeClass('visible');
-    $('#date_select').removeClass('show');
     var form = $("#meeting_form").serialize();
     var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
     dates = JSON.stringify(datePickerSelectedDates);
@@ -310,7 +334,6 @@ function submitMeeting(pk) {
                 }
             }
             // Form was invalid
-            console.log(data.pks);
             if (data.pks[0] == 0) {
                 addAlertHTML('Invalid meeting input')
             }
@@ -650,7 +673,6 @@ function showMeetingInfo() {
     $('#calendar_menu .site_select').find('.site').each(function() {
         if ($(this).find('input').is(':checked')) {
             site = $(this).find('.site-name');
-            console.log(site);
             addMeetingSiteOptionHTML(site.text(), site.attr('data-pk'));
         }
     });
@@ -661,13 +683,8 @@ function hideMeetingInfo() {
     $('#attendance_container').css('box-shadow','');
     $('#attendance_container').css('left','-100%');
     $('#id_type').val('');
-    $('#type_select').removeClass('visible');
-    $('#type_select .container').removeClass('show');
     $('#id_start_time').val('');
     datePickerSelectedDates = [];
-    $('#date_select').removeClass('show');
-    $('#date_container .select-container').removeClass('visible');
-    $('#date_container').removeClass('shadow');
     $('#id_end_time').val('');
     $('#start_hour').text('00');
     $('#start_minute').text('00');
@@ -681,7 +698,6 @@ function hideMeetingInfo() {
     $('#id_links').val('[]');
     $('#links').html(null);
     $('.time-container').children().val('');
-    $('#colors').hide();
     $('#id_attendance_lists').val('');
     $('#id_attendees').val('');
     $('.lists').html(null);
@@ -693,7 +709,7 @@ function hideMeetingInfo() {
 }
 
 function getUserFilterSets() {
-  var filterset_select_element = $("#list_select")
+  var filterset_select_element = $("#attendance_container .lists")
   filterset_select_element.html(null); // Clear the drop down
   // Retrieve the user's filtersets
   $.ajax({
@@ -928,7 +944,12 @@ function selectMeetingType(type) {
 }
 
 function setMeetingLinks(links) {
-    links = JSON.parse(links);
+    try {
+        links = JSON.parse(links);
+    } catch(err) {
+        console.log(err);
+        $('#id_links').val('[]');
+    }
     for (var i=0; i<links.length; i++) {
         addLinkHTML(links[i]['name'], links[i]['url']);
     }
@@ -941,7 +962,6 @@ function attachMeetingLink(name, url) {
     var link = {'name': name, 'url': url};
     link = JSON.stringify(link);
     var current_links = $('#id_links').val()
-    console.log(current_links);
     current_links = current_links.slice(0,-1)
     if (current_links.length > 1) {
         var links = current_links + ', ' + link + ']';
@@ -957,8 +977,13 @@ function deleteMeetingLink(link) {
     var url = link.attr('href');
     link.parents('.link').remove();
     var current_links = $('#id_links').val();
-    current_links = JSON.parse(current_links);
-    console.log(current_links);
+    try {
+        current_links = JSON.parse(current_links);
+    } catch(err) {
+        console.log(err);
+        $('#id_links').val('[]');
+        return
+    }
     for (var i=0; i<current_links.length; i++) {
         if (current_links[i]['name'] == name && current_links[i]['url'] == url) {
             current_links.splice(i, 1);
@@ -996,12 +1021,11 @@ function startListeners() {
         event.preventDefault();
         addAttendance();
     });
-    $('.list_select').on("click", function() {
+    $('#list_select').on("click", function() {
         $('.lists').toggle();
     });
     $('#attendance_back_btn').on("click", function() {
         $('#attendance_container').css('left','-100%');
-        $('.lists').hide();
     });
     $('#id_type').on("click", function(event) {
         $('#type_select').toggleClass('visible');
@@ -1064,8 +1088,9 @@ function startListeners() {
     });
     $('#calendar_menu .chapter input').on("change", function() {
         selectSite($(this));
-    })
+    });
     $('#calendar_menu .all input').on("change", function() {
         selectSite($(this));
-    })
+    });
 }
+

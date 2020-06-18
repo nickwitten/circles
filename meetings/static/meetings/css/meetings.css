@@ -213,8 +213,6 @@
 }
 #meeting_header {
     position: relative;
-    margin-left: auto;
-    margin-right: auto;
     padding-right: 40px;
     max-width: 100%;
 }
@@ -631,12 +629,12 @@
     transition: all 0.2s ease-in-out;
     border-radius: 5px;
 }
-#attendance_container .container {
+#lists_container {
     position: relative;
     margin: 22px auto 0 auto;
     width: 80%;
 }
-#attendance_container .list_select {
+#list_select {
     position: relative;
 }
 #attendance_container .lists {
@@ -651,7 +649,7 @@
     max-height: 400px;
     overflow-y: auto;
 }
-#attendance_container .list_container {
+#lists_container .list_container {
     display: flex;
     flex-flow: row nowrap;
     border-left: 1px solid #dee2e6;
