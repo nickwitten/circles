@@ -198,6 +198,11 @@ header a{
   color: inherit;
   display: flex;
   flex-flow: row wrap;
+  align-items: center;
+}
+.nav-right a,
+.nav-right h1 {
+  margin: 0 1vw;
 }
 #logout_btn {
     margin: auto 1vw auto 0;
@@ -280,15 +285,16 @@ header a{
 .hidden {
   visibility: hidden;
 }
-.screen-middle{
-  width: 30rem;
-  height: 43.5rem;
+.middle{
   position: absolute;
-  top: 50%;
   left: 50%;
-  margin-top: -20rem;
+  top: 50%;
+  transform: translate(-50%, -50%);
   z-index: 1;
-  }
+}
+.t-right {
+  text-align: right;
+}
 .shadow {
   -webkit-box-shadow: 3px 5px 12px 0px #ccc;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
   -moz-box-shadow:    3px 5px 12px 0px #ccc;  /* Firefox 3.5 - 3.6 */
@@ -349,4 +355,14 @@ header a{
 }
 .relative {
     position: relative;
+}
+.loading {
+    background: url('spinner.gif') no-repeat center center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 9999999;
+    background-color: white;
 }

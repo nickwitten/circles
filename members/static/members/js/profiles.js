@@ -36,7 +36,6 @@ function addProfileHTML(profile) {
   // Fill in the halves with the name and data
   $(left).append(
     $('<a/>')
-      .addClass("col-6 m-0")
       .attr("href","profile/" + profile['pk'].toString())
       .text(profile['first name'] + ' ' + profile['last name'])
   );
@@ -45,7 +44,6 @@ function addProfileHTML(profile) {
     $(right).append(
       $('<p/>')
         .text(profile['data'][i])
-        .addClass('m-0')
     );
   }
 }
@@ -200,38 +198,11 @@ function addListDeleteBtnHTML() {
 function addDataSelectHTML() {
   var select =
   $("<select/>")
-    .addClass("tool-input form-control m-1 d-inline-block")
+    .addClass("form-control")
     .change(function () {getProfiles()});
   for (var i = 0; i < form_choices_text.length; i++) {
     select.append($("<option/>").val(form_choices_text[i][0]).text(form_choices_text[i][1]))
   }
-  // select.append(
-  //   $("<option/>").val("").text("None"),
-  //   $("<option/>").val("current_role").text("Current Roles"),
-  //   $("<option/>").val("all_roles").text("All Roles"),
-  //   $("<option/>").val("current_cohort").text("Cohort"),
-  //   $("<option/>").val("current_resource_team").text("Resource Team"),
-  //   $("<option/>").val("current_resource_team_role").text("Resource Team Role"),
-  //   $("<option/>").val("excurrent_training").text("Training"),
-  //   $("<option/>").val("email").text("Email"),
-  //   $("<option/>").val("cell").text("Cell"),
-  //   $("<option/>").val("circles_id").text("ID"),
-  //   $("<option/>").val("status").text("Status"),
-  //   $("<option/>").val("birthdate").text("Birthdate"),
-  //   $("<option/>").val("race").text("Race"),
-  //   $("<option/>").val("gender").text("Gender"),
-  //   $("<option/>").val("all_children").text("Children"),
-  //   $("<option/>").val("first_street_address").text("Address"),
-  //   $("<option/>").val("first_city").text("City"),
-  //   $("<option/>").val("first_state").text("State"),
-  //   $("<option/>").val("first_zip").text("Zip"),
-  //   $("<option/>").val("first_home_ownership").text("Home Ownership"),
-  //   $("<option/>").val("first_habitat_home").text("Habitat Home"),
-  //   $("<option/>").val("first_safe_home").text("Safe Home"),
-  //   $("<option/>").val("first_repair_home").text("Home Needs Repair"),
-  //   $("<option/>").val("current_site").text("Site"),
-  //   $("<option/>").val("e_phone").text("Emergency Number"),
-  // );
   $("#data_displayed_container").append(
     select
   );
@@ -542,19 +513,6 @@ function activateFilterset(option_val) {
   getProfiles();
 }
 
-function showFilters() {
-  // Show filter container
-  document.getElementById('tool_container').classList.remove('d-none');
-}
-
-function hideFilters() {
-  // Hide the filters
-  $('#filter_by').val('');
-  $('#filter_input').val('');
-  getProfiles();
-  document.getElementById('tool_container').classList.add('d-none');
-}
-
 function expandTitle() {
   $('.expanding_size').text($('.expanding_input').val()); // Copy text to the span element
   if ($('.expanding_input').val() == '') { // When expanding_input is empty
@@ -618,12 +576,8 @@ $("#id_datatype").change(function() {
 $("#list_select").change(function() {
   activateFilterset($(this).val()); // Change the active filters
 });
-$("#add_filter_btn").on("click", function() {
-  showFilters(); // Show the filters
-});
-
-$("#hide_tools").on("click", function() {
-  hideFilters(); // Hide the filters
+$("#tools_btn").on("click", function() {
+  $('#tool_container').toggle();
 });
 $("#filterset_create").on("click", function() {
   createFilterset(); // Create a list

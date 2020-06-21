@@ -244,6 +244,7 @@ var closeFunctions = {
 $(document).ready(function(){
     buildCalendar(monthOffset, null);
     startListeners();
+    expandTitle();
     setColorSelect('hsla(0.0, 93%, 64%, 0.3)');
     showSites($('#calendar_menu .site_select').children().eq(1));
     $('#id_type').attr('readonly', 'readonly');
@@ -630,13 +631,22 @@ function getMeetingInfo(pk, lists=null) {
         url: "get-meeting-info",
         data: data,
         method: 'GET',
+        beforeSend: function() {
+            $('#meeting_info_container .loading').show();
+        },
+        complete: function() {
+            $('#meeting_info_container .loading').hide();
+        },
         success: function(data) {
             if (lists == null) {
                 initializeForm(data, false);
             } else {
                 initializeForm(data, true);
             }
-        }
+        },
+        error: function () {
+            addAlertHTML('Failed to Fetch Meeting');
+        },
     });
 }
 
@@ -1014,7 +1024,7 @@ function startListeners() {
     $(".lists").on("click",function() {
         updatePeopleSelect();
     });
-    $("#date_select_btn").on("click", function() {
+    $("#date_container").on("click", function() {
         toggleDatePicker(parseInt($(this).attr('data-month_offset')));
     });
     $('#attendance_btn').on("click", function() {

@@ -27,25 +27,25 @@
 
     <header>
 
-      <div id='cssmenu' class="contents-blurred">
+      <div id='cssmenu' class="">
         <ul class="d-inline-block">
           {% block tabs %}
           {% endblock tabs %}
         </ul>
         <div class="nav-right">
           {% if user.is_authenticated %}
-          <a id="logout_btn" class=""" href="{% url 'logout' %}">Logout</a>
+          <a id="logout_btn" class="" href="{% url 'logout' %}">Logout</a>
           {% else %}
-          <a id="logout_btn" class="" href="{% url 'login' %}">Login</a>
+          <a id="login_btn" class="" href="{% url 'login' %}">Login</a>
           {% endif %}
-          <h1 id="app_title" class="bottom mr-2">Circles</h1>
+          <h1 id="app_title" class="">Circles</h1>
         </div>
       </div>
       {% block app_tabs %}
       {% endblock app_tabs %}
     </header>
 
-    <div class="alert-container contents-blurred contents-blurred">
+    <div class="alert-container">
       {% if messages %}
       {% for message in messages %}
           <div class="alert alert-{{ message.tags }}">

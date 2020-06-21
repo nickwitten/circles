@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
 from django.http import HttpResponseRedirect
 from .models import Profile, Residence, Role, Training, Child, ChildInfo, FilterSet
-from .forms import ProfileCreationForm, ResidenceCreationForm, RoleCreationForm, TrainingAddForm, ChildCreationForm, ChildInfoCreationForm, ProfilesToolsForm
+from . import forms
 from bootstrap_modal_forms.generic import BSModalCreateView, BSModalUpdateView, BSModalDeleteView
 from django.db.models.functions import Concat
 from django.db.models import Value
@@ -29,7 +29,7 @@ class ProfileDetailView(LoginRequiredMixin, DetailView):
 class ProfileCreateView(LoginRequiredMixin, CreateView):
     model = Profile
     template_name = 'members/create_profile.html'
-    form_class = ProfileCreationForm
+    form_class = forms.ProfileCreationForm
 
     def form_valid(self,form):
         self.object = form.save()
@@ -38,7 +38,7 @@ class ProfileCreateView(LoginRequiredMixin, CreateView):
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = Profile
     template_name = 'members/create_profile.html'
-    form_class = ProfileCreationForm
+    form_class = forms.ProfileUpdateForm
 
 class ProfileDeleteView(LoginRequiredMixin, DeleteView):
     model = Profile
@@ -46,19 +46,19 @@ class ProfileDeleteView(LoginRequiredMixin, DeleteView):
 
 def create_profile(request):
     if request.method == 'POST':
-        p_form = ProfileCreationForm(request.POST)
-        r_form = ResidenceCreationForm(request.POST)
-        if p_form.is_valid() and r_form.is_valid():
-            new_profile = p_form.save()
-            r_form.save()
+        form = forms.ProfileCreationForm(request.POST)
+        if form.is_valid():
+            site = form.cleaned_data['site']
+            position = form.cleaned_data['position']
+            new_profile = form.save()
+            role = Role(site=site, position=position, profile=new_profile)
+            role.save()
             return redirect('profile-detail',new_profile.pk)
     else:
-        p_form = ProfileCreationForm()
-        r_form = ResidenceCreationForm()
+        form = forms.ProfileCreationForm()
 
     context = {
-        'p_form' : p_form,
-        'r_form' : r_form,
+        'form' : form,
     }
     return render(request, 'members/create_profile.html',context)
 
@@ -66,15 +66,15 @@ def update_profile(request,pk):
     object = Profile.objects.get(pk=pk)
     residences = object.order_residences()
     if request.method == 'POST':
-        p_form = ProfileCreationForm(request.POST, instance=object)
-        r_form = ResidenceCreationForm(request.POST, instance=residences.first())
+        p_form = forms.ProfileCreationForm(request.POST, instance=object)
+        r_form = forms.ResidenceCreationForm(request.POST, instance=residences.first())
         if p_form.is_valid() and r_form.is_valid():
             p_form.save()
             r_form.save()
             return redirect('profile-detail',pk)
     else:
-        p_form = ProfileCreationForm(instance = object)
-        r_form = ResidenceCreationForm(instance = object.residences.first())
+        p_form = forms.ProfileCreationForm(instance = object)
+        r_form = forms.ResidenceCreationForm(instance = object.residences.first())
 
     context = {
         'p_form' : p_form,
@@ -86,7 +86,7 @@ def update_profile(request,pk):
 class ResidenceCreateView(LoginRequiredMixin, BSModalCreateView):
     model = Residence
     template_name = 'members/modal_create.html'
-    form_class = ResidenceCreationForm
+    form_class = forms.ResidenceCreationForm
 
     def form_valid(self,form):
         residence = form.save(commit=False)
@@ -104,7 +104,7 @@ class ResidenceCreateView(LoginRequiredMixin, BSModalCreateView):
 class ResidenceUpdateView(LoginRequiredMixin, BSModalUpdateView):
     model = Residence
     template_name = 'members/modal_create.html'
-    form_class = ResidenceCreationForm
+    form_class = forms.ResidenceCreationForm
 
     def get_success_url(self):
         return reverse('profile-update',args=(self.object.profile.id,))
@@ -132,7 +132,7 @@ class ResidenceDeleteView(LoginRequiredMixin, BSModalDeleteView):
 class RoleCreateView(LoginRequiredMixin, BSModalCreateView):
     model = Role
     template_name = 'members/modal_create.html'
-    form_class = RoleCreationForm
+    form_class = forms.RoleCreationForm
 
     def form_valid(self,form):
         role = form.save(commit=False)
@@ -150,7 +150,7 @@ class RoleCreateView(LoginRequiredMixin, BSModalCreateView):
 class RoleUpdateView(LoginRequiredMixin, BSModalUpdateView):
     model = Role
     template_name = 'members/modal_create.html'
-    form_class = RoleCreationForm
+    form_class = forms.RoleCreationForm
 
     def get_success_url(self):
         return reverse('profile-update',args=(self.object.profile.id,))
@@ -178,7 +178,7 @@ class RoleDeleteView(LoginRequiredMixin, BSModalDeleteView):
 class TrainingAddView(LoginRequiredMixin, BSModalCreateView):
     model = Training
     template_name = 'members/modal_create.html'
-    form_class = TrainingAddForm
+    form_class = forms.TrainingAddForm
 
     def form_valid(self,form):
         role = form.save(commit=False)
@@ -196,7 +196,7 @@ class TrainingAddView(LoginRequiredMixin, BSModalCreateView):
 class TrainingUpdateView(LoginRequiredMixin, BSModalUpdateView):
     model = Training
     template_name = 'members/modal_create.html'
-    form_class = TrainingAddForm
+    form_class = forms.TrainingAddForm
 
     def get_success_url(self):
         return reverse('profile-update',args=(self.object.profile.id,))
@@ -233,7 +233,7 @@ def ChildrenEditView(request,pk):
 class ChildInfoCreateView(LoginRequiredMixin, BSModalCreateView):
     model = ChildInfo
     template_name = 'members/modal_create.html'
-    form_class = ChildInfoCreationForm
+    form_class = forms.ChildInfoCreationForm
 
     def form_valid(self,form):
         childinfo = form.save(commit=False)
@@ -251,7 +251,7 @@ class ChildInfoCreateView(LoginRequiredMixin, BSModalCreateView):
 class ChildCreateView(LoginRequiredMixin, CreateView):
     model = Child
     template_name = 'members/modal_create.html'
-    form_class = ChildCreationForm
+    form_class = forms.ChildCreationForm
 
     def form_valid(self,form):
         child = form.save(commit=False)
@@ -269,7 +269,7 @@ class ChildCreateView(LoginRequiredMixin, CreateView):
 class ChildUpdateView(LoginRequiredMixin, UpdateView):
     model = Child
     template_name = 'members/modal_create.html'
-    form_class = ChildCreationForm
+    form_class = forms.ChildCreationForm
 
     def get_success_url(self):
         return reverse('profile-update',args=(self.object.child_info.profile.id,))
@@ -281,7 +281,7 @@ class ChildUpdateView(LoginRequiredMixin, UpdateView):
 
 def profiles(request):
     filterset_objects = request.user.filtersets.all()
-    form = ProfilesToolsForm
+    form = forms.ProfilesToolsForm
     context = {
         'form': form,
         'form_choices_text': form_choices_text,
@@ -293,7 +293,7 @@ def profiles(request):
 
 # Get profiles view that returns profile data
 def GetProfiles(request):
-    tools_form = ProfilesToolsForm(request.POST)
+    tools_form = forms.ProfilesToolsForm(request.POST)
     if tools_form.is_valid():
         tool_inputs = tools_form.cleaned_data
         print('//////// tool inputs: ')
@@ -380,7 +380,7 @@ def FilterInput(request):
 
 # Creates an excel document
 def ExcelDump(request):
-    tools_form = ProfilesToolsForm(request.POST)
+    tools_form = forms.ProfilesToolsForm(request.POST)
     if tools_form.is_valid():
         tool_inputs = tools_form.cleaned_data
         print(tool_inputs)

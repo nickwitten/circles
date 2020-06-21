@@ -19,82 +19,63 @@
 
     <form id="tool_input_form" class="" action="post">
       {% csrf_token %}
+      {{ form.filters.as_hidden }}
+      {{ form.datatype.as_hidden }}
+
       <div id="top_search_container" class="top-search-container d-none">
 
         <div class="input-group">
           {{ form.searchinput }}
           <div class="input-group-append">
-            <button id="add_filter_btn" class="btn btn-secondary" type="button">Tools</button>
+            <button id="tools_btn" class="btn btn-secondary" type="button">Tools</button>
             <select id="list_select" class="d-inline-block rounded-0 custom-select bg-secondary text-white" name="">
             </select>
           </div>
         </div>
 
-        <div id="tool_container" class="d-block-notimportant border pl-3 pr-3 pt-2 d-none">
-          <div class="row">
+        <div id="tool_container" class="border" style="display:none;">
+          <div class="inputs">
 
-            <div class="mr-1 ml-1">
-              <p class="m-0 mt-2 mr-1 d-inline-block">Filter By: </p>
-
-              <select id="filter_by" class="tool-input form-control mt-1 d-inline-block" type="text" placeholder="filter by">
+            <div id="filter_container" class="input">
+              <p>Filter By: </p>
+              <select class="form-control" id="filter_by" placeholder="filter by" type="text">
                 {% for value, display in form_choices_text %}
                 <option value="{{ value }}">{{ display }}</option>
                 {% endfor %}
               </select>
-            </div>
-
-            <div class="mr-1 ml-1">
-              <p class="m-0 mt-2 mr-1 d-inline-block">Filter Input: </p>
-
-              <div id="filter_input_container" class="tool-input d-inline-block p-0 pt-1">
+              <p class="">Filter Input: </p>
+              <div id="filter_input_container" class="">
+              </div>
+              <div id="filter_submit_btn_container">
               </div>
             </div>
 
-            <div id="filter_submit_btn_container" class="p-0 tool-seperator">
-            </div>
-
-            <div class="mr-1 ml-1">
-              <p class="m-0 mt-2 mr-1 d-inline-block">Sort By: </p>
+            <div class="input">
+              <p class="">Sort By: </p>
               {{ form.sortby }}
             </div>
 
-
-            <div class="tool-seperator">
-            </div>
-
-            <div id="data_container" class="mr-1 ml-1">
-              <p class="m-0 mt-2 mr-1 d-inline-block">Data: </p>
-
-              <div id="data_displayed_container" class="d-inline-block">
+            <div id="data_container" class="input">
+              <p class="">Data: </p>
+              <div id="data_displayed_container" class="">
               </div>
-
-              <i id="add_data_btn" class="fas fa-plus-circle icon-btn d-inline-block"></i>
-
-              <div id="data_delete_btn_container" class="d-inline-block">
-              </div>
-
-            </div>
-
-            <div class="tool-seperator">
-            </div>
-
-            <div class="mr-1 ml-1">
-            </div>
-
-          </div>
-          <div class="row">
-            <div class="col-8 p-0 mb-0">
-              <div id="filter_list" class="mb-0 p-0 d-inline-block">
+              <i id="add_data_btn" class="fas fa-plus-circle icon-btn"></i>
+              <div id="data_delete_btn_container" class="">
               </div>
             </div>
-            <div id="tool_btns_container" class="pr-1 col-4 text-right">
-              <button id="filterset_create" class="btn btn-outline-secondary btn-sm" type="button" name="button">Create List</button>
-              <button id="export_excel_btn" class="btn btn-outline-secondary btn-sm mr-3" type="button" name="button">Export to Excel</button>
-              <i class="fas fa-chevron-up icon-btn mt-3" id="hide_tools"></i>
+
+            <div class="break">
+            </div>
+
+            <div id="filter_list" class="mb-0 p-0">
+            </div>
+
+            <div class="input btn-container">
+              <button id="filterset_create" class="btn btn-outline-secondary btn-sm">Create List</button>
+              <button id="export_excel_btn" class="btn btn-outline-secondary btn-sm">Export to Excel</button>
             </div>
           </div>
-          {{ form.filters.as_hidden }}
-          {{ form.datatype.as_hidden }}
+
         </div>
       </div>
     </form>
@@ -112,7 +93,10 @@
       </div>
     </div>
 
-    <ul class="list-group p-2" id="result-list">
+    <div id="create_profile" class="pt-2 pb-2 border">
+      <a href="create_profile/">+ Create Profile</a>
+    </div>
+    <ul class="list-group" id="result-list">
     </ul>
 
 

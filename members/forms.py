@@ -1,14 +1,31 @@
 from django import forms
 from bootstrap_modal_forms.forms import BSModalForm
-from .models import Profile, Residence, Role, Training, Child, ChildInfo
+from .models import Profile, Residence, Role, Training, Child, ChildInfo, Site
 from .data import form_choices_text
 
 
-class ProfileCreationForm(forms.ModelForm):
+class RoleCreationForm(BSModalForm):
 
-#                      Change CSS Classes
+    class Meta:
+        model = Role
+        exclude = ('profile',)
+        labels = {
+        "end_date":"End date (leave empty if current)"
+        }
+
     def __init__(self, *args, **kwargs):
-        super(ProfileCreationForm, self).__init__(*args, **kwargs)
+        super(RoleCreationForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            #gives text input crispy classes
+            visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
+
+
+class ProfileCreationForm(forms.ModelForm):
+    site = forms.ModelChoiceField(Site.objects.all())
+    position = forms.ChoiceField(choices=[('','---------')] + Role.position_choices)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         for visible in self.visible_fields():
 
             #gives text input crispy classes
@@ -29,6 +46,31 @@ class ProfileCreationForm(forms.ModelForm):
             "e_phone":"Phone number",
         }
 
+class ProfileUpdateForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+
+            #gives text input crispy classes
+            visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
+
+    class Meta:
+        model = Profile
+        fields = '__all__'
+        labels = {
+            "circles_id":"Circles ID",
+            "birthdate":"DOB",
+            "other_phone":"Other phone",
+            "email":"Email address",
+            "cell":"Cell phone",
+            "e_relationship":"Relationship",
+            "e_first_name":"First name",
+            "e_last_name":"Last name",
+            "e_phone":"Phone number",
+        }
+
+
 class ResidenceCreationForm(BSModalForm):
 
     class Meta:
@@ -36,7 +78,7 @@ class ResidenceCreationForm(BSModalForm):
         #fields = '__all__'
         exclude = ('profile',)
         labels = {
-            "end_date":"End date (leave empty if current)"
+        "end_date":"End date (leave empty if current)"
         }
 
     def __init__(self, *args, **kwargs):
@@ -46,21 +88,6 @@ class ResidenceCreationForm(BSModalForm):
             #gives text input crispy classes
             visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
 
-class RoleCreationForm(BSModalForm):
-
-    class Meta:
-        model = Role
-        exclude = ('profile',)
-        labels = {
-            "end_date":"End date (leave empty if current)"
-        }
-
-    def __init__(self, *args, **kwargs):
-        super(RoleCreationForm, self).__init__(*args, **kwargs)
-        for visible in self.visible_fields():
-
-            #gives text input crispy classes
-            visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
 
 class TrainingAddForm(BSModalForm):
 
@@ -134,7 +161,7 @@ class ProfilesToolsForm(forms.Form):
     sortby = forms.ChoiceField(required=False,
                                choices=form_choices_text,
                                widget=forms.Select(attrs={
-                                'class':'tool-input form-control mt-1 d-inline-block',
+                                'class':'form-control',
                                 'type':'text',
                                 'placeholder':'Sort By',
                                 'default':None,

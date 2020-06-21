@@ -1,6 +1,16 @@
                         /* members styles */
-.a
+.profile-content {
+  margin-top: 1vh;
+  min-height: 430px;
+}
+.profile-content .left {
+  position: static;
+}
                      /*profile creation syles*/
+
+#mainContainer.middle {
+    width: calc(250px + 20vw);
+}
 /*text input styles*/
 .inline-field .form-control{
   display:inline-block;
@@ -57,7 +67,12 @@ select.form-control:not([size]):not([multiple]) {
 .field-value{
   margin-bottom:4px;
 }
-
+.no-info {
+  margin: auto;
+  padding: calc(20px + 2vw);
+  font-size: calc(15px + 0.3vw);
+  width: fit-content;
+}
 /*.scroll{
   height:15rem;
   overflow:auto;
@@ -83,7 +98,9 @@ button:focus {
 
 #profile_search_content {
   overflow-y: scroll;
-  height: max(88vh, 40vw);
+  height: 88vh;
+  min-width: 350px;
+  min-height: 430px;
 }
 #filter_by {
 }
@@ -96,24 +113,80 @@ button:focus {
 #result-list {
 }
 #filter_submit {
-  margin: 14px;
+  margin-left: 10px;
 }
 #list_select {
   width:80%;
 }
-#tool_btns_container button {
-  vertical-align: top;
+
+#tool_container {
+  padding: 5px 0;
 }
-.tool-seperator {
-  width:6%;
+#tool_container .inputs {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  align-items: flex-start;
 }
-.tool-input {
-  width:6rem;
+@media screen and (max-width: 850px) {
+    #tool_container .inputs {
+        flex-flow: column nowrap;
+    }
 }
-#title_input:focus {
-  outline:0;
+#tool_container .inputs p {
+    width: calc(45px + 3vw);
+    margin: 8px;
 }
+#tool_container .inputs .input {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+}
+#tool_container .inputs select,
+#tool_container .inputs input {
+  height: fit-content;
+  width: calc(45px + 5vw);
+  font-size: calc(8px + 0.3vw);
+}
+#data_container p {
+  align-self: flex-start;
+}
+#add_data_btn,
+#data_delete_btn_container {
+ align-self: flex-start;
+ margin: 8px;
+}
+#tool_container .btn-container {
+  margin-left: auto;
+  margin-right: calc(5px + 1vw);
+  margin-top: 5px;
+}
+#tool_container button {
+  font-size: calc(8px + 0.3vw);
+  justify-self: flex-end;
+  margin: 1px;
+}
+#filter_list {
+    display: flex;
+    flex-flow: row wrap;
+}
+
 #list_title {
   position:relative;
   display:inline-block;
+}
+
+#create_profile {
+    width: 100%;
+}
+#profile_container {
+    margin: 0;
+}
+#profile_container .col-6 {
+    padding-left: 0;
+}
+#profile_container a,
+#create_profile a {
+    font-size: calc(12px + 0.3vw);
+    padding-left: calc(5px + 2vw);
 }

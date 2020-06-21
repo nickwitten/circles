@@ -22,7 +22,6 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
     circles_id = models.CharField(blank=True,null=True,max_length = 6)
-    site = models.ForeignKey(Site, on_delete=models.SET_NULL, null=True)
     birthdate = models.DateField(blank=True,null=True)
     race = models.CharField(blank=True,null=True,max_length=10,choices=[('white','White',),('black','Black'),('other','Other')])
     gender = models.CharField(blank=True,null=True,max_length=8,choices=[('male','Male'),('female','Female'),('other','Other')])
@@ -95,7 +94,8 @@ class Role(models.Model):
     profile = models.ForeignKey(Profile,on_delete=models.CASCADE,related_name='roles')
     start_date = models.DateField(blank=True,null=True)
     end_date = models.DateField(blank=True,null=True)
-    position = models.CharField(max_length=64,choices=[('circle leader','Circle Leader'),('ally','Ally'),('volunteer','Volunteer'),('resource team','Resource Team'),('donor','Donor')])
+    position_choices = [('circle leader','Circle Leader'),('ally','Ally'),('volunteer','Volunteer'),('resource team','Resource Team'),('donor','Donor'), ('other','Other')]
+    position = models.CharField(max_length=64,choices=position_choices)
     cohort = models.CharField(blank=True,null=True,max_length = 6, choices = [('cl','CL'),('ally', 'Ally')])
     resource_team_name = models.CharField(blank=True,null=True,max_length = 16)
     resource_team_role = models.CharField(blank=True,null=True,max_length = 16)

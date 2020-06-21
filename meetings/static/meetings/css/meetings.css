@@ -305,6 +305,7 @@
 }
 #colors {
     position: absolute;
+    z-index: 1;
     top: 105%;
     left: -95%;
     display: flex;
