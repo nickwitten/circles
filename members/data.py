@@ -86,7 +86,7 @@ form_choices_text.insert(0, ["",""])
 
 
 
-def get_profiles(tool_inputs):
+def get_profiles(tool_inputs, user):
     # #search_input = request.GET.get('search_input',None)
     # sort_by = request.GET.get('sort_by',None)
     # data_displayed = request.GET.get('data_displayed',None)
@@ -101,7 +101,7 @@ def get_profiles(tool_inputs):
         filters = json.loads(tool_inputs['filters'])
     except Exception as e:
         print(type(e), e)
-    profiles = Profile.objects.all()
+    profiles = user.userinfo.user_profile_access()
     profiles = search_profiles(profiles, tool_inputs['searchinput'] or '')
     profiles = filter_profiles(profiles, filters)
     profiles = get_profile_data(profiles, data_type)

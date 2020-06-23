@@ -12,12 +12,13 @@
 		<form method="POST">
 			{% csrf_token %}
 			<fieldset class="form-group">
-				<legend class="border-bottom mb-4">Delete Profile</legend>
-				<h2>Are you sure you want to delete the profile: {{ object.first_name }} {{ object.last_name }}</h2>
+				<legend class="border-bottom p-4">Delete Profile</legend>
+				<h2 class="p-4">Are you sure you want to delete the profile:</h2>
+				<h6 class="p-4">{{ object.first_name }} {{ object.last_name }}</h6>
 			</fieldset>
 			<div class="form-group">
+				<a class="btn btn-outline-secondary" href="{% url 'profile-detail' object.id %}">Cancel</a>
 				<button class="btn btn-outline-danger" type="submit">Yes Delete</button>
-        <a class="btn btn-outline-secondary" href="{% url 'profile-detail' object.id %}">Cancel</a>
 			</div>
 		</form
 		</div>

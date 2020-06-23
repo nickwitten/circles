@@ -17,32 +17,29 @@ from .data import get_profiles, get_field_options, create_excel, form_choices_te
 
 # Create your views here.
 
-class ProfileListView(LoginRequiredMixin, ListView):
-    model = Profile
-    context_object_name = 'profiles'
-    template_name = 'members/profiles.html'
-
 class ProfileDetailView(LoginRequiredMixin, DetailView):
     model = Profile
     template_name = 'members/profile_detail.html'
-
-class ProfileCreateView(LoginRequiredMixin, CreateView):
-    model = Profile
-    template_name = 'members/create_profile.html'
-    form_class = forms.ProfileCreationForm
-
-    def form_valid(self,form):
-        self.object = form.save()
-        return redirect('profile-update',self.object.id)
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = Profile
     template_name = 'members/create_profile.html'
     form_class = forms.ProfileUpdateForm
 
-class ProfileDeleteView(LoginRequiredMixin, DeleteView):
+class ProfileDeleteView(LoginRequiredMixin, BSModalDeleteView):
     model = Profile
-    success_url = '/members'
+    template_name = 'members/modal_delete.html'
+    success_message = 'Deleted'
+
+    def get_success_url(self):
+        return reverse('profiles')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['object_type'] = 'profile'
+        profile = Profile.objects.get(pk=self.kwargs['pk'])
+        context['instance'] = profile.first_name + ' ' + profile.last_name
+        return context
 
 def create_profile(request):
     if request.method == 'POST':
@@ -53,35 +50,15 @@ def create_profile(request):
             new_profile = form.save()
             role = Role(site=site, position=position, profile=new_profile)
             role.save()
-            return redirect('profile-detail',new_profile.pk)
+            return redirect('profile-update',new_profile.pk)
     else:
-        form = forms.ProfileCreationForm()
+        form = forms.ProfileCreationForm(user=request.user)
 
     context = {
         'form' : form,
     }
     return render(request, 'members/create_profile.html',context)
 
-def update_profile(request,pk):
-    object = Profile.objects.get(pk=pk)
-    residences = object.order_residences()
-    if request.method == 'POST':
-        p_form = forms.ProfileCreationForm(request.POST, instance=object)
-        r_form = forms.ResidenceCreationForm(request.POST, instance=residences.first())
-        if p_form.is_valid() and r_form.is_valid():
-            p_form.save()
-            r_form.save()
-            return redirect('profile-detail',pk)
-    else:
-        p_form = forms.ProfileCreationForm(instance = object)
-        r_form = forms.ResidenceCreationForm(instance = object.residences.first())
-
-    context = {
-        'p_form' : p_form,
-        'r_form' : r_form,
-        'object' : object
-    }
-    return render(request, 'members/create_profile.html',context)
 
 class ResidenceCreateView(LoginRequiredMixin, BSModalCreateView):
     model = Residence
@@ -141,6 +118,10 @@ class RoleCreateView(LoginRequiredMixin, BSModalCreateView):
 
     def get_success_url(self):
         return reverse('profile-update', args=(self.object.profile.id,))
+
+    def get_form(self):
+        print(self.kwargs)
+        return forms.RoleCreationForm(user=self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -245,8 +226,29 @@ class ChildInfoCreateView(LoginRequiredMixin, BSModalCreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = ''
+        context['title'] = 'Create Set'
         return context
+
+class ChildInfoUpdateView(LoginRequiredMixin, BSModalUpdateView):
+    model = ChildInfo
+    template_name = 'members/modal_create.html'
+    form_class = forms.ChildInfoCreationForm
+
+    def get_success_url(self):
+        return reverse('edit-children',args=(self.object.profile.id,))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Update Information'
+        return context
+
+class ChildInfoDeleteView(LoginRequiredMixin, BSModalDeleteView):
+    model = ChildInfo
+    template_name = 'members/modal_delete.html'
+    success_message = 'Deleted'
+
+    def get_success_url(self):
+        return reverse('edit-children',args=(self.object.profile.id,))
 
 class ChildCreateView(LoginRequiredMixin, CreateView):
     model = Child
@@ -279,6 +281,20 @@ class ChildUpdateView(LoginRequiredMixin, UpdateView):
         context['title'] = 'Update Child Info'
         return context
 
+class ChildDeleteView(LoginRequiredMixin, BSModalDeleteView):
+    model = Child
+    template_name = 'members/modal_delete.html'
+    success_message = 'Deleted'
+
+    def get_success_url(self):
+        return reverse('edit-children',args=(self.object.child_info.profile.id,))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['object_type'] = 'child'
+        context['instance'] = Child.objects.get(pk=self.kwargs['pk']).first_name
+        return context
+
 def profiles(request):
     filterset_objects = request.user.filtersets.all()
     form = forms.ProfilesToolsForm
@@ -296,10 +312,7 @@ def GetProfiles(request):
     tools_form = forms.ProfilesToolsForm(request.POST)
     if tools_form.is_valid():
         tool_inputs = tools_form.cleaned_data
-        print('//////// tool inputs: ')
-        print(tool_inputs)
-        print()
-        data = get_profiles(tools_form.cleaned_data)
+        data = get_profiles(tools_form.cleaned_data, request.user)
         return JsonResponse(data)
     print()
     print('FORM INVALID')

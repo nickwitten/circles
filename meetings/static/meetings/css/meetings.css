@@ -200,13 +200,6 @@
     flex-flow: column;
     height: 93%;
 }
-
-.back {
-    position: absolute;
-    right: 0;
-    color: #848484;
-    padding: 5px;
-}
 #meeting_submit_btn {
     margin-left: auto;
     margin-right: 6%;

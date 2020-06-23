@@ -86,9 +86,7 @@ header a{
 .blacklink:hover{
   color:#000000;
 }
-.half {
-  height: 50%
-}
+
 
 
 
@@ -230,6 +228,17 @@ header a{
 .close{
   line-height: 0.75;
 }
+.back {
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    right: 0;
+    color: #848484;
+    padding: 5px;
+}
+.required {
+    color: red;
+}
 /* */
 .profile-title{
   z-index: 2;
@@ -299,6 +308,22 @@ header a{
   -webkit-box-shadow: 3px 5px 12px 0px #ccc;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
   -moz-box-shadow:    3px 5px 12px 0px #ccc;  /* Firefox 3.5 - 3.6 */
   box-shadow:         3px 5px 12px 0px #ccc;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
+}
+.modal-shadow {
+    -webkit-box-shadow: rgba(0, 0, 0, 0.41) 0px 0px 0px 999em;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+    -moz-box-shadow:    rgba(0, 0, 0, 0.41) 0px 0px 0px 999em;  /* Firefox 3.5 - 3.6 */
+    box-shadow:         rgba(0, 0, 0, 0.41) 0px 0px 0px 999em;
+}
+.modal-container {
+    z-index: 500;
+    visibility: hidden;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 .text-small{
   font-size:small;

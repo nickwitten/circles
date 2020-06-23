@@ -23,17 +23,17 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
     last_name = models.CharField(max_length=20)
     circles_id = models.CharField(blank=True,null=True,max_length = 6)
     birthdate = models.DateField(blank=True,null=True)
-    race = models.CharField(blank=True,null=True,max_length=10,choices=[('white','White',),('black','Black'),('other','Other')])
-    gender = models.CharField(blank=True,null=True,max_length=8,choices=[('male','Male'),('female','Female'),('other','Other')])
+    race = models.CharField(blank=True,null=True,max_length=10,choices=[('White','White',),('Black','Black'),('Other','Other')])
+    gender = models.CharField(blank=True,null=True,max_length=8,choices=[('Male','Male'),('Female','Female'),('Other','Other')])
     email = models.EmailField(blank=True,null=True)
     cell = PhoneNumberField(blank=True,null=True)
     other_phone = PhoneNumberField(blank=True,null=True)
     image = models.ImageField(default='default.jpg',upload_to='profile_pics')
-    e_relationship = models.CharField(blank=True,null=True,max_length=10,choices=[('friend','Friend',),('parent','Parent'),('sibling','Sibling')])
+    e_relationship = models.CharField(blank=True,null=True,max_length=10,choices=[('Friend','Friend',),('Parent','Parent'),('Sibling','Sibling')])
     e_first_name = models.CharField(blank=True,null=True,max_length = 20)
     e_last_name = models.CharField(blank=True,null=True,max_length = 20)
     e_phone = PhoneNumberField(blank=True,null=True)
-    status = models.CharField(blank=True,null=True,max_length=16,choices=[('potential','Potential'),('active','Active'),('inactive','Inactive')])
+    status = models.CharField(blank=True,null=True,max_length=16,choices=[('Potential','Potential'),('Active','Active'),('Inactive','Inactive')])
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
@@ -71,18 +71,18 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
 
 class Residence(models.Model):
     profile = models.ForeignKey(Profile,on_delete=models.CASCADE,related_name='residences')
-    start_date = models.DateField(blank=True,null=True)
-    end_date = models.DateField(blank=True,null=True)
     street_address = models.CharField(max_length=64)
     unit = models.CharField(blank=True,max_length=16)
     city = models.CharField(max_length=32)
     state = models.CharField(max_length=32)
     zip = models.CharField(max_length=5)
+    start_date = models.DateField(blank=True,null=True)
+    end_date = models.DateField(blank=True,null=True)
     ownership = models.CharField(blank=True,null=True,max_length=16,choices=[('N/A','N/A'),('Rent','Rent'),('Own','Own'),('Doubled','Doubled')],default='N/A')
-    habitat = models.CharField(max_length=8,choices=[('N/A','N/A'),('Yes','Yes'),('No','No'),],default='N/A')
-    safe = models.CharField(max_length=8,choices=[('N/A','N/A'),('Yes','Yes'),('No','No'),],default='N/A')
-    repair = models.CharField(max_length=8,choices=[('N/A','N/A'),('Yes','Yes'),('No','No'),],default='N/A')
     payment = models.CharField(blank=True,null=True,max_length=16)
+    habitat = models.CharField(blank=True,null=True, max_length=8,choices=[('N/A','N/A'),('Yes','Yes'),('No','No'),],default='N/A')
+    safe = models.CharField(blank=True,null=True, max_length=8,choices=[('N/A','N/A'),('Yes','Yes'),('No','No'),],default='N/A')
+    repair = models.CharField(blank=True,null=True, max_length=8,choices=[('N/A','N/A'),('Yes','Yes'),('No','No'),],default='N/A')
 
     def __str__(self):
         return f'{self.street_address}'
@@ -92,14 +92,14 @@ class Residence(models.Model):
 
 class Role(models.Model):
     profile = models.ForeignKey(Profile,on_delete=models.CASCADE,related_name='roles')
+    site = models.ForeignKey(Site,on_delete=models.SET_NULL, null=True, related_name='roles')
+    position_choices = [('Circle Leader','Circle Leader'),('Ally','Ally'),('Volunteer','Volunteer'),('Resource Team','Resource Team'),('Donor','Donor'), ('Other','Other')]
+    position = models.CharField(max_length=64,choices=position_choices)
     start_date = models.DateField(blank=True,null=True)
     end_date = models.DateField(blank=True,null=True)
-    position_choices = [('circle leader','Circle Leader'),('ally','Ally'),('volunteer','Volunteer'),('resource team','Resource Team'),('donor','Donor'), ('other','Other')]
-    position = models.CharField(max_length=64,choices=position_choices)
-    cohort = models.CharField(blank=True,null=True,max_length = 6, choices = [('cl','CL'),('ally', 'Ally')])
+    cohort = models.CharField(blank=True,null=True,max_length = 6, choices = [('CL','CL'),('Ally', 'Ally')])
     resource_team_name = models.CharField(blank=True,null=True,max_length = 16)
     resource_team_role = models.CharField(blank=True,null=True,max_length = 16)
-    site = models.ForeignKey(Site,blank=True,null=True,on_delete=models.SET_NULL,related_name='roles')
 
 
     def __str__(self):
@@ -111,7 +111,7 @@ class Role(models.Model):
 
 class Training(models.Model):
     profile = models.ForeignKey(Profile,on_delete=models.CASCADE,related_name='training')
-    subject = models.CharField(blank=True,null=True,max_length = 32)
+    subject = models.CharField(max_length = 32)
     end_date = models.DateField(blank=True,null=True)
 
     def __str__(self):
@@ -131,7 +131,7 @@ class ChildInfo(models.Model):
     parent_city = models.CharField(blank=True,null=True,max_length=32)
     parent_state = models.CharField(blank=True,null=True,max_length=32)
     parent_zip = models.CharField(blank=True,null=True,max_length=5)
-    e_relationship = models.CharField(blank=True,null=True,max_length=10,choices=[('friend','Friend',),('parent','Parent'),('sibling','Sibling')])
+    e_relationship = models.CharField(blank=True,null=True,max_length=10,choices=[('Friend','Friend',),('Parent','Parent'),('Sibling','Sibling')])
     e_first_name = models.CharField(blank=True,null=True,max_length = 20)
     e_last_name = models.CharField(blank=True,null=True,max_length = 20)
     e_phone = PhoneNumberField(blank=True,null=True)
@@ -147,16 +147,17 @@ class Child(models.Model):
     first_name = models.CharField(max_length = 16)
     last_name = models.CharField(max_length = 16)
     middle_name = models.CharField(max_length = 16)
-    relationship = models.CharField(blank=True,null=True,max_length=10,choices=[('child','Child'),('grandchild','Grandchild'),('other related','Other Related'),('other','Other')])
+    relationship = models.CharField(blank=True,null=True,max_length=10,choices=[('Child','Child'),('Grandchild','Grandchild'),('Other Related','Other Related'),('Other','Other')])
     attendance = models.CharField(blank=True,null=True,max_length=10,choices=[('active','Active'),('inactive','Inactive')])
     birthdate = models.DateField(blank=True,null=True)
-    gender = models.CharField(blank=True,null=True,max_length=8,choices=[('male','Male'),('female','Female'),('other','Other')])
-    health_issues = models.TextField(blank=True,null=True)
-    physical_date = models.DateField(blank=True,null=True)
+    gender = models.CharField(blank=True,null=True,max_length=8,choices=[('Male','Male'),('Female','Female'),('Other','Other')])
+    known_health_issues = models.TextField(blank=True,null=True)
+    date_of_last_physical_exam = models.DateField(blank=True,null=True)
     allergies = models.TextField(blank=True,null=True)
     medications = models.TextField(blank=True,null=True)
     dietary_modifications = models.TextField(blank=True,null=True)
     disabilities = models.TextField(blank=True,null=True)
+    nonvisible_fields = ['id', 'child_info', 'first_name', 'last_name', 'middle_name', 'disabilities']
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
@@ -173,6 +174,21 @@ class Child(models.Model):
 
     def get_related(profile):
         return profile.order_children()
+
+    def get_display_fields(self):
+        fields = []
+        for field in self._meta.get_fields():
+            if field.name not in self.nonvisible_fields:
+                value = getattr(self, field.name)
+                value = value if value else ''
+                try:
+                    value = value.capitalize()
+                except:
+                    pass
+                label = ' '.join(field.name.split('_')).capitalize()
+                label = label + ':'
+                fields += [(label, value)]
+        return fields
 
 
 class FilterSet(models.Model):

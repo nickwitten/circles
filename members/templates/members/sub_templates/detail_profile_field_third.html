@@ -2,7 +2,9 @@
   <div class="inline-field">
     <p class="field-label-third">{{ label }}</p>
     <div class="field-value-container-third">
+      {% if value %}
       <p class="field-value font-weight-bold font-size-small">{{ value }}</p>
+      {% endif %}
     </div>
   </div>
 </div>

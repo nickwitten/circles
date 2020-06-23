@@ -14,7 +14,11 @@ class RoleCreationForm(BSModalForm):
         }
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super(RoleCreationForm, self).__init__(*args, **kwargs)
+        if user:
+            sites = user.userinfo.user_site_access()
+            self.fields['site'] = forms.ModelChoiceField(sites)
         for visible in self.visible_fields():
             #gives text input crispy classes
             visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
@@ -25,9 +29,12 @@ class ProfileCreationForm(forms.ModelForm):
     position = forms.ChoiceField(choices=[('','---------')] + Role.position_choices)
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        if user:
+            sites = user.userinfo.user_site_access()
+            self.fields['site'] = forms.ModelChoiceField(sites)
         for visible in self.visible_fields():
-
             #gives text input crispy classes
             visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
 
@@ -134,21 +141,6 @@ class ChildInfoCreationForm(BSModalForm):
 
             #gives text input crispy classes
             visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
-
-# class ProfilesToolsForm(forms.ModelForm):
-#
-#     class Meta:
-#         model = ToolInputs
-#         exclude = {}
-#
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         search_input_widget = self.fields['searchinput'].widget
-#         search_input_widget.attrs['class'] = "form-control"
-#         search_input_widget.attrs['aria-describedby'] = "basic-addon1"
-#
-#         sort_by_widget = self.fields['sortby'].widget
-#         sort_by_widget.attrs[]
 
 class ProfilesToolsForm(forms.Form):
     searchinput = forms.CharField(required=False,

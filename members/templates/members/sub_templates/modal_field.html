@@ -1,0 +1,14 @@
+<div class="row mb-2">
+  <div class="col-4">
+    <div class="inline-field">
+      {% if field.errors %}
+        <p class="error">*</p>
+      {% endif %}
+      {% if field.field.required %}<span class="required">*</span>{% endif %}
+      {{ field.label_tag }}
+    </div>
+  </div>
+  <div class="col-8">
+    {{ field }}
+  </div>
+</div>

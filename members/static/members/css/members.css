@@ -1,22 +1,70 @@
                         /* members styles */
 .profile-content {
-  margin-top: 1vh;
+  margin-top: 20px;
   min-height: 430px;
+  min-width: 350px;
+  position: relative;
 }
 .profile-content .left {
   position: static;
 }
+.profile-content .row {
+  margin-left: 0;
+  margin-right: 0;
+}
+@media screen and (max-width: 770px) {
+    .profile-content .half {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
                      /*profile creation syles*/
 
-#mainContainer.middle {
-    width: calc(250px + 20vw);
+#create_profile_modal {
+    display: flex;
+    flex-flow: column;
+    z-index: 5;
+    background-color: white;
+    border-radius: 5px;
+    padding: 1rem 0;
 }
+#create_profile_modal div {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+}
+#create_profile_modal label {
+    font-size: calc(12px + 0.3vw);
+    margin: auto 0;
+    margin-right: 20px;
+    white-space: nowrap;
+}
+#create_profile_modal input,
+#create_profile_modal select {
+    width: calc(100px + 15vw);
+}
+
+#profile_pic {
+    border-radius: 5px;
+}
+
 /*text input styles*/
-.inline-field .form-control{
-  display:inline-block;
-  width:100%;
-  text-align:left;
-  padding:3px 0px
+label, select, input, .form-control {
+  font-size: calc(8px + 0.3vw);
+}
+.third {
+  height: 100%;
+}
+.third input,
+.third select {
+  font-size: calc(7px + 0.3vw);
+  height: 30px;
+}
+select.form-control:not([size]):not([multiple]) {
+  height: 30px;
+}
+.profile-container div {
+  padding: 0;
 }
 .form-control{
   padding-top:4px;
@@ -24,11 +72,8 @@
 }
 .inline-field .form-control{
   display:inline;
-  width:53%;
+  width:52%;
   text-align:left;
-}
-select.form-control:not([size]):not([multiple]) {
-    height:30px;
 }
 .error{
   color:red;
@@ -78,12 +123,25 @@ select.form-control:not([size]):not([multiple]) {
   overflow:auto;
 } */
 
-.inactive-slide {
+#childInfoSlide {
   position: absolute;
-  z-index:1;
-  left:-100%;
-  transition:1s;
-  margin:0px;
+  z-index: 2;
+  transition: all .3s ease-out;
+  margin: 2rem 0;
+  top: -100%;
+  opacity: 0;
+  transform: translate(-50%);
+  border-radius: 5px;
+  min-width: 372px;
+}
+#childInfoSlide.show {
+  top: 0;
+  opacity: 1;
+}
+.children-container {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  background-color: white;
 }
 .icon-btn {
   border:none;
@@ -101,6 +159,11 @@ button:focus {
   height: 88vh;
   min-width: 350px;
   min-height: 430px;
+}
+#top_search_container input,
+#tools_btn,
+#list_select {
+  font-size: 14px;
 }
 #filter_by {
 }

@@ -9,9 +9,11 @@
   </div>
 
   <div class="modal-body">
-    <fieldset class="form-group">
-      <h4>Are you sure you want to delete this {{ object_type }}:</h4>
-      <p class="">{{ instance }}</p>
+    <fieldset class="">
+      <h4>Are you sure you want to delete this{% if object_type %} {{ object_type }}{% endif %}?</h4>
+      {% if instance %}
+      <h6 class="mt-2">{{ instance }}</h6>
+      {% endif %}
     </fieldset>
   </div>
 

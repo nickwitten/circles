@@ -4,6 +4,7 @@ from members.models import Site
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from meetings.models import Meeting
+from members.models import Profile
 
 class UserInfo(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -13,6 +14,9 @@ class UserInfo(models.Model):
         return f'{self.user}'
 
     def user_site_access(self):
+        return self.site_access.all()
+
+    def user_site_access_dict(self):
         site_access = []
         sites = self.site_access.all()
         for site in sites:
@@ -30,6 +34,11 @@ class UserInfo(models.Model):
         sites = self.site_access.all()
         meetings = Meeting.objects.filter(site__in=sites)
         return meetings
+
+    def user_profile_access(self):
+        sites = self.site_access.all()
+        profiles = Profile.objects.filter(roles__site__in=sites) # Need to check if it has a role with site field in sites
+        return profiles
 
 @receiver(post_save, sender=User)
 def create_user_userinfo(sender, instance, created, **kwargs):

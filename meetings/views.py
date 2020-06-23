@@ -14,7 +14,7 @@ from circles import settings
 import json
 
 def meetings(request):
-    site_access = request.user.userinfo.user_site_access()
+    site_access = request.user.userinfo.user_site_access_dict()
     context = {
         'form': forms.MeetingCreationForm,
         'site_access': site_access,

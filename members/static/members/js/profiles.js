@@ -509,6 +509,10 @@ function activateFilterset(option_val) {
     addListTitleInputHTML(title); // Add the title input to the page
     addListDeleteBtnHTML(); // Add the delete button
   }
+  // Clear existing filters
+  $('#filter_by').val('');
+  getFilterInputField();
+  // update
   getFilters();
   getProfiles();
 }
