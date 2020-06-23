@@ -42,13 +42,13 @@
           <div class="col-6 mb-2">
             <img id="profile_pic" class="article-img" src="{{ object.image.url }}" height=100 width=150>
           </div>
-          <div class="col-3">
-            <p class="field-label">Circles ID:</p>
+          <div class="col-3 mt-auto mb-auto">
+            <p class="field-label id">Circles ID:</p>
           </div>
-          <div class="col-3 field-value-container">
+          <div class="col-3 field-value-container mt-auto mb-auto">
             <div class="field-value-sub-container">
               {% if object.circles_id %}
-              <p class="field-value font-weight-bold">{{ object.circles_id }}</p>
+              <p class="field-value font-weight-bold id">{{ object.circles_id }}</p>
               {% endif %}
             </div>
           </div>

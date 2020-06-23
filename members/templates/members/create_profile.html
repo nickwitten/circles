@@ -80,12 +80,14 @@
           <div id="mainContainer" class="profile-container shadow">
             <div class="row mb-2">
               <div class="col-6 mb-2" style="">
-                  <img id="profile_pic" class="article-img" src="{{ object.image.url }}" height=75 width=112>
+                {% if request.path != '/members/create_profile/' %}
+                <img id="profile_pic" class="article-img" src="{{ object.image.url }}" height=100 width=150>
+                {% endif %}
               </div>
-              <div class="col-3">
+              <div class="col-3 mt-auto mb-auto">
                 {{ form.circles_id.label_tag }}
               </div>
-              <div class="col-3">
+              <div class="col-3 mt-auto mb-auto">
                 {{ form.circles_id }}
               </div>
             </div>

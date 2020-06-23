@@ -58,9 +58,10 @@ class ProfileUpdateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for visible in self.visible_fields():
-
             #gives text input crispy classes
             visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
+        self.fields['circles_id'].widget.attrs['class'] += ' id'
+
 
     class Meta:
         model = Profile
