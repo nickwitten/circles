@@ -397,7 +397,7 @@ def ExcelDump(request):
     if tools_form.is_valid():
         tool_inputs = tools_form.cleaned_data
         print(tool_inputs)
-        sorted_profiles = get_profiles(tool_inputs)
+        sorted_profiles = get_profiles(tool_inputs, request.user)
         output = create_excel(tool_inputs, sorted_profiles)
         response = HttpResponse(output.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         return response

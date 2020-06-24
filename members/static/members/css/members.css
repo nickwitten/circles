@@ -44,8 +44,28 @@
     width: calc(100px + 15vw);
 }
 
-#profile_pic {
-    border-radius: 5px;
+#id_image {
+    position: absolute;
+    left: 999px;
+}
+.img-wrapper {
+    position: relative;
+    border-radius: 50%;
+    width: 60%;
+    overflow: hidden;
+}
+#edit_pic {
+    position: absolute;
+    background-color: black;
+    opacity: 0.5;
+    margin: 0;
+    top: 65%;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+#edit_pic i {
+    font-size: 15px;
 }
 
 /*text input styles*/

@@ -645,6 +645,7 @@ function getMeetingInfo(pk, lists=null) {
             }
         },
         error: function () {
+            hideMeetingInfo();
             addAlertHTML('Failed to Fetch Meeting');
         },
     });

@@ -52,6 +52,7 @@ training_data = list(keywords.keys())[14:16]
 child_data = list(keywords.keys())[16]
 # HTML Value --> HTML Display
 form_display_text = {
+    'current_site': 'Site',
     'current_role':'Current Role',
     'all_roles':'All Roles',
     'current_cohort':'Cohort',
@@ -74,7 +75,6 @@ form_display_text = {
     'first_habitat_home':'Habitat Home',
     'first_safe_home':'Safe Home',
     'first_repair_home':'Repair Home',
-    'current_site':'Site',
     'e_phone':'Emergency Number',
 }
 

@@ -378,6 +378,9 @@ header a{
 .rounded {
     border-radius: 2px;
 }
+.round {
+    border-radius: 50%;
+}
 .relative {
     position: relative;
 }

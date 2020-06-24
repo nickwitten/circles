@@ -23,6 +23,9 @@
 
   <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
+    <div class="d-none">
+      {{ form.image }}
+    </div>
     <div class="profile-content blended container">
 
 <!---------------- errors in form --------------------------->
@@ -59,7 +62,7 @@
           {{ form.site }}
         </div>
         <div>
-          {{ form.position.label_tag }}
+          <label for="id_position">Role:</label>
           {{ form.position }}
         </div>
         <div class="">
@@ -72,7 +75,7 @@
 
 <!------------------------------------------------------------>
 
-      <div class="row mt-5">
+      <div class="row">
         <div class="col-6 half">
 
 <!-------------- Basic Profile Info Container ---------------->
@@ -81,7 +84,12 @@
             <div class="row mb-2">
               <div class="col-6 mb-2" style="">
                 {% if request.path != '/members/create_profile/' %}
-                <img id="profile_pic" class="article-img" src="{{ object.image.url }}" height=100 width=150>
+                <div class="img-wrapper">
+                  <img id="profile_pic" class="article-img round" src="{{ object.image.url }}" width="100%">
+                  <label id="edit_pic" for="id_image">
+                    <i class="fas fa-edit middle text-white"></i>
+                  </label>
+                </div>
                 {% endif %}
               </div>
               <div class="col-3 mt-auto mb-auto">
@@ -129,7 +137,6 @@
             {% include 'members/sub_templates/create_profile_field.html' with field=form.email %}
             {% include 'members/sub_templates/create_profile_field.html' with field=form.cell %}
             {% include 'members/sub_templates/create_profile_field.html' with field=form.other_phone %}
-            {% include 'members/sub_templates/create_profile_field.html' with field=form.image %}
 
             <div class="row mb-2 mt-5">
               <div class="col-6">
@@ -399,29 +406,47 @@
 
     </script>
   {% else %}
-    <script type="text/javascript">
+  <script type="text/javascript">
 
-      $(document).ready(function() {
+  $(document).ready(function() {
 
-        $(".create-residence").modalForm({
-          formURL: "{% url 'create-residence' object.id %}"
-        });
+    $(".create-residence").modalForm({
+      formURL: "{% url 'create-residence' object.id %}"
+    });
 
-        $(".create-role").modalForm({
-          formURL: "{% url 'create-role' object.id %}"
-        });
+    $(".create-role").modalForm({
+      formURL: "{% url 'create-role' object.id %}"
+    });
 
-        $(".add-training").modalForm({
-          formURL: "{% url 'add-training' object.id %}"
-        });
+    $(".add-training").modalForm({
+      formURL: "{% url 'add-training' object.id %}"
+    });
 
-        $(".modal-trigger").each(function () {
-          $(this).modalForm({formURL: $(this).data('id')});
-        });
+    $(".modal-trigger").each(function () {
+      $(this).modalForm({formURL: $(this).data('id')});
+    });
 
-      });
+    $("#id_image").change(function() {
+      readURL($(this)[0]);
+     });
+  });
 
-    </script>
-  {% endif %}
+  function readURL(input) {
+    console.log("uploaded");
+    console.log(input);
+    console.log(input.files);
+    console.log(input.files[0]);
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $('#profile_pic')
+                .attr('src', e.target.result)
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  </script>
+{% endif %}
 
 {% endblock content %}
