@@ -1,0 +1,36 @@
+{% extends 'members/base.html' %}
+
+<!--------------- Nav Bar ------------------->
+
+{% block app_tabs %}
+
+<ul class="sub_tags bg-blue">
+    <li><a class='text-white sub_tabs' href="{% url 'profiles' %}">Profiles</a></li>
+    <li><a class='blacklink sub_tabs' href="#">Profile Info</a></li>
+</ul>
+
+{% endblock app_tabs %}
+
+<!------------------------------------------->
+
+{% block content %}
+
+<!---------------------------- Child Info Slide ------------------------------->
+
+<div class="modal-container">
+  <div id="childInfoSlide" class="content-section modal-shadow middle">
+    <a href="#" class="close-more-child-info fas fa-times back"></a>
+    <div class="border-bottom text-center mb-2">
+      <h3>Children</h3>
+    </div>
+    {% for childinfo in object.get_child_infos %}
+      {% include 'members/sub_templates/children_info.html' with childinfo=childinfo %}
+    {% endfor %}
+  </div>
+</div>
+
+<!----------------------------------------------------------------------------->
+
+{% include 'members/profile.html' %}
+
+{% endblock %}

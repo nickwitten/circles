@@ -1,0 +1,17 @@
+{% load members_tags %}
+<div class="field-container
+            {% if field in object.third_fields %} field-third{% endif %}
+            {% if field in object.half_fields %} field-half{% endif %}">
+  <p class="field-label">{{ field|field_to_label}}</p>
+  {% if form %}
+    {% if request.path == '/members/create_profile/' %}
+    <div class="field-value">
+      <input type="text" class="form-control field-value">
+    </div>
+    {% else %}
+    <div class="field-value">{{ form|hash_dict:field }}</div>
+    {% endif %}
+  {% else %}
+    <p class="field-value font-weight-bold">{{ object|get_obj_attr:field }}</p>
+  {% endif %}
+</div>

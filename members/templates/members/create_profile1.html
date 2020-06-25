@@ -1,0 +1,76 @@
+{% extends 'members/base.html' %}
+
+<!--------------- Nav Bar ------------------->
+
+{% block app_tabs %}
+
+<ul class="sub_tags bg-blue">
+    <li><a class='text-white sub_tabs' href="{% url 'profiles' %}">Profiles</a></li>
+    <li><a class='text-white sub_tabs' href="#">Profile Info</a></li>
+    <li><a class='blacklink sub_tabs' href="#">Edit Profile</a></li>
+</ul>
+
+{% endblock app_tabs %}
+
+<!------------------------------------------->
+
+{% block content %}
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="d-none">
+      {{ form.image }}
+    </div>
+
+    <!---------------- errors in form --------------------------->
+
+    {% if form.errors %}
+      {% for field in form %}
+          {% for error in field.errors %}
+              <div class="alert alert-danger">
+                  <strong>{{ field.label }}:</strong>
+                  <strong>{{ error|escape }}</strong>
+              </div>
+          {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+          <div class="alert alert-danger">
+              <strong>{{ error|escape }}</strong>
+          </div>
+      {% endfor %}
+    {% endif %}
+
+    <!--------------- Create Modal ----------------------------->
+
+    <div class="modal-container visible">
+      <div id="create_profile_modal" class="middle modal-shadow">
+        <div>
+          {{ form.first_name.label_tag }}
+          {{ form.first_name }}
+        </div>
+        <div>
+          {{ form.last_name.label_tag }}
+          {{ form.last_name }}
+        </div>
+        <div>
+          {{ form.site.label_tag }}
+          {{ form.site }}
+        </div>
+        <div>
+          <label for="id_position">Role:</label>
+          {{ form.position }}
+        </div>
+        <div class="">
+          <a class="btn btn-outline-secondary" href="{% url 'profiles' %}">Cancel</a>
+          <button class="btn btn-outline-info" type="submit">Create Profile</button>
+        </div>
+      </div>
+    </div>
+
+    <!--------------------------------------------------------->
+
+    {% include 'members/profile.html' %}
+
+</form>
+
+{% endblock %}

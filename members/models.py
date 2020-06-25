@@ -19,14 +19,14 @@ class Site(models.Model):
         return f'{self.site}'
 
 class Profile(models.Model): # ForeignKey field must have same name as related model
+    circles_ID = models.CharField(blank=True,null=True,max_length = 6)
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
-    circles_id = models.CharField(blank=True,null=True,max_length = 6)
-    birthdate = models.DateField(blank=True,null=True)
-    race = models.CharField(blank=True,null=True,max_length=10,choices=[('White','White',),('Black','Black'),('Other','Other')])
+    DOB = models.DateField(blank=True,null=True)
     gender = models.CharField(blank=True,null=True,max_length=8,choices=[('Male','Male'),('Female','Female'),('Other','Other')])
-    email = models.EmailField(blank=True,null=True)
-    cell = PhoneNumberField(blank=True,null=True)
+    race = models.CharField(blank=True,null=True,max_length=10,choices=[('White','White',),('Black','Black'),('Other','Other')])
+    email_address = models.EmailField(blank=True,null=True)
+    cell_phone = PhoneNumberField(blank=True,null=True)
     other_phone = PhoneNumberField(blank=True,null=True)
     image = models.ImageField(default='default.jpg',upload_to='profile_pics')
     e_relationship = models.CharField(blank=True,null=True,max_length=10,choices=[('Friend','Friend',),('Parent','Parent'),('Sibling','Sibling')])
@@ -34,6 +34,11 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
     e_last_name = models.CharField(blank=True,null=True,max_length = 20)
     e_phone = PhoneNumberField(blank=True,null=True)
     status = models.CharField(blank=True,null=True,max_length=16,choices=[('Potential','Potential'),('Active','Active'),('Inactive','Inactive')])
+    main_fields = ['first_name', 'last_name', 'DOB', 'gender', 'race',
+                   'cell_phone', 'other_phone',]
+    e_fields = ['e_relationship', 'e_first_name', 'e_last_name', 'e_phone',]
+    third_fields = ['DOB', 'gender', 'race',]
+    half_fields = ['circles_ID', ]
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
@@ -79,16 +84,25 @@ class Residence(models.Model):
     start_date = models.DateField(blank=True,null=True)
     end_date = models.DateField(blank=True,null=True)
     ownership = models.CharField(blank=True,null=True,max_length=16,choices=[('N/A','N/A'),('Rent','Rent'),('Own','Own'),('Doubled','Doubled')],default='N/A')
-    payment = models.CharField(blank=True,null=True,max_length=16)
+    monthly_payment = models.CharField(blank=True,null=True,max_length=16)
     habitat = models.CharField(blank=True,null=True, max_length=8,choices=[('N/A','N/A'),('Yes','Yes'),('No','No'),],default='N/A')
-    safe = models.CharField(blank=True,null=True, max_length=8,choices=[('N/A','N/A'),('Yes','Yes'),('No','No'),],default='N/A')
+    safety = models.CharField(blank=True,null=True, max_length=8,choices=[('N/A','N/A'),('Yes','Yes'),('No','No'),],default='N/A')
     repair = models.CharField(blank=True,null=True, max_length=8,choices=[('N/A','N/A'),('Yes','Yes'),('No','No'),],default='N/A')
+    display_fields = ['ownership', 'habitat', 'safety', 'repair', 'monthly_payment',]
 
     def __str__(self):
         return f'{self.street_address}'
 
     def get_related(profile):
         return profile.order_residences()
+
+    def dates(self):
+        dates = ''
+        if self.start_date:
+            dates = self.start_date.format('m/d/Y')
+            if self.end_date:
+                dates += ' - ' + self.end_date.format('m/d/Y')
+
 
 class Role(models.Model):
     profile = models.ForeignKey(Profile,on_delete=models.CASCADE,related_name='roles')

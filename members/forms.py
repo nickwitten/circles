@@ -28,6 +28,10 @@ class ProfileCreationForm(forms.ModelForm):
     site = forms.ModelChoiceField(Site.objects.all())
     position = forms.ChoiceField(choices=[('','---------')] + Role.position_choices)
 
+    class Meta:
+        model = Profile
+        fields = '__all__'
+
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
@@ -36,48 +40,19 @@ class ProfileCreationForm(forms.ModelForm):
             self.fields['site'] = forms.ModelChoiceField(sites)
         for visible in self.visible_fields():
             #gives text input crispy classes
-            visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
+            visible.field.widget.attrs['class'] = 'form-control'
+
+class ProfileUpdateForm(forms.ModelForm):
 
     class Meta:
         model = Profile
         fields = '__all__'
-        labels = {
-            "circles_id":"Circles ID",
-            "birthdate":"DOB",
-            "other_phone":"Other phone",
-            "email":"Email address",
-            "cell":"Cell phone",
-            "e_relationship":"Relationship",
-            "e_first_name":"First name",
-            "e_last_name":"Last name",
-            "e_phone":"Phone number",
-        }
-
-class ProfileUpdateForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for visible in self.visible_fields():
             #gives text input crispy classes
-            visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
-        self.fields['circles_id'].widget.attrs['class'] += ' id'
-
-
-    class Meta:
-        model = Profile
-        fields = '__all__'
-        labels = {
-            "circles_id":"Circles ID",
-            "birthdate":"DOB",
-            "other_phone":"Other phone",
-            "email":"Email address",
-            "cell":"Cell phone",
-            "e_relationship":"Relationship",
-            "e_first_name":"First name",
-            "e_last_name":"Last name",
-            "e_phone":"Phone number",
-        }
-
+            visible.field.widget.attrs['class'] = "form-control"
 
 class ResidenceCreationForm(BSModalForm):
 

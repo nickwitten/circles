@@ -19,12 +19,19 @@ from .data import get_profiles, get_field_options, create_excel, form_choices_te
 
 class ProfileDetailView(LoginRequiredMixin, DetailView):
     model = Profile
-    template_name = 'members/profile_detail.html'
+    # template_name = 'members/profile_detail.html'
+    template_name = 'members/profile_detail1.html'
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = Profile
-    template_name = 'members/create_profile.html'
+    # template_name = 'members/create_profile.html'
+    template_name = 'members/update_profile.html'
     form_class = forms.ProfileUpdateForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+
 
 class ProfileDeleteView(LoginRequiredMixin, BSModalDeleteView):
     model = Profile
@@ -55,9 +62,11 @@ def create_profile(request):
         form = forms.ProfileCreationForm(user=request.user)
 
     context = {
-        'form' : form,
+        'form': form,
+        'object': Profile,
     }
-    return render(request, 'members/create_profile.html',context)
+    # return render(request, 'members/create_profile.html',context)
+    return render(request, 'members/create_profile1.html',context)
 
 
 class ResidenceCreateView(LoginRequiredMixin, BSModalCreateView):

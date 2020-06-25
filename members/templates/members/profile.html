@@ -1,0 +1,108 @@
+{% load members_tags %}
+<div id="profile_content" class="blended container">
+
+    <div class="row">
+        <div class="col-6 half">
+
+<!-------------- Basic Profile Info Container ---------------->
+
+            <div id="main_container" class="profile-container shadow">
+                <div class="main-header">
+                    <div class="img-wrapper">
+                        {% if request.path != '/members/create_profile/' %}
+                        <img id="profile_pic" class="article-img round" src="{{ object.image.url }}" width="100%">
+                        {% if 'update' in request.path %}
+                        <label id="edit_pic" for="id_image">
+                            <i class="fas fa-edit middle text-white"></i>
+                        </label>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    {% include 'members/sub_templates/profile_field.html' with field='circles_ID' %}
+                </div>
+
+                {% for field in object.main_fields %}
+                {% include 'members/sub_templates/profile_field.html' with field=field %}
+                {% endfor %}
+
+                <h6 class="mt-4 mb-2">Emergency Contact</h6>
+
+                {% for field in object.e_fields %}
+                {% include 'members/sub_templates/profile_field.html' with field=field %}
+                {% endfor %}
+
+            </div>
+
+<!-------------------- Housing Container ---------------------------------->
+
+            <div id="housing_container" class="profile-container shadow">
+
+                <div class="border-bottom text-center pt-2">
+                    <h3>Housing</h3>
+                </div>
+
+                {% if object %}
+                {% for residence in object.order_residences %}
+
+                <div class="residence_container border-bottom">
+                    <div class="residence-left">
+                        <p class="dates p-2">
+                            {% if residence.start_date %}
+                            {{ residence.start_date|date:'m/d/Y' }}{% if residence.end_date %} - {{ residence.end_date|date:'m/d/Y' }}{% endif %}
+                            {% endif %}
+                        </p>
+                        {% if 'update' in request.path %}
+                        <div class="buttons p-2">
+                            <a href="#" class="modal-trigger far fa-edit blacklink text-small mr-2 ml-2"
+                               data-id="{% url 'update-residence' residence.pk %}">
+                            </a>
+                            <a href="#" class="modal-trigger far fa-trash-alt blacklink text-small mr-2 ml-2"
+                               data-id="{% url 'delete-residence' residence.pk %}">
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="residence-right">
+                        <p class="residence-field mt-2">
+                            {{ residence.street_address|default_if_none:"" }}{% if residence.unit %}, Unit #{{residence.unit }}{% endif %}
+                        </p>
+                        <p class="residence-field mb-2">{{ residence.city }}, {{ residence.state }} {{ residence.zip }}</p>
+                        {% for field in residence.display_fields %}
+                        <p class="residence-field mb-2">{{ field|field_to_label }} {{ residence|get_obj_attr:field }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% endfor %}
+                {% endif %}
+
+                {% if 'create_profile' in request.path or 'update' in request.path %}
+                <a href="#" class="create-residence modal-trigger btn btn-outline-secondary mt-2"
+                        data-id="{% url 'create-residence' object.pk %}">Add Home Info
+                </a>
+
+                {% endif %}
+
+            </div>
+
+    </div>
+  </div>
+
+<!---------------------- Navigation Buttons -------------------------------->
+
+  {% if 'update' in request.path %}
+    <div class="form-group float-left text-align-right p-4 m-0 d-inline-block">
+      <a class="btn btn-outline-danger modal-trigger" href="#" data-id="{% url 'profile-delete' object.id %}">Delete Profile</a>
+    </div>
+    <div class="form-group float-right text-align-left p-4 m-0 d-inline-block">
+      <button class="btn btn-outline-secondary" type="submit">Save</button>
+    </div>
+  {% elif request.path != '/members/create_profile/' %}
+    <div class="form-group text-right p-4">
+        <a class="btn btn-outline-secondary" href="{% url 'profile-update' object.id %}">Edit Profile</a>
+    </div>
+  {% endif %}
+
+<!------------------------------------------------------>
+
+</div>

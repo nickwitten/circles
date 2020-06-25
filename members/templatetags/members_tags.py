@@ -9,5 +9,18 @@ def get_obj_attr(obj, attr):
     else:
         result = getattr(obj, attr)
         if result == None:
-            return 'Not Available'
+            return ''
         return result
+
+@register.filter
+def hash_dict(form, name):
+    return form[name]
+
+@register.filter
+def field_to_label(field):
+    words = field.split('_')
+    try:
+        words[0] = words[0][0].upper() + words[0][1:]
+    except:
+        words[0] = words[0].capital()
+    return ' '.join(words) + ':'

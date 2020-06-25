@@ -1,24 +1,27 @@
-                        /* members styles */
-.profile-content {
+label, select, input, .form-control {
+  font-size: calc(8px + 0.3vw);
+  padding: 3px 5px;
+}
+
+#profile_content {
   margin-top: 20px;
   min-height: 430px;
   min-width: 350px;
   position: relative;
 }
-.profile-content .left {
+#profile_content .left {
   position: static;
 }
-.profile-content .row {
+#profile_content .row {
   margin-left: 0;
   margin-right: 0;
 }
 @media screen and (max-width: 770px) {
-    .profile-content .half {
+    #profile_content .half {
         flex: 0 0 100%;
         max-width: 100%;
     }
 }
-                     /*profile creation syles*/
 
 #create_profile_modal {
     display: flex;
@@ -44,14 +47,21 @@
     width: calc(100px + 15vw);
 }
 
+#main_container .main-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 #id_image {
     position: absolute;
     left: 999px;
 }
 .img-wrapper {
+    display: inline-flex;
     position: relative;
     border-radius: 50%;
-    width: 60%;
+    width: 30%;
     overflow: hidden;
 }
 #edit_pic {
@@ -68,80 +78,77 @@
     font-size: 15px;
 }
 
-/*text input styles*/
-label, select, input, .form-control {
-  font-size: calc(8px + 0.3vw);
+.field-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 35px;
+    padding: 5px 2px;
 }
-.third {
-  height: 100%;
+.field-value {
+    min-width: 50%;
 }
-.third input,
-.third select {
-  font-size: calc(7px + 0.3vw);
-  height: 30px;
+.field-label {
+    white-space: nowrap;
+    margin-right: 5px;
 }
-select.form-control:not([size]):not([multiple]) {
-  height: 30px;
+.field-container select,
+.field-container input,
+.field-container select.form-control:not([size]):not([multiple])  {
+    height: fit-content;
 }
-.profile-container div {
-  padding: 0;
+.field-half,
+.field-third {
+    display: inline-flex;
+    margin: 0;
+    padding-right: 3px;
 }
-.form-control{
-  padding-top:4px;
-  padding-bottom:4px;
+.field-half {
+    width: 50%;
 }
-.inline-field .form-control{
-  display:inline;
-  width:52%;
-  text-align:left;
+.field-half .field-value {
+    min-width: 32%;
 }
+.field-third {
+    width: 32%;
+}
+.field-third .field-value {
+    min-width: 45%;
+}
+
+#housing_container {
+    display: flex;
+    flex-flow: column nowrap;
+}
+#housing_container .residence_container {
+    display: flex;
+}
+#housing_container .residence-left {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: space-between;
+    align-items: center;
+    width: 33%;
+}
+#housing_container .create-residence {
+    width: fit-content;
+    align-self: flex-end;
+}
+
+
+
+
 .error{
   color:red;
   display:inline;
 }
-/*label styles*/
-.profile-container label{
-  margin-top:0.25rem;
-  margin-right:5px;
-}
-.asteriskField{
-  display:none;
-}
-                    /*profile detail styles*/
-/*label styles*/
-.field-label{
-  margin-top:0.25rem;
-  margin-bottom:8px;
-}
-.field-label-third{
-  margin:4px 5px 8px 0px;
-  display:inline-block;
-}
-/*Value styles*/
-.field-value-container{
-  padding:0px 15px;
-}
-.field-value-container-third{
-  padding:4px 13px;
-  display:inline-block;
-  text-align:left;
-}
-.field-value-sub-container{
-  padding:4px 13px
-}
-.field-value{
-  margin-bottom:4px;
-}
+
 .no-info {
   margin: auto;
   padding: calc(20px + 2vw);
   font-size: calc(15px + 0.3vw);
   width: fit-content;
 }
-/*.scroll{
-  height:15rem;
-  overflow:auto;
-} */
 
 #childInfoSlide {
   position: absolute;

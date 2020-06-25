@@ -1,0 +1,101 @@
+{% extends 'members/base.html' %}
+
+<!--------------- Nav Bar ------------------->
+
+{% block app_tabs %}
+
+<ul class="sub_tags bg-blue">
+    <li><a class='text-white sub_tabs' href="{% url 'profiles' %}">Profiles</a></li>
+    <li><a class='text-white sub_tabs' href="{% url 'profile-detail' object.pk %}">Profile Info</a></li>
+    <li><a class='blacklink sub_tabs' href="#">Edit Profile</a></li>
+</ul>
+
+{% endblock app_tabs %}
+
+<!------------------------------------------->
+
+{% block content %}
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="d-none">
+      {{ form.image }}
+    </div>
+
+    <!---------------- errors in form --------------------------->
+
+    {% if form.errors %}
+      {% for field in form %}
+          {% for error in field.errors %}
+              <div class="alert alert-danger">
+                  <strong>{{ field.label }}:</strong>
+                  <strong>{{ error|escape }}</strong>
+              </div>
+          {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+          <div class="alert alert-danger">
+              <strong>{{ error|escape }}</strong>
+          </div>
+      {% endfor %}
+    {% endif %}
+
+    <!------------------------------------------------------------>
+
+    {% include 'members/profile.html' %}
+
+</form>
+
+<!---------------------- Modal Popup ------------------>
+
+<div class="modal fade show" tabindex="-1" role="dialog" id="modal" aria-modal="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content popup">
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+  $(document).ready(function() {
+
+    $(".create-residence").modalForm({
+      formURL: "{% url 'create-residence' object.id %}"
+    });
+
+    $(".create-role").modalForm({
+      formURL: "{% url 'create-role' object.id %}"
+    });
+
+    $(".add-training").modalForm({
+      formURL: "{% url 'add-training' object.id %}"
+    });
+
+    $(".modal-trigger").each(function () {
+      $(this).modalForm({formURL: $(this).data('id')});
+    });
+
+    $("#id_image").change(function() {
+      readURL($(this)[0]);
+     });
+  });
+
+  function readURL(input) {
+    console.log("uploaded");
+    console.log(input);
+    console.log(input.files);
+    console.log(input.files[0]);
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $('#profile_pic')
+                .attr('src', e.target.result)
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+</script>
+
+
+{% endblock %}
