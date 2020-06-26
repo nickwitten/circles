@@ -70,9 +70,9 @@ def get_meeting_info(request):
         lists = [list.filterset for list in FilterSet.objects.filter(pk__in=lists)]
     people_objs = []
     for filterset in lists:
-        people_objs += filter_profiles(Profile.objects.all(), json.loads(filterset))
-    people = list(set([str(profile) for profile in people_objs]))
-    people_pks = list(set([profile.pk for profile in people_objs]))
+        print(filterset)
+        people_objs += filter_profiles(request.user.userinfo.user_profile_access(), json.loads(filterset))
+    people = list(set([(str(profile), profile.pk) for profile in people_objs]))
     data = {
         'pk': pk,
         'type': type,
@@ -82,7 +82,6 @@ def get_meeting_info(request):
         'attendance_lists': list_pks,
         'attendees': attendees,
         'people': people,
-        'people_pks': people_pks,
         'color': color,
         'site': site,
         'location': location,

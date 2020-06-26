@@ -1,4 +1,5 @@
 {% extends 'members/base.html' %}
+{% load members_tags %}
 
 <!--------------- Nav Bar ------------------->
 
@@ -42,7 +43,7 @@
 
     <!------------------------------------------------------------>
 
-    {% include 'members/profile.html' %}
+    {% include 'members/profile.html' with create=False update=True detail=False %}
 
 </form>
 
@@ -58,18 +59,6 @@
 <script type="text/javascript">
 
   $(document).ready(function() {
-
-    $(".create-residence").modalForm({
-      formURL: "{% url 'create-residence' object.id %}"
-    });
-
-    $(".create-role").modalForm({
-      formURL: "{% url 'create-role' object.id %}"
-    });
-
-    $(".add-training").modalForm({
-      formURL: "{% url 'add-training' object.id %}"
-    });
 
     $(".modal-trigger").each(function () {
       $(this).modalForm({formURL: $(this).data('id')});

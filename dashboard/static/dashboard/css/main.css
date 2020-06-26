@@ -271,11 +271,6 @@ header a{
 .sub_tags a {
   font-size: calc(8px + 0.2vw);
 }
-.profile-container{
-  padding:1rem;
-  margin-bottom:1rem;
-  background-color: white;
-}
 .inactive{
   background-color:#00000069;
   opacity: .6;
@@ -371,6 +366,9 @@ header a{
 .flex {
     display: flex;
     flex-flow: row wrap;
+}
+.j-between {
+    justify-content: space-between;
 }
 .flex-center {
     margin: auto;

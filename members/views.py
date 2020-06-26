@@ -123,13 +123,13 @@ class RoleCreateView(LoginRequiredMixin, BSModalCreateView):
     def form_valid(self,form):
         role = form.save(commit=False)
         role.profile = Profile.objects.get(pk=self.kwargs['pk'])
-        return super(RoleCreateView, self).form_valid(form)
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse('profile-update', args=(self.object.profile.id,))
 
-    def get_form(self):
-        print(self.kwargs)
+    def get_form(self, **kwargs):
+        print('getting form')
         return forms.RoleCreationForm(user=self.request.user)
 
     def get_context_data(self, **kwargs):

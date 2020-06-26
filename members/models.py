@@ -114,6 +114,7 @@ class Role(models.Model):
     cohort = models.CharField(blank=True,null=True,max_length = 6, choices = [('CL','CL'),('Ally', 'Ally')])
     resource_team_name = models.CharField(blank=True,null=True,max_length = 16)
     resource_team_role = models.CharField(blank=True,null=True,max_length = 16)
+    display_fields = ['cohort', 'resource_team_name', 'resource_team_role', 'site',]
 
 
     def __str__(self):

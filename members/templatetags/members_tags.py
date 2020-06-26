@@ -2,6 +2,7 @@ from django import template
 
 register = template.Library()
 
+
 @register.filter
 def get_obj_attr(obj, attr):
     if attr == None or attr == '':
@@ -12,9 +13,11 @@ def get_obj_attr(obj, attr):
             return ''
         return result
 
+
 @register.filter
 def hash_dict(form, name):
     return form[name]
+
 
 @register.filter
 def field_to_label(field):

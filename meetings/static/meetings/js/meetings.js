@@ -135,19 +135,22 @@ function addFilterSetsHTML(filtersets) {
     }
 }
 
-function addPeopleHTML(people, people_pks) {
+// people - list of tuples (name, pk)
+function addPeopleHTML(people) {
     for (var i=0; i<people.length; i++) {
         item = $('<div/>')
             .addClass('attendance-item')
-            .attr("data-pk", people_pks[i])
+            .attr("data-pk", people[i][1])
         item.append(
             $('<input/>')
                 .attr('type', 'checkbox')
         );
         item.append(
-            $('<p/>')
-                .text(people[i])
-                .attr('data-pk', people_pks[i])
+            $('<a/>')
+                .text(people[i][0])
+                .attr('data-pk', people[i][1])
+                .attr('href', "/members/profile/" + people[i][1])
+                .attr('target', '_blank')
         );
         $('#people_select').append(item);
     }
@@ -652,7 +655,7 @@ function getMeetingInfo(pk, lists=null) {
 }
 
 function initializeForm(meeting, update_only_people_select) {
-    addPeopleHTML(meeting.people, meeting.people_pks);
+    addPeopleHTML(meeting.people);
     setPeopleSelectValue(meeting.attendees);
     if (!update_only_people_select) {
         $('#id_type').val(meeting.type);
@@ -905,7 +908,7 @@ function setListSelectValue(lists) {
 
 function setPeopleSelectValue(people) {
     $('#people_select').children().each(function() {
-        if (people.includes(parseInt($(this).find('p').attr('data-pk')))) {
+        if (people.includes(parseInt($(this).find('a').attr('data-pk')))) {
             $(this).find('input').prop('checked',true);
         }
     });
@@ -925,7 +928,7 @@ function getPeopleSelectValue() {
     var people = [];
     $('#people_select').children().each(function() {
         if ($(this).find('input').is(":checked")) {
-            people.push($(this).find('p').attr('data-pk'));
+            people.push($(this).find('a').attr('data-pk'));
         }
     });
     return people

@@ -584,7 +584,10 @@ $("#tools_btn").on("click", function() {
   $('#tool_container').toggle();
 });
 $("#filterset_create").on("click", function() {
+  $('#filter_by').val('');
+  $('#filter_input').val('');
   createFilterset(); // Create a list
+  getProfiles();
 });
 $("#add_data_btn").on("click", function() {
   addDataSelectHTML(); // Add a select element

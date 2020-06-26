@@ -1,5 +1,5 @@
 {% extends 'members/base.html' %}
-
+{% load members_tags %}
 <!--------------- Nav Bar ------------------->
 
 {% block app_tabs %}
@@ -31,6 +31,23 @@
 
 <!----------------------------------------------------------------------------->
 
-{% include 'members/profile.html' %}
+{% include 'members/profile.html' with create=False update=False detail=True %}
+
+<script type="text/javascript">
+  $(document).ready(function() {
+
+    $(".more-child-info").click(function(){
+      $('.modal-container').addClass('visible');
+      $('#childInfoSlide').addClass('show');
+    });
+
+    $(".close-more-child-info").click(function(){
+      $('.modal-container').removeClass('visible');
+      $('#childInfoSlide').removeClass('show');
+    });
+
+  });
+
+</script>
 
 {% endblock %}

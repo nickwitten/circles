@@ -23,7 +23,6 @@ class RoleCreationForm(BSModalForm):
             #gives text input crispy classes
             visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
 
-
 class ProfileCreationForm(forms.ModelForm):
     site = forms.ModelChoiceField(Site.objects.all())
     position = forms.ChoiceField(choices=[('','---------')] + Role.position_choices)

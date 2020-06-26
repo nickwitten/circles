@@ -1,17 +1,18 @@
 {% load members_tags %}
+
 <div id="profile_content" class="blended container">
 
     <div class="row">
         <div class="col-6 half">
 
-<!-------------- Basic Profile Info Container ---------------->
+<!-------------- Basic Profile Info ---------------->
 
             <div id="main_container" class="profile-container shadow">
                 <div class="main-header">
                     <div class="img-wrapper">
-                        {% if request.path != '/members/create_profile/' %}
+                        {% if not create %}
                         <img id="profile_pic" class="article-img round" src="{{ object.image.url }}" width="100%">
-                        {% if 'update' in request.path %}
+                        {% if update %}
                         <label id="edit_pic" for="id_image">
                             <i class="fas fa-edit middle text-white"></i>
                         </label>
@@ -33,15 +34,15 @@
 
             </div>
 
-<!-------------------- Housing Container ---------------------------------->
+<!-------------------- Housing ---------------------------------->
 
             <div id="housing_container" class="profile-container shadow">
 
-                <div class="border-bottom text-center pt-2">
+                <div class="border-bottom text-center">
                     <h3>Housing</h3>
                 </div>
 
-                {% if object %}
+                {% if object and object.order_residences %}
                 {% for residence in object.order_residences %}
 
                 <div class="residence_container border-bottom">
@@ -51,8 +52,8 @@
                             {{ residence.start_date|date:'m/d/Y' }}{% if residence.end_date %} - {{ residence.end_date|date:'m/d/Y' }}{% endif %}
                             {% endif %}
                         </p>
-                        {% if 'update' in request.path %}
-                        <div class="buttons p-2">
+                        {% if update %}
+                        <div class="p-2">
                             <a href="#" class="modal-trigger far fa-edit blacklink text-small mr-2 ml-2"
                                data-id="{% url 'update-residence' residence.pk %}">
                             </a>
@@ -74,35 +75,177 @@
                 </div>
 
                 {% endfor %}
+                {% else %}
+                <div class="border-bottom">
+                    <p class="no-info">No Housing Information</p>
+                </div>
                 {% endif %}
 
-                {% if 'create_profile' in request.path or 'update' in request.path %}
+                {% if update %}
                 <a href="#" class="create-residence modal-trigger btn btn-outline-secondary mt-2"
                         data-id="{% url 'create-residence' object.pk %}">Add Home Info
                 </a>
-
+                {% elif create %}
+                <a href="#" class="create-residence btn btn-outline-secondary mt-2">Add Home Info
+                </a>
                 {% endif %}
 
             </div>
 
-    </div>
-  </div>
+        </div>
+        <div class="col-6 half">
+
+<!-------------------- Children ------------------------------->
+
+            <div id="children_container" class="profile-container shadow">
+                <div class="border-bottom text-center">
+                    <h3>Children</h3>
+                </div>
+
+                <div class="border-bottom">
+                    {% if object and object.order_children %}
+                        {% for child in object.order_children %}
+                        <div class="child-container">
+                            <p class="name">{{ child.first_name }} {{ child.last_name }}</p>
+                            <p class="age">{{ child.calculate_age }}</p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="no-info">No Child Information</p>
+                    {% endif %}
+                </div>
+                <!-- Add Child Button -->
+                {% if create %}
+                <a class="btn btn-outline-secondary mt-2" href="#">Edit Children</a>
+                {% elif update %}
+                <a class="btn btn-outline-secondary mt-2" href="{% url 'edit-children' object.pk %}">Edit Children</a>
+                {% elif object.order_children %}
+                <a class="btn btn-outline-secondary more-child-info mt-2">More Info</a>
+                {% endif %}
+
+            </div>
+
+<!-------------------- Roles ---------------------------------->
+
+            <div id="roles_container" class="profile-container shadow">
+
+                <div class="border-bottom text-center">
+                    <h3>Roles</h3>
+                </div>
+
+                <!-- Status Field -->
+                <div class="border-bottom">
+                    <div class="field-container">
+                        <p class="field-label">Status:</p>
+                        <p class="field-value">{% if detail %}{{ object.status|default_if_none:'Not Available' }}{% else %}{{ form.status }}{%endif %}</p>
+                    </div>
+                </div>
+
+                <!-- Role Objects -->
+                {% if object and object.order_roles %}
+                {% for role in object.order_roles %}
+                <div class="role-container border-bottom">
+                    <div class="role-left">
+                        <p class="dates p-2">
+                            {% if role.start_date %}
+                            {{ role.start_date|date:'m/d/Y' }}{% if role.end_date %} - {{ role.end_date|date:'m/d/Y' }}{% endif %}
+                            {% endif %}
+                        </p>
+                        {% if update %}
+                        <div class="p-2">
+                            <a class="modal-trigger blacklink far fa-edit icon-btn text-small mr-2 ml-2"
+                               data-id="{% url 'update-role' role.pk %}">
+                            </a>
+                            {% if object.order_roles|length != 1 %}
+                            <a class="modal-trigger blacklink far fa-trash-alt icon-btn text-small mr-2 ml-2"
+                               data-id="{% url 'delete-role' role.pk %}">
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="role-right">
+                        <h6 class="m-0 text-capitalize mb-1">
+                            {{ role.position }}
+                        </h6>
+                        {% for field in role.display_fields %}
+                        <p class="mb-2">{{ field|field_to_label }} {{ role|get_obj_attr:field }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="border-bottom">
+                    <p class="no-info">No Role Information</p>
+                </div>
+                {% endif %}
+
+                <!----- Add Role Button ------>
+                {% if update %}
+                <a href="#" class="create-role modal-trigger btn btn-outline-secondary mt-2"
+                   data-id="{% url 'create-role' object.pk %}">Add Role
+                </a>
+                {% elif create %}
+                <a href="#" class="create-role btn btn-outline-secondary mt-2">Add Role</a>
+                {% endif %}
+            </div>
+
+<!----------------------- Training Container ---------------------------------->
+
+            <div id="trainings_container" class="profile-container shadow">
+                <div class="border-bottom text-center">
+                    <h3>Training</h3>
+                </div>
+
+                <div class="border-bottom">
+                    {% if object and object.order_training %}
+                        <div class="border-bottom flex">
+                            <h6 class="subject d-inline-block">Subject</h6>
+                            <h6 class="date d-inline-block">Date Completed</h6>
+                        </div>
+                        {% for training in object.order_training %}
+                        <div class="training-container">
+                            <p class="subject">{{ training.subject }}</p>
+                            <p class="date">{{ training.end_date }}</p>
+                            {% if update %}
+                            <div class="edit-buttons">
+                                <a class="modal-trigger blacklink far fa-edit icon-btn text-small"
+                                   data-id="{% url 'update-training' training.pk %}">
+                                </a>
+                                <a class="modal-trigger blacklink far fa-trash-alt icon-btn text-small"
+                                   data-id="{% url 'delete-training' training.pk %}">
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="no-info">No Training Information</p>
+                    {% endif %}
+                </div>
+                <!-- Add Training Button -->
+                {% if create %}
+                <a class="btn btn-outline-secondary mt-2" href="#">Add Training</a>
+                {% elif update %}
+                <a class="btn btn-outline-secondary modal-trigger mt-2" href="#"
+                   data-id="{% url 'add-training' object.pk %}">Add Training</a>
+                {% endif %}
+
+            </div>
+
+<!-------------------------------------------------------------------------->
+
+        </div>
 
 <!---------------------- Navigation Buttons -------------------------------->
-
-  {% if 'update' in request.path %}
-    <div class="form-group float-left text-align-right p-4 m-0 d-inline-block">
-      <a class="btn btn-outline-danger modal-trigger" href="#" data-id="{% url 'profile-delete' object.id %}">Delete Profile</a>
-    </div>
-    <div class="form-group float-right text-align-left p-4 m-0 d-inline-block">
-      <button class="btn btn-outline-secondary" type="submit">Save</button>
-    </div>
-  {% elif request.path != '/members/create_profile/' %}
-    <div class="form-group text-right p-4">
-        <a class="btn btn-outline-secondary" href="{% url 'profile-update' object.id %}">Edit Profile</a>
-    </div>
-  {% endif %}
-
+        <div class="buttons">
+            {% if update %}
+                <button class="btn btn-outline-secondary" type="submit" name="button">Save</button>
+                <a class="btn btn-outline-danger modal-trigger" href="#" data-id="{% url 'profile-delete' object.id %}">Delete Profile</a>
+            {% elif detail %}
+                <a class="btn btn-outline-secondary" href="{% url 'profile-update' object.id %}">Edit Profile</a>
+            {% endif %}
+        </div>
 <!------------------------------------------------------>
-
+    </div>
 </div>

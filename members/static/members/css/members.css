@@ -2,6 +2,11 @@ label, select, input, .form-control {
   font-size: calc(8px + 0.3vw);
   padding: 3px 5px;
 }
+h6 {
+  font-size: calc(12px + 0.3vw);
+}
+
+                    /* Profile View Styles */
 
 #profile_content {
   margin-top: 20px;
@@ -21,6 +26,20 @@ label, select, input, .form-control {
         flex: 0 0 100%;
         max-width: 100%;
     }
+}
+
+.profile-container{
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: white;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-between;
+    flex-flow: row-reverse;
+    padding: 15px;
+    width: 100%;
 }
 
 #create_profile_modal {
@@ -116,27 +135,73 @@ label, select, input, .form-control {
     min-width: 45%;
 }
 
-#housing_container {
+#housing_container,
+#roles_container {
     display: flex;
     flex-flow: column nowrap;
 }
-#housing_container .residence_container {
+#housing_container .residence_container,
+#roles_container .role-container {
     display: flex;
 }
-#housing_container .residence-left {
+#housing_container .residence-left,
+#roles_container .role-left {
     display: flex;
     flex-flow: column nowrap;
     justify-content: space-between;
     align-items: center;
-    width: 33%;
+    width: 40%;
 }
-#housing_container .create-residence {
+#housing_container .create-residence,
+#roles_container .create-role {
     width: fit-content;
     align-self: flex-end;
 }
+#roles_container .field-container p {
+    margin: 15px
+}
 
-
-
+#children_container,
+#trainings_container {
+    display: flex;
+    flex-flow: column nowrap;
+}
+#children_container .child-container {
+    display: flex;
+    justify-content: space-between;
+}
+#children_container .name {
+    margin: 15px;
+}
+#children_container .age{
+    margin: 15px;
+    min-width: 50%;
+}
+#children_container .btn,
+#trainings_container .btn {
+    align-self: flex-end
+}
+#trainings_container .training-container {
+    display: flex;
+}
+#trainings_container .subject,
+#trainings_container .date {
+    width: 40%;
+}
+#trainings_container .subject,
+#trainings_container .date,
+#trainings_container .training-container .modal-trigger {
+    margin: 15px 0;
+}
+#trainings_container h6.subject,
+#trainings_container h6.date {
+    margin: 5px 0;
+}
+#trainings_container .edit-buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 40px;
+}
 
 .error{
   color:red;
