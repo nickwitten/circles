@@ -21,7 +21,7 @@ class RoleCreationForm(BSModalForm):
             self.fields['site'] = forms.ModelChoiceField(sites)
         for visible in self.visible_fields():
             #gives text input crispy classes
-            visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
+            visible.field.widget.attrs['class'] = "form-control"
 
 class ProfileCreationForm(forms.ModelForm):
     site = forms.ModelChoiceField(Site.objects.all())

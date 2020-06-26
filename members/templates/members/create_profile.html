@@ -1,19 +1,14 @@
 {% extends 'members/base.html' %}
-{% load crispy_forms_tags %}
 
 <!--------------- Nav Bar ------------------->
 
 {% block app_tabs %}
 
-  <ul class="sub_tags bg-blue">
+<ul class="sub_tags bg-blue">
     <li><a class='text-white sub_tabs' href="{% url 'profiles' %}">Profiles</a></li>
-    {% if request.path == '/members/create_profile/' %}
     <li><a class='text-white sub_tabs' href="#">Profile Info</a></li>
-    {% else %}
-    <li><a class='text-white sub_tabs' href="{% url 'profile-detail' object.pk %}">Profile Info</a></li>
-    {% endif %}
     <li><a class='blacklink sub_tabs' href="#">Edit Profile</a></li>
-  </ul>
+</ul>
 
 {% endblock app_tabs %}
 
@@ -21,14 +16,13 @@
 
 {% block content %}
 
-  <form method="POST" enctype="multipart/form-data">
+<form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     <div class="d-none">
       {{ form.image }}
     </div>
-    <div class="profile-content blended container">
 
-<!---------------- errors in form --------------------------->
+    <!---------------- errors in form --------------------------->
 
     {% if form.errors %}
       {% for field in form %}
@@ -46,7 +40,8 @@
       {% endfor %}
     {% endif %}
 
-    {% if request.path == '/members/create_profile/' %}
+    <!--------------- Create Modal ----------------------------->
+
     <div class="modal-container visible">
       <div id="create_profile_modal" class="middle modal-shadow">
         <div>
@@ -71,382 +66,11 @@
         </div>
       </div>
     </div>
-    {% endif %}
 
-<!------------------------------------------------------------>
+    <!--------------------------------------------------------->
 
-      <div class="row">
-        <div class="col-6 half">
+    {% include 'members/profile.html' with create=True update=False detail=False %}
 
-<!-------------- Basic Profile Info Container ---------------->
+</form>
 
-          <div id="mainContainer" class="profile-container shadow">
-            <div class="row mb-2">
-              <div class="col-6 mb-2" style="">
-                {% if request.path != '/members/create_profile/' %}
-                <div class="img-wrapper">
-                  <img id="profile_pic" class="article-img round" src="{{ object.image.url }}" width="100%">
-                  <label id="edit_pic" for="id_image">
-                    <i class="fas fa-edit middle text-white"></i>
-                  </label>
-                </div>
-                {% endif %}
-              </div>
-              <div class="col-3 mt-auto mb-auto">
-                {{ form.circles_id.label_tag }}
-              </div>
-              <div class="col-3 mt-auto mb-auto">
-                {{ form.circles_id }}
-              </div>
-            </div>
-
-            {% if request.path == '/members/create_profile/' %}
-
-              <!------ Dummy Fields ------->
-              <div class="row mb-2">
-                <div class="col-4">
-                  <div class="inline-field">
-                    <label>First Name:</label>
-                  </div>
-                </div>
-                <div class="col-8">
-                  <input class="form-field textinput textInput form-control" type="text">
-                </div>
-              </div>
-              <div class="row mb-2">
-                <div class="col-4">
-                  <div class="inline-field">
-                    <label>Last Name:</label>
-                  </div>
-                </div>
-                <div class="col-8">
-                  <input class="form-field textinput textInput form-control" type="text">
-                </div>
-              </div>
-
-            {% else %}
-              {% include 'members/sub_templates/create_profile_field.html' with field=form.first_name %}
-              {% include 'members/sub_templates/create_profile_field.html' with field=form.last_name %}
-            {% endif %}
-            <div class="row mb-2">
-              {% include 'members/sub_templates/create_profile_field_third.html' with field=form.birthdate %}
-              {% include 'members/sub_templates/create_profile_field_third.html' with field=form.gender %}
-              {% include 'members/sub_templates/create_profile_field_third.html' with field=form.race %}
-            </div>
-
-            {% include 'members/sub_templates/create_profile_field.html' with field=form.email %}
-            {% include 'members/sub_templates/create_profile_field.html' with field=form.cell %}
-            {% include 'members/sub_templates/create_profile_field.html' with field=form.other_phone %}
-
-            <div class="row mb-2 mt-5">
-              <div class="col-6">
-                <p class="font-weight-bold">Emergency Contact</p>
-              </div>
-            </div>
-
-            {% include 'members/sub_templates/create_profile_field.html' with field=form.e_relationship %}
-            {% include 'members/sub_templates/create_profile_field.html' with field=form.e_first_name %}
-            {% include 'members/sub_templates/create_profile_field.html' with field=form.e_last_name %}
-            {% include 'members/sub_templates/create_profile_field.html' with field=form.e_phone %}
-
-          </div>
-
-<!-------------------- Housing Container ---------------------------------->
-
-            <div class="profile-container shadow pt-0 pb-0">
-
-              <div class="border-bottom text-center pt-2">
-                <h3>Housing</h3>
-              </div>
-
-              {% if request.path != '/members/create_profile/' %}
-                {% for house in object.order_residences %}
-                  <div class="border-bottom">
-                    <div class="row mb-2 p-2">
-                      <div class="col-4">
-                        <div class="">
-                          <p class="mb-0">
-                            {% if house.start_date %}
-                            {{ house.start_date|date:'m/d/Y' }}{% if house.end_date %} - {{ house.end_date|date:'m/d/Y' }}{% endif %}
-                            {% endif %}
-                          </p>
-                        </div>
-                        <div class="pt-4 mt-4">
-                          <div class="form-group mb-0 pt-2 d-inline-block">
-                            <button class="modal-trigger far fa-edit icon-btn text-small" data-id="{% url 'update-residence' house.pk %}" type="button" name="button">
-                            </button>
-                          </div>
-                          <div class="form-group mb-0 pt-2 d-inline-block">
-                            <button class="modal-trigger far fa-trash-alt icon-btn text-small" data-id="{% url 'delete-residence' house.pk %}" type="button" name="button">
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-8">
-                        <p class="m-0">
-                          {{ house.street_address|default_if_none:"" }}{% if house.unit %}, Unit #{{house.unit }}{% endif %}
-                        </p>
-                        <p class="mb-2">
-                          {{ house.city }}, {{ house.state }} {{ house.zip }}
-                        </p>
-                        <p class="mb-2">Ownership: {{ house.ownership|default_if_none:"" }}</p>
-                        <p class="mb-2">Habitat: {{ house.habitat|default_if_none:"" }}</p>
-                        <p class="mb-2">Safety: {{ house.safe|default_if_none:"" }}, Repairs: {{ house.repair|default_if_none:"" }}</p>
-                        <p class="mb-2">Monthly Hs. Payment: {{ house.payment|default_if_none:"" }}</p>
-                      </div>
-                    </div>
-                  </div>
-                {% endfor %}
-              {% endif %}
-
-              <div class="text-right">
-
-                <!-- Add Home Info Button -->
-                <div class="form-group m-0 pb-2 pt-2 d-inline-block">
-                  <button class="create-residence btn btn-outline-secondary" type="button" name="button">Add Home Info</button>
-                </div>
-
-              </div>
-
-            </div>
-
-<!------------------------------------------------------>
-
-        </div>
-        <div class="col-6 half">
-
-<!-------------------- Children Container ------------------------------->
-
-          <div class="profile-container shadow pt-0 pb-0">
-            <div class="border-bottom text-center pt-2">
-              <h3>Children</h3>
-            </div>
-
-            {% if request.path != '/members/create_profile/' %}
-              {% for child in object.order_children %}
-                <div class="">
-                  <div class="row pl-2">
-                    <div class="col-6">
-                      <p class="m-2">{{ child.first_name }} {{ child.last_name }}</p>
-                    </div>
-                    <div class="col-6">
-                      <p class="m-2">{{ child.calculate_age }}</p>
-                    </div>
-                  </div>
-                </div>
-              {% endfor %}
-            {% endif %}
-
-            <div class="text-right">
-              <!-- Add Child Button -->
-              <div class="form-group m-0 pb-2 pt-2 d-inline-block">
-                {% if request.path == '/members/create_profile/' %}
-                  <a class="btn btn-outline-secondary" href="#">Edit Children</a>
-                {% else %}
-                  <a class="btn btn-outline-secondary" href="{% url 'edit-children' object.pk %}">Edit Children</a>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-
-<!-------------------- Roles Container ---------------------------------->
-
-            <div class="profile-container shadow pt-0 pb-0">
-
-              <div class="border-bottom text-center pt-2">
-                <h3>Roles</h3>
-              </div>
-
-                          <!-- Status Field -->
-              <div class="border-bottom">
-                <div class="row pt-4 pb-4">
-                  <div class="col-4">
-                    <div class="inline-field">
-                      {% if form.status.errors %}
-                        <p class="error">*</p>
-                      {% endif %}
-                      {{ form.status.label_tag }}
-                    </div>
-                  </div>
-                  <div class="col-8">
-                    {{ form.status }}
-                  </div>
-                </div>
-              </div>
-
-                          <!-- Role Objects -->
-              {% if request.path != '/members/create_profile/' %}
-                {% for role in object.order_roles %}
-                  <div class="border-bottom">
-                    <div class="row mb-2 p-2">
-                      <div class="col-4">
-                        <div class="">
-                          <p class="mb-0">
-                            {% if role.start_date %}
-                            {{ role.start_date|date:'m/d/Y' }}{% if role.end_date %} - {{ role.end_date|date:'m/d/Y' }}{% endif %}
-                            {% endif %}
-                          </p>
-                        </div>
-                        <div class="pt-2 mt-4">
-                          <div class="form-group mb-0 pt-2 d-inline-block">
-                            <button class="modal-trigger far fa-edit icon-btn text-small" data-id="{% url 'update-role' role.pk %}" type="button" name="button">
-                            </button>
-                          </div>
-                          <div class="form-group mb-0 pt-2 d-inline-block">
-                            {% if object.order_roles|length != 1 %}
-                            <button class="modal-trigger far fa-trash-alt icon-btn text-small" data-id="{% url 'delete-role' role.pk %}" type="button" name="button">
-                            </button>
-                            {% endif %}
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-8">
-                        <h5 class="m-0 text-capitalize mb-1">
-                          {{ role.position }}
-                        </h5>
-                        <p class="mb-2">Cohort: {{ role.cohort|default_if_none:"" }}</p>
-                        <p class="mb-2">Resource team name: {{ role.resource_team_name|default_if_none:"" }}</p>
-                        <p class="mb-2">Resource team role: {{ role.resource_team_role|default_if_none:"" }}
-                        <p class="mb-2">Site: {{ role.site|default_if_none:"" }}</p>
-                      </div>
-                    </div>
-                  </div>
-                {% endfor %}
-              {% endif %}
-
-              <div class="text-right">
-                <!-- Add Role Button -->
-                <div class="form-group m-0 pb-2 pt-2 d-inline-block">
-                  <button class="create-role btn btn-outline-secondary" type="button" name="button">Add Role</button>
-                </div>
-              </div>
-            </div>
-
-<!----------------------- Training Container ---------------------------------->
-
-          <div class="profile-container shadow pt-0 pb-0">
-            <div class="border-bottom text-center pt-2">
-              <h3>Training</h3>
-            </div>
-
-            <div class="border-bottom">
-              <div class="row">
-                <div class="col-5">
-                  <h5 class="m-0">Subject</h5>
-                </div>
-                <div class="col-5">
-                  <h5 class="m-0">Date Completed</h5>
-                </div>
-              </div>
-            </div>
-            <div class="border-bottom">
-              {% if request.path != '/members/create_profile/' %}
-                {% for training in object.order_training %}
-                  <div class="row pt-2 pb-2">
-                    <div class="col-5">
-                      <p class="m-0">{{ training.subject }}</p>
-                    </div>
-                    <div class="col-4">
-                      <p class="m-0">{{ training.end_date|default_if_none:"" }}</p>
-                    </div>
-                    <div class="col-3">
-                      <button class="modal-trigger far fa-edit icon-btn text-small" data-id="{% url 'update-training' training.pk %}" type="button" name="button">
-                      </button>
-                      <button class="modal-trigger far fa-trash-alt icon-btn text-small" data-id="{% url 'delete-training' training.pk %}" type="button" name="button">
-                      </button>
-                    </div>
-                  </div>
-                {% endfor %}
-              {% endif %}
-            </div>
-            <div class="text-right">
-              <!-- Add Training Button -->
-              <div class="form-group m-0 pb-2 pt-2 d-inline-block">
-                <button class="add-training btn btn-outline-secondary" type="button" name="button">Add Training</button>
-              </div>
-            </div>
-          </div>
-
-<!----------------------------------------------------------------------------->
-
-        </div>
-      </div>
-
-<!---------------------- Navigation Buttons -------------------------------->
-
-      {% if request.path == '/members/create_profile/' %}
-
-      {% else %}
-        <div class="form-group float-left text-align-right p-4 m-0 d-inline-block">
-          <a class="btn btn-outline-danger modal-trigger" href="#" data-id="{% url 'profile-delete' object.id %}">Delete Profile</a>
-        </div>
-        <div class="form-group float-right text-align-left p-4 m-0 d-inline-block">
-          <button class="btn btn-outline-secondary" type="submit">Save</button>
-        </div>
-      {% endif %}
-
-<!------------------------------------------------------>
-
-    </div>
-  </form>
-
-<!---------------------- Modal Popup ------------------>
-
-  <div class="modal fade show" tabindex="-1" role="dialog" id="modal" aria-modal="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content popup">
-      </div>
-    </div>
-  </div>
-
-  {% if request.path == '/members/create_profile/' %}
-    <script type="text/javascript">
-
-      $('#create_modal').show();
-
-    </script>
-  {% else %}
-  <script type="text/javascript">
-
-  $(document).ready(function() {
-
-    $(".create-residence").modalForm({
-      formURL: "{% url 'create-residence' object.id %}"
-    });
-
-    $(".create-role").modalForm({
-      formURL: "{% url 'create-role' object.id %}"
-    });
-
-    $(".add-training").modalForm({
-      formURL: "{% url 'add-training' object.id %}"
-    });
-
-    $(".modal-trigger").each(function () {
-      $(this).modalForm({formURL: $(this).data('id')});
-    });
-
-    $("#id_image").change(function() {
-      readURL($(this)[0]);
-     });
-  });
-
-  function readURL(input) {
-    console.log("uploaded");
-    console.log(input);
-    console.log(input.files);
-    console.log(input.files[0]);
-    if (input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function (e) {
-            $('#profile_pic')
-                .attr('src', e.target.result)
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-  }
-
-  </script>
-{% endif %}
-
-{% endblock content %}
+{% endblock %}

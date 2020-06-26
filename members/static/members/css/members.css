@@ -186,12 +186,13 @@ h6 {
 }
 #trainings_container .subject,
 #trainings_container .date {
-    width: 40%;
+    width: 38%;
 }
 #trainings_container .subject,
 #trainings_container .date,
 #trainings_container .training-container .modal-trigger {
     margin: 15px 0;
+    padding-left: 15px;
 }
 #trainings_container h6.subject,
 #trainings_container h6.date {

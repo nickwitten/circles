@@ -20,7 +20,7 @@ from .data import get_profiles, get_field_options, create_excel, form_choices_te
 class ProfileDetailView(LoginRequiredMixin, DetailView):
     model = Profile
     # template_name = 'members/profile_detail.html'
-    template_name = 'members/profile_detail1.html'
+    template_name = 'members/profile_detail.html'
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = Profile
@@ -66,7 +66,7 @@ def create_profile(request):
         'object': Profile,
     }
     # return render(request, 'members/create_profile.html',context)
-    return render(request, 'members/create_profile1.html',context)
+    return render(request, 'members/create_profile.html',context)
 
 
 class ResidenceCreateView(LoginRequiredMixin, BSModalCreateView):
@@ -128,14 +128,16 @@ class RoleCreateView(LoginRequiredMixin, BSModalCreateView):
     def get_success_url(self):
         return reverse('profile-update', args=(self.object.profile.id,))
 
-    def get_form(self, **kwargs):
-        print('getting form')
-        return forms.RoleCreationForm(user=self.request.user)
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Add Role'
         return context
+
 
 class RoleUpdateView(LoginRequiredMixin, BSModalUpdateView):
     model = Role

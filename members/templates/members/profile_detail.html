@@ -1,13 +1,14 @@
 {% extends 'members/base.html' %}
-
-
+{% load members_tags %}
 <!--------------- Nav Bar ------------------->
 
 {% block app_tabs %}
-  <ul class="sub_tags bg-blue">
+
+<ul class="sub_tags bg-blue">
     <li><a class='text-white sub_tabs' href="{% url 'profiles' %}">Profiles</a></li>
-    <li><a class='blacklink sub_tabs' href="">Profile Info</a></li>
-  </ul>
+    <li><a class='blacklink sub_tabs' href="#">Profile Info</a></li>
+</ul>
+
 {% endblock app_tabs %}
 
 <!------------------------------------------->
@@ -30,249 +31,7 @@
 
 <!----------------------------------------------------------------------------->
 
-
-<div class="profile-content blended container">
-  <div class="row">
-    <div class="col-6 half">
-
-<!------------------- Profile Fields --------------------->
-
-      <div class="profile-container shadow">
-        <div class="row mb-2">
-          <div class="col-6 mb-2">
-            <img id="profile_pic" class="article-img round" src="{{ object.image.url }}" width="60%">
-          </div>
-          <div class="col-3 mt-auto mb-auto">
-            <p class="field-label id">Circles ID:</p>
-          </div>
-          <div class="col-3 field-value-container mt-auto mb-auto">
-            <div class="field-value-sub-container">
-              {% if object.circles_id %}
-              <p class="field-value font-weight-bold id">{{ object.circles_id }}</p>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        {% include 'members/sub_templates/detail_profile_field.html' with label='First name:' value=object.first_name %}
-        {% include 'members/sub_templates/detail_profile_field.html' with label='Last name:' value=object.last_name %}
-
-        <div class="row mb-2">
-          {{ form.birthdate.errors }}
-          {{ form.race.errors }}
-          {{ form.gender.errors }}
-          <div class="col-4 pr-0">
-            <div class="inline-field">
-              <p class="field-label-third">DOB: </p>
-              <!--<div class="field-value-container-third">-->
-                <p class="field-value d-inline-block font-weight-bold">{{ object.birthdate|date:'m-d-Y' }}</p>
-              <!--</div>-->
-            </div>
-          </div>
-          {% include 'members/sub_templates/detail_profile_field_third.html' with label='Gender:' value=object.gender %}
-          {% include 'members/sub_templates/detail_profile_field_third.html' with label='Race:' value=object.race %}
-        </div>
-
-        {% include 'members/sub_templates/detail_profile_field.html' with label='Email address:' value=object.email %}
-        {% include 'members/sub_templates/detail_profile_field.html' with label='Cell:' value=object.cell %}
-        {% include 'members/sub_templates/detail_profile_field.html' with label='Current address:' value=object.order_residences.first.street_address %}
-        {% if object.order_residences.first.unit %}{% include 'members/sub_templates/detail_profile_field.html' with label='Unit #:' value=object.order_residences.first.unit %}{% endif %}
-        <div class="row mb-2">
-          {% include 'members/sub_templates/detail_profile_field_third.html' with label='City:' value=object.order_residences.first.city %}
-          {% include 'members/sub_templates/detail_profile_field_third.html' with label='State:' value=object.order_residences.first.state %}
-          {% include 'members/sub_templates/detail_profile_field_third.html' with label='Zip:' value=object.order_residences.first.zip %}
-        </div>
-
-        <div class="row mb-3 mt-5">
-          <div class="col-6">
-            <h6 class="">Emergency Contact</h6>
-          </div>
-        </div>
-
-        {% include 'members/sub_templates/detail_profile_field.html' with label='Relationship:' value=object.e_relationship %}
-        {% include 'members/sub_templates/detail_profile_field.html' with label='First name:' value=object.e_first_name %}
-        {% include 'members/sub_templates/detail_profile_field.html' with label='Last name:' value=object.e_last_name %}
-        {% include 'members/sub_templates/detail_profile_field.html' with label='Phone number:' value=object.e_phone %}
-
-
-      </div>
-
-<!------------------ Housing Container ---------------------------------------->
-
-      <div class="profile-container shadow pt-0 pb-0">
-
-        <div class="border-bottom text-center pt-2">
-          <h3>Housing</h3>
-        </div>
-
-        {% if object.order_residences %}
-          {% for house in object.order_residences %}
-            <div class="border-bottom">
-              <div class="row p-2">
-                <div class="col-4">
-                  <p class="mb-0">
-                    {% if house.start_date %}
-                    {{ house.start_date|date:'m/d/Y' }}{% if house.end_date %} - {{ house.end_date|date:'m/d/Y' }}{% endif %}
-                    {% endif %}
-                  </p>
-                </div>
-                <div class="col-8">
-                  <p class="">
-                    {{ house.street_address }}{% if house.unit %}, Unit #{{house.unit }}{% endif %}
-                  </p>
-                  <p class="mb-2">
-                    {{ house.city }}, {{ house.state }} {{ house.zip }}
-                  </p>
-                  <p class="mb-2">Ownership: {{ house.ownership|default_if_none:"" }}</p>
-                  <p class="mb-2">Habitat: {{ house.habitat|default_if_none:"" }}</p>
-                  <p class="mb-2">Safety: {{ house.safe|default_if_none:"" }}, Repairs: {{ house.repair|default_if_none:"" }}</p>
-                  <p class="mb-2">Monthly Hs. Payment: {{ house.payment|default_if_none:"" }}</p>
-                </div>
-              </div>
-            </div>
-          {% endfor %}
-        {% else %}
-          <p class="no-info">No Housing Information</p>
-        {% endif %}
-      </div>
-<!----------------------------------------------------------------------------->
-
-    </div>
-    <div class="col-6 half">
-
-<!---------------------------- Children Container ----------------------------->
-
-      <div class="profile-container shadow pt-0 pb-0">
-
-        <div class="border-bottom text-center pt-2">
-          <h3>Children</h3>
-        </div>
-
-        {% if object.get_child_infos %}
-          {% for childinfo in object.get_child_infos %}
-            {% for child in childinfo.order_children %}
-              <div class="">
-                <div class="row pl-2">
-                  <div class="col-6">
-                    <p class="m-2">{{ child.first_name }} {{ child.last_name }}</p>
-                  </div>
-                  <div class="col-6">
-                    <p class="m-2">{{ child.calculate_age }}</p>
-                  </div>
-                </div>
-              </div>
-
-          {% endfor %}
-        {% endfor %}
-        <div class="text-right p-2">
-          <button class="btn more-child-info" type="button" name="button">More Info</button>
-        </div>
-        {% else %}
-          <p class="no-info">No Child Information</p>
-        {% endif %}
-
-      </div>
-
-<!---------------------------- Roles Container -------------------------------->
-
-      <div class="profile-container shadow pt-0 pb-0">
-
-        <div class="border-bottom text-center pt-2">
-          <h3>Roles</h3>
-        </div>
-
-                            <!-- Status Field -->
-        <div class="border-bottom">
-          <div class="row pt-4 pb-4">
-            <div class="col-4">
-              <div class="inline-field">
-                <p class="pl-2">Status:</p>
-              </div>
-            </div>
-            <div class="col-8">
-              <p>{{ object.status|default_if_none:"" }}</p>
-            </div>
-          </div>
-        </div>
-
-
-        {% if object.order_roles %}
-          {% for role in object.order_roles %}
-            <div class="border-bottom">
-              <div class="row p-2">
-                  <div class="col-4">
-                    <p class="mb-0">
-                      {% if role.start_date %}
-                      {{ role.start_date|date:'m/d/Y' }}{% if role.end_date %} - {{ role.end_date|date:'m/d/Y' }}{% endif %}
-                      {% endif %}
-                    </p>
-                  </div>
-                  <div class="col-8">
-                    <h5 class="m-0 mb-1">
-                      {{ role.position }}
-                    </h5>
-                    <p class="mb-2">Cohort: {{ role.cohort|default_if_none:"" }}</p>
-                    <p class="mb-2">Resource team name: {{ role.resource_team_name|default_if_none:"" }}</p>
-                    <p class="mb-2">Resource team role: {{ role.resource_team_role|default_if_none:"" }}
-                    <p class="mb-2">Site: {{ role.site|default_if_none:"" }}</p>
-                  </div>
-              </div>
-            </div>
-          {% endfor %}
-        {% else %}
-          <p class="no-info">No Roles</p>
-        {% endif %}
-
-      </div>
-
-<!------------------------- Training Container -------------------------------->
-
-      <div class="profile-container shadow pt-0 pb-0">
-
-        <div class="border-bottom text-center pt-2">
-          <h3>Training</h3>
-        </div>
-
-        <div class="border-bottom">
-          <div class="row">
-            <div class="col-6">
-              <h5 class="m-0">Subject</h5>
-            </div>
-            <div class="col-5">
-              <h5 class="m-0">Date Completed</h5>
-            </div>
-          </div>
-        </div>
-
-        <div class="">
-          {% if object.order_training %}
-            {% for training in object.order_training %}
-              <div class="row pt-2 pb-2">
-                <div class="col-6">
-                  <p class="m-0">{{ training.subject }}</p>
-                </div>
-                <div class="col-5">
-                  <p class="m-0">{{ training.end_date|default_if_none:"" }}</p>
-                </div>
-              </div>
-            {% endfor %}
-          {% else %}
-            <p class="no-info">No Training</p>
-          {% endif %}
-        </div>
-
-      </div>
-
-<!----------------------------------------------------------------------------->
-
-    </div>
-  </div>
-
-<!------------------ Nav Button ------------------>
-  <div class="form-group text-right p-4">
-    <a class="btn btn-outline-secondary" href="{% url 'profile-update' object.id %}">Edit Profile</a>
-  </div>
-</div>
+{% include 'members/profile.html' with create=False update=False detail=True %}
 
 <script type="text/javascript">
   $(document).ready(function() {
@@ -291,5 +50,4 @@
 
 </script>
 
-
-{% endblock content %}
+{% endblock %}
