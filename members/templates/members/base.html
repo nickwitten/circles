@@ -1,16 +1,10 @@
 {% extends "dashboard/base.html" %}
-{% load crispy_forms_tags %}
 
 <!--------------- Nav Bar ------------------->
 
 {% block tabs %}
   <link rel="stylesheet" type="text/css" href='/static/members/css/members.css'>
-
-  <li><a href="{% url 'dashboard' %}"><p>Dashboard</p></a></li>
-  <li class='active'><a href="{% url 'profiles' %}"><p>Members</p></a></li>
-  <li><a href="{% url 'meetings' %}"><p>Meetings</p></a></li>
-  <li><a href="#"><p>Training</p></a></li>
-  <li><a href="#"><p>Progress</p></a></li>
+  {% include 'dashboard/tabs.html' with members=True %}
 {% endblock tabs %}
 
 {% block app_tabs %}

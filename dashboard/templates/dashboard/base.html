@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- CSS -->
-    <link rel="stylesheet" type="text/css" href="{% static 'assets/css/bootstrap.css' %} ">
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/css/bootstrap.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'dashboard/css/main.css' %}">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
   </head>
@@ -47,11 +47,32 @@
       {% for message in messages %}
           <div class="alert alert-{{ message.tags }}">
             {{ message }}
-            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            <a href="#" class="close fas fa-times" data-dismiss="alert" aria-label="close"></a>
           </div>
       {% endfor %}
       {% endif %}
     </div>
+
+    <!---------------- errors in form --------------------------->
+
+    {% if form.errors %}
+      {% for field in form %}
+          {% for error in field.errors %}
+              <div class="alert alert-danger">{{ field.label }}: {{ error|escape }}
+                  <a href="#" class="close fas fa-times" data-dismiss="alert" aria-label="close"></a>
+              </div>
+          {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+          <div class="alert alert-danger">
+            <strong>{{ error|escape }}</strong>
+            <a href="#" class="close fas fa-times" data-dismiss="alert" aria-label="close"></a>
+          </div>
+      {% endfor %}
+    {% endif %}
+
+    <!------------------------------------------------------------>
+
 
       {% block content %}{% endblock %}
 

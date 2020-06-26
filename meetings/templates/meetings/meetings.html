@@ -123,10 +123,15 @@
           </div>
         </div>
         {{ form.notes }}
-        <div id="file_input">
-          <input multiple id="file_upload" type="file">
-          <label for="file_upload" class="fas fa-file-upload"></label>
-          <div id="files">
+        <div class="load-container">
+          <div id="file_input">
+            <input multiple id="file_upload" type="file">
+            <label for="file_upload" class="fas fa-file-upload"></label>
+            <div id="files">
+            </div>
+          </div>
+          <div class="loading">
+            <div class="spinner"></div>
           </div>
         </div>
         <div id="link_input">
@@ -135,8 +140,8 @@
           </div>
         </div>
       </div>
-      <button id="attendance_btn" class="btn">Attendance</button>
-      <button id="meeting_submit_btn" class="btn" data-pk="0">Save</button>
+      <button id="attendance_btn" class="btn btn-outline-secondary">Attendance</button>
+      <button id="meeting_submit_btn" class="btn btn-outline-secondary" data-pk="0">Save</button>
     </form>
     <div class="loading" style="display:none;">
       <div class="spinner"></div>
@@ -175,7 +180,9 @@
     </div>
     <div class="break mb-4"></div>
     <div id="people_select">
-
+    </div>
+    <div class="loading" style="display: none;">
+      <div class="spinner"></div>
     </div>
   </div>
 
@@ -225,7 +232,12 @@
       <li>FRI
       <li>SAT
     </ul>
-    <div id="days_container">
+    <div class="load-container">
+      <div id="days_container">
+      </div>
+      <div class="loading" style="display: none;">
+        <div class="spinner"></div>
+      </div>
     </div>
   </div>
 </div>

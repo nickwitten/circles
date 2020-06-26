@@ -196,19 +196,6 @@ function addLinkHTML(name, url) {
         $('#links').append(link);
 }
 
-function addAlertHTML(message) {
-    alert = $('<div/>')
-        .addClass('alert alert-danger')
-        .text(message);
-    close_btn = $('<a/>')
-        .attr('href','#')
-        .addClass('close fas fa-times')
-        .attr('data-dismiss', 'alert')
-        .attr('aria-label','close');
-    alert.append(close_btn);
-    $('.alert-container').append(alert);
-}
-
 function addMeetingSiteOptionHTML(site, site_pk) {
     option = $('<option/>')
         .text(site)
@@ -326,6 +313,12 @@ function submitMeeting(pk) {
             'dates':dates,
         },
         type: 'post',
+        beforeSend: function() {
+            $('#meeting_info_container .loading').show();
+        },
+        complete: function() {
+            $('#meeting_info_container .loading').hide();
+        },
         success: function(data) {
             $('#meeting_submit_btn').attr('data-pk', data.pks[0]);
             // If new meeting(s) created handle files
@@ -339,13 +332,16 @@ function submitMeeting(pk) {
             }
             // Form was invalid
             if (data.pks[0] == 0) {
-                addAlertHTML('Invalid meeting input')
+                addAlertHTML('Invalid meeting input', 'danger')
             }
             // Update Calendar
             buildCalendar(monthOffset, 0);
             // Update Date on Meeting
             datePickerSelectedDates = datePickerSelectedDates.slice(0,1);
             $('#date').text(datePickerSelectedDates[0]);
+        },
+        error: function() {
+            addAlertHTML("Unable to Save Changes", "danger");
         }
     })
 }
@@ -362,9 +358,18 @@ function deleteMeeting(pk) {
             'X-CSRFToken': csrftoken,
         },
         method: 'POST',
+        beforeSend: function() {
+            $('#meeting_info_container .loading').show();
+        },
+        complete:  function() {
+            $('#meeting_info_container .loading').hide();
+        },
         success: function() {
             hideMeetingInfo();
             buildCalendar();
+        },
+        error: function() {
+            addAlertHTML("Unable to Delete Meeting", "danger");
         }
     });
 }
@@ -504,6 +509,12 @@ function queryMeetingsDb(baseyear, basemonth, endyear, endmonth, dates, view) {
         url: "get-meetings",
         data: data,
         method: 'GET',
+        beforeSend: function() {
+            $('#calendar_content .loading').show();
+        },
+        complete: function() {
+            $('#calendar_content .loading').hide();
+        },
         success: function(data) {
             meetings = {};
             for (var i=0; i<data.meetings.length; i++) {
@@ -519,6 +530,9 @@ function queryMeetingsDb(baseyear, basemonth, endyear, endmonth, dates, view) {
             }
             addDays(dates, view);
             startCalendarListeners();
+        },
+        error: function() {
+            addAlertHTML('Unable to Fetch Meetings', 'danger');
         }
     });
 }
@@ -549,10 +563,19 @@ function uploadMeetingFiles(pk, files) {
         method: 'POST',
         processData: false,
         contentType: false,
+        beforeSend: function() {
+            $('#meeting_content .loading').show();
+        },
+        complete: function() {
+            $('#meeting_content .loading').hide();
+        },
         success: function(data) {
             if ($('#meeting_submit_btn').attr('data-pk') == pk) {
                 addFileHTML(data.files.slice(0,files.length), true);
             }
+        },
+        error: function() {
+            addAlertHTML("Failed to Upload File(s)", 'danger');
         }
     })
 }
@@ -573,12 +596,21 @@ function deleteMeetingFile(pk) {
             'file_pk': pk,
         },
         method: 'POST',
+        beforeSend: function() {
+            $('#meeting_content .loading').show();
+        },
+        complete: function() {
+            $('#meeting_content .loading').hide();
+        },
         success: function(data) {
             $('#files').children().each(function() {
                 if ($(this).attr('data-pk') == pk.toString()) {
                     $(this).remove();
                 }
             })
+        },
+        error: function() {
+            addAlertHTML("Unable to Delete File", 'danger');
         }
     })
 }
@@ -649,7 +681,7 @@ function getMeetingInfo(pk, lists=null) {
         },
         error: function () {
             hideMeetingInfo();
-            addAlertHTML('Failed to Fetch Meeting');
+            addAlertHTML('Failed to Fetch Meeting', 'danger');
         },
     });
 }
@@ -695,7 +727,7 @@ function showMeetingInfo() {
 function hideMeetingInfo() {
     document.getElementById('meeting_info_container').classList.remove('show');
     $('#attendance_container').css('box-shadow','');
-    $('#attendance_container').css('left','-100%');
+    $('#attendance_container').removeClass('show');
     $('#id_type').val('');
     $('#id_start_time').val('');
     datePickerSelectedDates = [];
@@ -729,10 +761,19 @@ function getUserFilterSets() {
   $.ajax({
     url: "/members/profile/get-filtersets",
     dataType: 'json',
+    beforeSend: function() {
+        $('attendance_container .loading').show();
+    },
+    complete: function() {
+        $('attendance_container .loading').hide();
+    },
     success: function (data) {
-      // Data contains list of filterset objects which contain
-      // a title and a list of filter objects
-      addFilterSetsHTML(data.filtersets); // Add the html elements
+        // Data contains list of filterset objects which contain
+        // a title and a list of filter objects
+        addFilterSetsHTML(data.filtersets); // Add the html elements
+    },
+    error: function() {
+        addAlertHTML("Couldn't Load User Lists", "danger");
     },
   });
 };
@@ -894,10 +935,6 @@ function setTimeSelectValue(start_time, end_time) {
     $('#end_period').text(end_period);
 }
 
-function addAttendance() {
-    $('#attendance_container').css('left','50%');
-}
-
 function setListSelectValue(lists) {
     $('.lists').children().each(function() {
         if (lists.includes(parseInt($(this).find('p').attr('data-pk')))) {
@@ -1033,13 +1070,13 @@ function startListeners() {
     });
     $('#attendance_btn').on("click", function() {
         event.preventDefault();
-        addAttendance();
+        $('#attendance_container').toggleClass('show');
     });
     $('#list_select').on("click", function() {
         $('.lists').toggle();
     });
     $('#attendance_back_btn').on("click", function() {
-        $('#attendance_container').css('left','-100%');
+        $('#attendance_container').removeClass('show');
     });
     $('#id_type').on("click", function(event) {
         $('#type_select').toggleClass('visible');

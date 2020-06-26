@@ -109,8 +109,12 @@
 #day_labels li {
     font-size: 12px;
 }
+#calendar_content .load-container {
+    position: relative;
+    height: 80%
+}
 #days_container {
-    height: 80%;
+    height: 100%;
 }
 .calendar-week {
     height: 16.666%;
@@ -193,6 +197,9 @@
 #meeting_info_container.show {
     opacity: 1;
     left: 0;
+}
+#meeting_info_container .loading {
+    border-radius: 5px;
 }
 
 #meeting_form {
@@ -530,6 +537,14 @@
     resize: none;
 }
 
+
+#meeting_content .load-container {
+    position: relative;
+}
+#meeting_content .spinner {
+    height: 10px;
+    width: 10px;
+}
 #file_input, #link_input {
     display: flex;
 }
@@ -621,6 +636,12 @@
     left: -100%;
     z-index: 2;
     transition: all 0.2s ease-in-out;
+    border-radius: 5px;
+}
+#attendance_container.show {
+    left: 50%;
+}
+#attendance_container .loading {
     border-radius: 5px;
 }
 #lists_container {

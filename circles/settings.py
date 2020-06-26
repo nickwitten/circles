@@ -33,7 +33,6 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'bootstrap_modal_forms',
     'phonenumber_field',
-    'crispy_forms',
     'users.apps.UsersConfig',
     'members.apps.MembersConfig',
     'dashboard.apps.DashboardConfig',
@@ -131,5 +130,3 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 STATIC_URL = '/static/'
-
-CRISPY_TEMPLATE_PACK = 'bootstrap4'

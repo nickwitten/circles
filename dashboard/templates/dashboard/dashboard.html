@@ -1,23 +1,14 @@
 {% extends 'dashboard/base.html' %}
-{% load crispy_forms_tags %}
 
 <!--------------- Nav Bar ------------------->
 
 {% block tabs %}
-  {% if user.is_authenticated %}
-    <li class='active'><a href="{% url 'dashboard' %}"><p>Dashboard</p></a></li>
-    <li><a href="{% url 'profiles' %}"><p>Members</p></a></li>
-    <li><a href="{% url 'meetings' %}"><p>Meetings</p></a></li>
-    <li><a href="#"><p>Training</p></a></li>
-    <li><a href="#"><p>Progress</p></a></li>
-  {% else %}
-    <li class='active'><a href="{% url 'dashboard' %}">Dashboard</a></li>
-  {% endif %}
-{% endblock tabs %}
+  {% include 'dashboard/tabs.html' with dashboard=True %}
+{% endblock %}
 
 {% block app_tabs %}
   <ul class="sub_tags bg-blue">
-    <li><a class='text-white sub_tabs' href="#">Dashboard</a></li>
+    <li><a class='sub_tabs' href="#">Dashboard</a></li>
   </ul>
 {% endblock app_tabs %}
 
