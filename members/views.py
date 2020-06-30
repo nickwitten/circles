@@ -320,7 +320,7 @@ def profiles(request):
 
 # Get profiles view that returns profile data
 def GetProfiles(request):
-    tools_form = forms.ProfilesToolsForm(request.POST)
+    tools_form = forms.ProfilesToolsForm(request.GET)
     if tools_form.is_valid():
         tool_inputs = tools_form.cleaned_data
         data = get_profiles(tools_form.cleaned_data, request.user)
@@ -329,64 +329,37 @@ def GetProfiles(request):
     print('FORM INVALID')
     print()
 
-# Add a filterset to the current user
-def CreateFilterset(request):
-    # Obtain the current filters
-    filters = request.GET.get('filters',None)
-    # Create a FilterSet model to be saved to the user
-    filterset = FilterSet(user=request.user,filterset=filters)
-    filterset.save() # Save the model
-    data = {
-    }
-
-    return JsonResponse(data)
-
-# Returns the filtersets of the user
-def GetFiltersets(request):
+def UserFiltersets(request):
+    filterset_object = None
+    if request.POST:
+        title = request.POST.get('title', None)
+        filters = request.POST.get('filters',None)
+        pk = request.POST.get('pk', None)
+        delete = request.POST.get('delete', None)
+        if pk:
+            filterset_object = FilterSet.objects.get(pk=pk)
+            if delete:
+                filterset_object.delete()
+            # Update title
+            else:
+                filterset_object.title = title
+                filterset_object.save()
+        # Create new filterset if pk not provided
+        else:
+            filterset_object = FilterSet(user=request.user,filterset=filters)
+            filterset_object.save()
     # Get the objects associated to the current user
     filterset_objects = request.user.filtersets.all()
-    # Create a dictionary for the filtersets to be in
-    data = {
-        'filtersets' : []
-    }
-    # Add each filterset to the dictionary as its own dictionary
+    filtersets = []
     for filterset in filterset_objects:
-        data["filtersets"].append(
-            {
-                "title": filterset.title,
-                "filters": filterset.filterset,
-                "pk": filterset.pk,
-            }
-        )
-
-    return JsonResponse(data)
-
-# Adds a title to the created filterset
-def AddFiltersetTitle(request):
-    # receive data
-    title = request.GET.get('title',None)
-    filters = request.GET.get('filters',None)
-    # Get the active filterset
-    filterset_object = request.user.filtersets.filter(filterset=filters).first()
-    # Assign a title
-    filterset_object.title = title
-    filterset_object.save()
+        filtersets.append({
+            "title": filterset.title,
+            "filters": filterset.filterset,
+            "pk": filterset.pk,
+        })
     data = {
-        'title' : filterset_object.title,
-        'filters' : filterset_object.filterset,
-    }
-
-    return JsonResponse(data)
-
-# Deletes a user's filterset
-def DeleteFilterset(request):
-    # Receive data
-    user = request.user
-    filters = request.GET.get('filters',None)
-    title = request.GET.get('title',None)
-    # Delete the active filterset
-    request.user.filtersets.filter(title=title, filterset=filters).first().delete()
-    data = {
+        'filtersets': filtersets,
+        'pk': filterset_object.pk if filterset_object else None
     }
     return JsonResponse(data)
 

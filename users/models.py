@@ -37,7 +37,8 @@ class UserInfo(models.Model):
 
     def user_profile_access(self):
         sites = self.site_access.all()
-        profiles = Profile.objects.filter(roles__site__in=sites) # Need to check if it has a role with site field in sites
+        # Need to check if it has a role with site field in sites
+        profiles = Profile.objects.filter(roles__site__in=sites).distinct()
         return profiles
 
 @receiver(post_save, sender=User)

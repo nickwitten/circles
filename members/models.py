@@ -59,7 +59,6 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
     def order_residences(self):
         return self.residences.order_by('-start_date')
 
-
     def order_roles(self):
         return self.roles.order_by('-start_date')
 
@@ -93,6 +92,7 @@ class Residence(models.Model):
     def __str__(self):
         return f'{self.street_address}'
 
+    @staticmethod
     def get_related(profile):
         return profile.order_residences()
 
@@ -120,6 +120,7 @@ class Role(models.Model):
     def __str__(self):
         return f'{self.profile} {self.start_date}'
 
+    @staticmethod
     def get_related(profile):
         return profile.order_roles()
 
@@ -130,8 +131,9 @@ class Training(models.Model):
     end_date = models.DateField(blank=True,null=True)
 
     def __str__(self):
-        return f'{self.profile} {self.start_date}'
+        return f'{self.profile} - {self.subject}'
 
+    @staticmethod
     def get_related(profile):
         return profile.order_training()
 
@@ -187,6 +189,7 @@ class Child(models.Model):
     def middle_initial(self):
         return self.middle_name[0]
 
+    @staticmethod
     def get_related(profile):
         return profile.order_children()
 
@@ -208,8 +211,8 @@ class Child(models.Model):
 
 class FilterSet(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='filtersets')
-    title = models.CharField(max_length=32)
-    filterset = models.CharField(max_length=512)
+    title = models.CharField(max_length=32, default='')
+    filterset = models.CharField(max_length=512, default='[]')
 
     def __str__(self):
         return f'{self.user.username} {self.title}'

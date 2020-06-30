@@ -25,10 +25,7 @@ urlpatterns = [
     path('profile/childinfo/child/<int:pk>/update',views.ChildUpdateView.as_view(),name='update-child'),
     path('profile/childinfo/child/<int:pk>/delete',views.ChildDeleteView.as_view(),name='delete-child'),
     path('profile/get-profiles',views.GetProfiles,name='get-profiles'),
-    path('profile/create-filterset',views.CreateFilterset,name='create-filterset'),
-    path('profile/get-filtersets',views.GetFiltersets,name='get-filtersets'),
-    path('profile/add-filterset-title',views.AddFiltersetTitle,name='add-filterset-title'),
-    path('profile/delete-filterset',views.DeleteFilterset,name='delete-filterset'),
+    path('profile/filtersets',views.UserFiltersets,name='filtersets'),
     path('profile/get-filterinput',views.FilterInput,name='get-filterinput'),
     path('profile/get-profiles-excel',views.ExcelDump,name='get-profiles-excel'),
 ]

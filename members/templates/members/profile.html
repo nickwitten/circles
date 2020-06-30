@@ -36,14 +36,16 @@
 
 <!-------------------- Housing ---------------------------------->
 
+            {% with residences=object.order_residences %}
+
             <div id="housing_container" class="profile-container shadow">
 
                 <div class="border-bottom text-center">
                     <h3>Housing</h3>
                 </div>
 
-                {% if object and object.order_residences %}
-                {% for residence in object.order_residences %}
+                {% if residences %}
+                {% for residence in residences %}
 
                 <div class="residence_container border-bottom">
                     <div class="residence-left">
@@ -95,7 +97,11 @@
         </div>
         <div class="col-6 half">
 
+        {% endwith %}
+
 <!-------------------- Children ------------------------------->
+
+            {% with children=object.order_children %}
 
             <div id="children_container" class="profile-container shadow">
                 <div class="border-bottom text-center">
@@ -103,8 +109,8 @@
                 </div>
 
                 <div class="border-bottom">
-                    {% if object and object.order_children %}
-                        {% for child in object.order_children %}
+                    {% if children %}
+                        {% for child in children %}
                         <div class="child-container">
                             <p class="name">{{ child.first_name }} {{ child.last_name }}</p>
                             <p class="age">{{ child.calculate_age }}</p>
@@ -125,7 +131,11 @@
 
             </div>
 
+            {% endwith %}
+
 <!-------------------- Roles ---------------------------------->
+
+            {% with roles=object.order_roles %}
 
             <div id="roles_container" class="profile-container shadow">
 
@@ -142,8 +152,8 @@
                 </div>
 
                 <!-- Role Objects -->
-                {% if object and object.order_roles %}
-                {% for role in object.order_roles %}
+                {% if roles %}
+                {% for role in roles %}
                 <div class="role-container border-bottom">
                     <div class="role-left">
                         <p class="dates p-2">
@@ -156,7 +166,7 @@
                             <a class="modal-trigger blacklink far fa-edit icon-btn text-small mr-2 ml-2"
                                data-id="{% url 'update-role' role.pk %}">
                             </a>
-                            {% if object.order_roles|length != 1 %}
+                            {% if roles|length != 1 %}
                             <a class="modal-trigger blacklink far fa-trash-alt icon-btn text-small mr-2 ml-2"
                                data-id="{% url 'delete-role' role.pk %}">
                             </a>
@@ -190,7 +200,11 @@
                 {% endif %}
             </div>
 
+            {% endwith %}
+
 <!----------------------- Training Container ---------------------------------->
+
+            {% with trainings=object.order_training %}
 
             <div id="trainings_container" class="profile-container shadow">
                 <div class="border-bottom text-center">
@@ -198,12 +212,12 @@
                 </div>
 
                 <div class="border-bottom">
-                    {% if object and object.order_training %}
+                    {% if trainings %}
                         <div class="border-bottom flex">
                             <h6 class="subject d-inline-block">Subject</h6>
                             <h6 class="date d-inline-block">Date Completed</h6>
                         </div>
-                        {% for training in object.order_training %}
+                        {% for training in trainings %}
                         <div class="training-container">
                             <p class="subject">{{ training.subject }}</p>
                             <p class="date">{{ training.end_date }}</p>
@@ -232,6 +246,8 @@
                 {% endif %}
 
             </div>
+
+            {% endwith %}
 
 <!-------------------------------------------------------------------------->
 

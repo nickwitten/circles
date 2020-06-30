@@ -50,28 +50,6 @@ function addProfileHTML(profile) {
 
 // Add the filter and delete button into the list of active filters
 function addFilterHTML(filter, filter_number) {
-  // var filtertext = {
-  //   current_site:"Site",
-  //   first_city:"City",
-  //   first_state:"State",
-  //   first_zip:"Zip",
-  //   first_street_address:"Street Address",
-  //   current_role:"Current Role",
-  //   all_roles:"All Roles",
-  //   current_cohort:"Cohort",
-  //   current_resource_team:"Resource Team",
-  //   current_resource_team_role:"Resource Team Role",
-  //   excurrent_training:"Completed Training",
-  //   excurrent_not_training:"Incomplete Training",
-  //   first_home_ownership:"Home Ownership",
-  //   first_habitat_home:"Habitat Home",
-  //   first_safe_home:"Safe Home",
-  //   first_repair_home:"Home Needs Repair",
-  //   gender:"Gender",
-  //   race:"Race",
-  //   last_name:"Last Name",
-  //   current_role:"Current Role",
-  // }
   filtertext = {};
   for (var i = 0; i < form_choices_text.length; i++) {
     filtertext[form_choices_text[i][0]] = form_choices_text[i][1];
@@ -109,6 +87,7 @@ function addFilterSetsHTML(filtersets) {
       $("<option/>")
         .text(filtersets[i]["title"])
         .attr("value",'{"title": "' + filtersets[i]["title"].toString() + '", "filters": ' + filtersets[i]["filters"].toString() + '}')
+        .attr('data-pk', filtersets[i]["pk"])
     );
   }
 }
@@ -180,17 +159,19 @@ function addListTitleInputHTML(title) {
       .attr("maxlength",40)
       .attr("onInput","expandTitle()")
       .attr("value", title)
-      .change(function() {addFiltersetTitle($(this).val());})
+      .change(function() {addFiltersetTitle($(this).val(), $('#delete_filterset_btn').attr('data-pk'));})
   )
 }
 
 // Add the button to delete a filterset
-function addListDeleteBtnHTML() {
+function addListDeleteBtnHTML(pk) {
+  console.log(pk);
   $("#delete_list_btn_container").append(
     $("<button/>")
       .attr("id","delete_filterset_btn")
+      .attr("data-pk", pk)
       .addClass("far fa-trash-alt icon-btn text-small")
-      .on("click", function() {deleteFilterset();})
+      .on("click", function() {deleteFilterset($(this).attr('data-pk'));})
   )
 }
 
@@ -244,18 +225,24 @@ $(document).ready(function(){
 // Get the profiles based on current filters and search input and add them
 // to the page
 function getProfiles() {
+  $('#result-list').empty(); // Clear the result list
   toolinputform = collectPageData();
   // Ajax call to the backend (GetProfiles)
   $.ajax({
     url: '/members/profile/get-profiles',
     data: toolinputform,
-    method: 'POST',
+    method: 'GET',
+    beforeSend: function() {
+        $('#profiles_loading_container .loading').show();
+    },
+    complete: function() {
+        $('#profiles_loading_container .loading').hide();
+    },
     success: function (data) {
       // Returned:
       // group object containing a list of profile objects
       // Profile objects contain first name, last name, pk, and data
       var groups = data.groups;
-      $('#result-list').html(null); // Clear the result list
       // Loop throught the groups
       var i = 0;
       var j = groups.length;
@@ -275,7 +262,10 @@ function getProfiles() {
           addProfileHTML(group['profiles'][k]);
         };
       };
-    }
+    },
+    error: function() {
+        addAlertHTML("Failed to Fetch Profiles", 'danger');
+    },
   });
 }
 
@@ -354,17 +344,16 @@ function addFilter() {
   filters.push( {"filterby": filterBy, "filterinput": filterInput} );
   // Update the page
   getFilters();
-  getProfiles();
   // Clear the filter by
   $('#filter_by').val('');
-  $('#filter_input_container').html(null); // Remove the input
+  $('#filter_input_container').empty(); // Remove the input
   addFilterInputHTML([]); // Add an input to hold the place
   // Deactivate any active lists
-  $('#list_title').html(null);
-  $("#delete_list_btn_container").html(null);
+  $('#list_title').empty();
+  $("#delete_list_btn_container").empty();
   $('#list_select').val(null);
-  $('#filterset_create_btn_container').html(null); // Remove buttons
-  $('#filter_submit_btn_container').html(null);
+  $('#filterset_create_btn_container').empty(); // Remove buttons
+  $('#filter_submit_btn_container').empty();
   // Add the create filterset button
   //addCreateFiltersetBtnHTML();
 }
@@ -379,8 +368,8 @@ function removeFilter(button) {
   getFilters();
   getProfiles();
   // Deactivate any active lists
-  $('#list_title').html(null);
-  $('#delete_list_btn_container').html(null);
+  $('#list_title').empty();
+  $('#delete_list_btn_container').empty();
   $('#list_select').val(null);
 }
 
@@ -390,110 +379,174 @@ function removeFilter(button) {
 // Get the users filtersets and fill out the list drop down
 function getUserFilterSets() {
   var filterset_select_element = $("#list_select")
-  filterset_select_element.html(null); // Clear the drop down
-  $("#filterset_create_btn_container").html(null); // Remove create filterset
-  // button
+  filterset_select_element.empty(); // Clear the drop down
   // Retrieve the user's filtersets
   $.ajax({
-    url: "/members/profile/get-filtersets",
+    url: "/members/profile/filtersets",
     dataType: 'json',
+    beforeSend: function() {
+        $('#top_search_container .loading').show();
+    },
+    complete: function() {
+        $('#top_search_container .loading').hide();
+    },
     success: function (data) {
       // Data contains list of filterset objects which contain
       // a title and a list of filter objects
       addFilterSetsHTML(data.filtersets); // Add the html elements
     },
-    async: false,
+    error: function() {
+        addAlertHTML("Unable to Fetch User Lists", 'danger');
+    }
   });
 };
 
 
 // Change the filter input to the appropriate options
 function getFilterInputField(filter_by) {
+  $("#filter_input_container").empty(); // Clear the input container
+  $("#filter_submit_btn_container").empty(); // Clear the button container
   $.ajax({
     url: "/members/profile/get-filterinput",
     data: {
       'filterby':filter_by,
     },
     dataType: 'json',
-    success: function (data) {
-      options = data.options;
+    beforeSend: function() {
+        $('#filter_container .loading').show();
     },
-    async: false,
+    complete: function() {
+        $('#filter_container .loading').hide();
+    },
+    success: function (data) {
+        addFilterInputHTML(data.options); // Add the correct input type to the container
+        addFilterSubmitHTML();
+    },
+    error: function() {
+        addAlertHTML("Failed to Load Field Values", 'danger');
+    }
   });
-  $("#filter_input_container").html(null); // Clear the input container
-  $("#filter_submit_btn_container").html(null); // Clear the button container
-  addFilterInputHTML(options); // Add the correct input type to the container
-  addFilterSubmitHTML();
-  getProfiles() // update page
 }
 
-// Adds a the current filters to a filterset and adds to users filtersets
+// Adds the current filters to a filterset and adds to users filtersets
 function createFilterset() {
+  // Adds filter if not active yet
+  if ($('#filter_by').val() != '') {
+    addFilter();
+  }
+  $('#filter_by').val('');
+  $('#filter_input').val('');
+  var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
   $.ajax({
-    url: "/members/profile/create-filterset",
+    url: "/members/profile/filtersets",
+    headers: {
+      'X-CSRFToken': csrftoken,
+    },
     data: {
       'filters' : JSON.stringify(filters),
     },
-    dataType: 'json',
-    success: function (data) {
-      $("#list_title").html(null); // Clear the title
-      addListTitleInputHTML(null); // Add the title input to the page
-      $("#delete_list_btn_container").html(null); // Clear button
-      addListDeleteBtnHTML(); // Add the delete button
-      $("#title_input").focus(); // Place the cursor in the input
-      getUserFilterSets(); // Update page
+    method: 'post',
+    beforeSend: function() {
+      $('#top_search_container .loading').show();
     },
-    async: false
+    complete: function() {
+      $('#top_search_container .loading').hide();
+    },
+    success: function (data) {
+      $("#list_title").empty(); // Clear the title
+      addListTitleInputHTML(null); // Add the title input to the page
+      $("#delete_list_btn_container").empty(); // Clear button
+      addListDeleteBtnHTML(data.pk); // Add the delete button
+      $("#title_input").focus(); // Place the cursor in the input
+      $('#list_select').empty();
+      addFilterSetsHTML(data.filtersets);
+    },
+    error: function() {
+      addAlertHTML('Unable to Create List', 'danger');
+    },
   });
 }
 
 // Add a title to the new filterset
-function addFiltersetTitle(title) {
+function addFiltersetTitle(title, pk) {
+  var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
   $.ajax({
-    url: "/members/profile/add-filterset-title",
+    url: "/members/profile/filtersets",
+    headers: {
+        'X-CSRFToken': csrftoken,
+    },
     data: {
-      'filters' : JSON.stringify(filters),
-      'title' : title
+      'title' : title,
+      'pk': pk,
     },
+    method: 'POST',
     dataType: 'json',
-    success: function (data) {
-        // Update page
-        getUserFilterSets();
+    beforeSend: function() {
+        $('#top_search_container .loading').show();
     },
-    async: false,
-  });
-  // Set the list select to the new title
-  $("#list_select option").each(function () {
-          if ($(this).html() == title) {
-              $(this).attr("selected", "selected");
-              return;
-          }
+    complete: function() {
+        $('#top_search_container .loading').hide();
+    },
+    success: function (data) {
+        // update list select
+        $('#list_select').empty();
+        addFilterSetsHTML(data.filtersets);
+        // select updated list
+        $('#list_select option').each(function() {
+            if ($(this).attr('data-pk') == data.pk) {
+                $(this).attr("selected", "selected");
+            }
+        });
+    },
+    error: function() {
+        addAlertHTML('Unable to Update List Title', 'danger');
+    },
   });
   $("#title_input").blur(); // Remove cursor from field
 }
 
 // Delete a filterset from database
-function deleteFilterset() {
+function deleteFilterset(pk) {
+  var csrftoken = $('[name = "csrfmiddlewaretoken"').val();
   $.ajax({
-    url: "/members/profile/delete-filterset",
-    data: {
-      'filters': JSON.stringify(filters), // Send filters
-      'title': $("#title_input").val(), // Send title
+    url: "/members/profile/filtersets",
+    headers: {
+        'X-CSRFToken': csrftoken
     },
+    data: {
+        'pk': pk,
+        'delete': true,
+    },
+    method: 'POST',
     dataType: 'json',
+    beforeSend: function() {
+        $('#top_search_container .loading').show();
+    },
+    complete: function() {
+        $('#top_search_container .loading').hide();
+    },
     success: function (data) {
       filters = []; // Remove all filters
       getProfiles(); // Update page
       getFilters();
-      getUserFilterSets();
-      $("#list_title").html(null); // Clear the title
-      $("#delete_list_btn_container").html(null); // Clear the button
+      // Remove list from list select
+      $("#list_select option").each(function() {
+        if ($(this).attr('data-pk') == pk) {
+            $(this).remove();
+        }
+      });
+      $("#list_title").empty(); // Clear the title
+      $("#delete_list_btn_container").empty(); // Clear the button
+    },
+    error: function() {
+        addAlertHTML("Unable to Delete List", 'danger');
     }
   });
 }
 
 // Add a filterset's filters to active filters
 function activateFilterset(option_val) {
+  pk = $("#list_select").find('option:selected').attr('data-pk');
   // Get the filterset from the option value
   if (option_val) {
     var value = JSON.parse(option_val);
@@ -503,15 +556,16 @@ function activateFilterset(option_val) {
   title = value["title"];
   filters = value["filters"];
   // Add the title
-  $("#list_title").html(null); // Clear the title
-  $("#delete_list_btn_container").html(null); // Clear button
+  $("#list_title").empty(); // Clear the title
+  $("#delete_list_btn_container").empty(); // Clear button
   if (option_val) { // If deselecting a list add no title
     addListTitleInputHTML(title); // Add the title input to the page
-    addListDeleteBtnHTML(); // Add the delete button
+    addListDeleteBtnHTML(pk); // Add the delete button
   }
   // Clear existing filters
   $('#filter_by').val('');
-  getFilterInputField();
+  $('#filter_input_container').empty();
+  addFilterInputHTML([]);
   // update
   getFilters();
   getProfiles();
@@ -530,7 +584,7 @@ function deleteDataBtn(delete_select) {
   if (delete_select) {
     $("#data_displayed_container").children().last().remove();
   }
-  $("#data_delete_btn_container").html(null); // Delete existing button
+  $("#data_delete_btn_container").empty(); // Delete existing button
   // If there are more than one data selects add the data delete button
   if ($("#data_displayed_container > select").length > 1) {
     addDataDeleteBtnHTML();
@@ -584,10 +638,7 @@ $("#tools_btn").on("click", function() {
   $('#tool_container').toggle();
 });
 $("#filterset_create").on("click", function() {
-  $('#filter_by').val('');
-  $('#filter_input').val('');
   createFilterset(); // Create a list
-  getProfiles();
 });
 $("#add_data_btn").on("click", function() {
   addDataSelectHTML(); // Add a select element

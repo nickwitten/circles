@@ -27,8 +27,13 @@
           {{ form.searchinput }}
           <div class="input-group-append">
             <button id="tools_btn" class="btn btn-secondary" type="button">Tools</button>
-            <select id="list_select" class="d-inline-block rounded-0 custom-select bg-secondary text-white" name="">
-            </select>
+            <div class="p-relative">
+              <div class="loading" style="display: none;">
+                <div class="small spinner"></div>
+              </div>
+              <select id="list_select" class="d-inline-block rounded-0 custom-select bg-secondary text-white" name="">
+              </select>
+            </div>
           </div>
         </div>
 
@@ -43,7 +48,12 @@
                 {% endfor %}
               </select>
               <p class="">Filter Input: </p>
-              <div id="filter_input_container" class="">
+              <div class="p-relative">
+                <div class="loading" style="display: none;">
+                  <div class="small spinner"></div>
+                </div>
+                <div id="filter_input_container" class="">
+                </div>
               </div>
               <div id="filter_submit_btn_container">
               </div>
@@ -84,7 +94,7 @@
 
 
 
-    <div class="text-center mb-2">
+    <div id="title_container" class="text-center mb-2">
       <div id="list_title">
       </div>
 
@@ -92,11 +102,16 @@
       </div>
     </div>
 
-    <div id="create_profile" class="pt-2 pb-2 border">
-      <a href="create_profile/">+ Create Profile</a>
+    <div id="profiles_loading_container">
+      <div id="create_profile" class="pt-2 pb-2 border">
+        <a href="create_profile/">+ Create Profile</a>
+      </div>
+      <ul class="list-group" id="result-list">
+      </ul>
+      <div class="loading" style="display: none;">
+        <div class="spinner"></div>
+      </div>
     </div>
-    <ul class="list-group" id="result-list">
-    </ul>
 
 
 

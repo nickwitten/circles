@@ -373,6 +373,9 @@ header a{
 .flex-center {
     margin: auto;
 }
+.p-relative {
+    position: relative;
+}
 .rounded {
     border-radius: 2px;
 }
@@ -403,6 +406,10 @@ header a{
     height: 25px;
     width: 25px;
     transform-origin: left;
+}
+.loading .small.spinner {
+    height: 10px;
+    width: 10px;
 }
 @keyframes spin {
     0% {
