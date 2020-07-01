@@ -337,7 +337,7 @@ header a{
 .expanding_input,
 .expanding_size {
   margin: 0;
-  padding: 1vw;
+  padding: 5px;
   border: 1px solid #ccc;
   box-radius: 3px;
   font-family: Raleway, sans-serif;

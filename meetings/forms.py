@@ -10,7 +10,9 @@ class MeetingCreationForm(forms.ModelForm):
         fields = '__all__'
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
         super().__init__(*args, **kwargs)
+        self.fields['site'] = forms.ModelChoiceField(user.userinfo.user_site_access())
         self.fields['type'].widget.attrs['oninput'] = 'expandTitle();'
         self.fields['type'].widget.attrs['class'] = 'expanding_input'
         self.fields['type'].widget.attrs['placeholder'] = 'Type'

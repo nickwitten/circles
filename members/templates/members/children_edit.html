@@ -47,7 +47,7 @@
   $(document).ready(function() {
 
     $(".create-childinfo").modalForm({
-      formURL: "{% url 'create-childinfo' profile_pk %}"
+      formURL: "{% url 'create-childinfo' profile.pk %}"
     });
 
     $(".modal-trigger").each( function () {

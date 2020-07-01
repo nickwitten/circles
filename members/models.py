@@ -211,8 +211,8 @@ class Child(models.Model):
 
 class FilterSet(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='filtersets')
-    title = models.CharField(max_length=32, default='')
-    filterset = models.CharField(max_length=512, default='[]')
+    title = models.CharField(max_length=32, null=True, blank=True)
+    filters = models.CharField(max_length=512, default='[]')
 
     def __str__(self):
         return f'{self.user.username} {self.title}'

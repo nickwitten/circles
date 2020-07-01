@@ -1,31 +1,38 @@
 from django import forms
 from bootstrap_modal_forms.forms import BSModalForm
-from .models import Profile, Residence, Role, Training, Child, ChildInfo, Site
+from .models import Profile, Residence, Role, Training, Child, ChildInfo, Site, FilterSet
+from django.contrib.auth.models import User
 from .data import form_choices_text
 
 
-class RoleCreationForm(BSModalForm):
+class FieldStyleMixin:
 
+    def field_styles(self):
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = "form-control"
+
+
+class RoleCreationForm(FieldStyleMixin, BSModalForm):
     class Meta:
         model = Role
         exclude = ('profile',)
         labels = {
-        "end_date":"End date (leave empty if current)"
+            "end_date": "End date (leave empty if current)"
         }
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
-        super(RoleCreationForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if user:
             sites = user.userinfo.user_site_access()
+            profiles = user.userinfo.user_profile_access()
             self.fields['site'] = forms.ModelChoiceField(sites)
-        for visible in self.visible_fields():
-            #gives text input crispy classes
-            visible.field.widget.attrs['class'] = "form-control"
+        self.field_styles()
 
-class ProfileCreationForm(forms.ModelForm):
-    site = forms.ModelChoiceField(Site.objects.all())
-    position = forms.ChoiceField(choices=[('','---------')] + Role.position_choices)
+
+class ProfileCreationForm(FieldStyleMixin, forms.ModelForm):
+    site = forms.ModelChoiceField(None)
+    position = forms.ChoiceField(choices=[('', '---------')] + Role.position_choices)
 
     class Meta:
         model = Profile
@@ -37,42 +44,32 @@ class ProfileCreationForm(forms.ModelForm):
         if user:
             sites = user.userinfo.user_site_access()
             self.fields['site'] = forms.ModelChoiceField(sites)
-        for visible in self.visible_fields():
-            #gives text input crispy classes
-            visible.field.widget.attrs['class'] = 'form-control'
+        self.field_styles()
 
-class ProfileUpdateForm(forms.ModelForm):
-
+class ProfileUpdateForm(FieldStyleMixin, forms.ModelForm):
     class Meta:
         model = Profile
         fields = '__all__'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for visible in self.visible_fields():
-            #gives text input crispy classes
-            visible.field.widget.attrs['class'] = "form-control"
+        self.field_styles()
 
-class ResidenceCreationForm(BSModalForm):
-
+class ResidenceCreationForm(FieldStyleMixin, BSModalForm):
     class Meta:
         model = Residence
-        #fields = '__all__'
+        # fields = '__all__'
         exclude = ('profile',)
         labels = {
-        "end_date":"End date (leave empty if current)"
+            "end_date": "End date (leave empty if current)"
         }
 
     def __init__(self, *args, **kwargs):
-        super(ResidenceCreationForm, self).__init__(*args, **kwargs)
-        for visible in self.visible_fields():
-
-            #gives text input crispy classes
-            visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
+        super().__init__(*args, **kwargs)
+        self.field_styles()
 
 
-class TrainingAddForm(BSModalForm):
-
+class TrainingAddForm(FieldStyleMixin, BSModalForm):
     class Meta:
         model = Training
         exclude = ('profile',)
@@ -80,14 +77,10 @@ class TrainingAddForm(BSModalForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(TrainingAddForm, self).__init__(*args, **kwargs)
-        for visible in self.visible_fields():
+        super().__init__(*args, **kwargs)
+        self.field_styles()
 
-            #gives text input crispy classes
-            visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
-
-class ChildCreationForm(forms.ModelForm):
-
+class ChildCreationForm(FieldStyleMixin, forms.ModelForm):
     class Meta:
         model = Child
         exclude = ('child_info',)
@@ -95,41 +88,51 @@ class ChildCreationForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(ChildCreationForm, self).__init__(*args, **kwargs)
-        for visible in self.visible_fields():
+        super().__init__(*args, **kwargs)
+        self.field_styles()
 
-            #gives text input crispy classes
-            visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
-
-class ChildInfoCreationForm(BSModalForm):
-
+class ChildInfoCreationForm(FieldStyleMixin, BSModalForm):
     class Meta:
         model = ChildInfo
-        #fields = '__all__'
+        # fields = '__all__'
         exclude = ('profile',)
         labels = {
         }
 
     def __init__(self, *args, **kwargs):
         super(ChildInfoCreationForm, self).__init__(*args, **kwargs)
-        for visible in self.visible_fields():
-
-            #gives text input crispy classes
-            visible.field.widget.attrs['class'] = "form-field textinput textInput form-control"
+        self.field_styles()
 
 class ProfilesToolsForm(forms.Form):
     searchinput = forms.CharField(required=False,
                                   widget=forms.TextInput(attrs={
-                                    'class':"form-control",
-                                    'aria-describedby':'basic-addon1',
+                                      'class': "form-control",
+                                      'aria-describedby': 'basic-addon1',
                                   }))
     filters = forms.CharField(required=False)
     datatype = forms.CharField(required=False)
     sortby = forms.ChoiceField(required=False,
                                choices=form_choices_text,
                                widget=forms.Select(attrs={
-                                'class':'form-control',
-                                'type':'text',
-                                'placeholder':'Sort By',
-                                'default':None,
+                                   'class': 'form-control',
+                                   'type': 'text',
+                                   'placeholder': 'Sort By',
+                                   'default': None,
                                }))
+
+
+class UserListForm(forms.ModelForm):
+    class Meta:
+        model = FilterSet
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['user'].required = False
+
+    def save(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().save(commit=False)
+        if user:
+            self.instance.user = user
+        return super().save(*args, **kwargs)

@@ -16,7 +16,7 @@
 
   <div id="profile_search_content" class="content-section shadow">
 
-    <form id="tool_input_form" class="" action="post">
+    <form id="tool_input_form">
       {% csrf_token %}
       {{ form.filters.as_hidden }}
       {{ form.datatype.as_hidden }}
@@ -27,7 +27,7 @@
           {{ form.searchinput }}
           <div class="input-group-append">
             <button id="tools_btn" class="btn btn-secondary" type="button">Tools</button>
-            <div class="p-relative">
+            <div id="lists_loading_container" class="p-relative">
               <div class="loading" style="display: none;">
                 <div class="small spinner"></div>
               </div>
@@ -80,8 +80,8 @@
             </div>
 
             <div class="input btn-container">
-              <button id="filterset_create" class="btn btn-outline-secondary btn-sm">Create List</button>
-              <button id="export_excel_btn" class="btn btn-outline-secondary btn-sm">Export to Excel</button>
+              <a id="filterset_create" href="#" class="btn btn-outline-secondary btn-sm m-1">Create List</a>
+              <a id="export_excel_btn" href="#" class="btn btn-outline-secondary btn-sm m-1">Export to Excel</a>
             </div>
           </div>
 
@@ -90,17 +90,17 @@
     </form>
 
 
+    <form id="list_form">
+      {{ list_form.title.as_hidden }}
+      {{ list_form.filters.as_hidden }}
+      <div id="title_container" class="text-center mb-2">
+        <div id="list_title">
+        </div>
 
-
-
-
-    <div id="title_container" class="text-center mb-2">
-      <div id="list_title">
+        <div id="delete_list_btn_container" class="d-inline-block">
+        </div>
       </div>
-
-      <div id="delete_list_btn_container" class="d-inline-block">
-      </div>
-    </div>
+    </form>
 
     <div id="profiles_loading_container">
       <div id="create_profile" class="pt-2 pb-2 border">

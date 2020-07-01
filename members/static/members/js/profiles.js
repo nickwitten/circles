@@ -62,10 +62,11 @@ function addFilterHTML(filter, filter_number) {
     $('<a/>')
       .addClass("d-inline-block")
       .text(filtertext[filter["filterby"]] + ': ' + filter["filterinput"]),
-    // Trash can icon next to filter element
-    $('<button/>')
+    // X icon next to filter element
+    $('<a/>')
       .attr("id","delete-" + filter_number.toString())
-      .addClass("fas fa-times icon-btn text-small")
+      .attr("href", "#")
+      .addClass("fas fa-times blacklink text-small filter-remove")
       .click(function() { removeFilter($(this))})
   );
   $('#filter_list').append(container);
@@ -86,7 +87,7 @@ function addFilterSetsHTML(filtersets) {
     $('#list_select').append(
       $("<option/>")
         .text(filtersets[i]["title"])
-        .attr("value",'{"title": "' + filtersets[i]["title"].toString() + '", "filters": ' + filtersets[i]["filters"].toString() + '}')
+        .attr("value",'{"title": "' + filtersets[i]["title"] + '", "filters": ' + filtersets[i]["filters"] + '}')
         .attr('data-pk', filtersets[i]["pk"])
     );
   }
@@ -133,9 +134,10 @@ function addFilterInputHTML(options) {
 // Add filter submit button
 function addFilterSubmitHTML() {
   $("#filter_submit_btn_container").append(
-    $("<i/>")
+    $("<a/>")
       .attr("id","filter_submit")
-      .addClass("fas fa-plus-circle icon-btn d-inline-block")
+      .attr("href", "#")
+      .addClass("fas fa-plus-circle blacklink icon-btn d-inline-block")
       .on("click", function() {addFilter();})
   );
 }
@@ -165,12 +167,12 @@ function addListTitleInputHTML(title) {
 
 // Add the button to delete a filterset
 function addListDeleteBtnHTML(pk) {
-  console.log(pk);
   $("#delete_list_btn_container").append(
-    $("<button/>")
+    $("<a/>")
       .attr("id","delete_filterset_btn")
+      .attr("href", "#")
       .attr("data-pk", pk)
-      .addClass("far fa-trash-alt icon-btn text-small")
+      .addClass("far fa-trash-alt blacklink text-small")
       .on("click", function() {deleteFilterset($(this).attr('data-pk'));})
   )
 }
@@ -383,12 +385,11 @@ function getUserFilterSets() {
   // Retrieve the user's filtersets
   $.ajax({
     url: "/members/profile/filtersets",
-    dataType: 'json',
     beforeSend: function() {
-        $('#top_search_container .loading').show();
+        $('#lists_loading_container .loading').show();
     },
     complete: function() {
-        $('#top_search_container .loading').hide();
+        $('#lists_loading_container .loading').hide();
     },
     success: function (data) {
       // Data contains list of filterset objects which contain
@@ -436,6 +437,7 @@ function createFilterset() {
   }
   $('#filter_by').val('');
   $('#filter_input').val('');
+  form = getFiltersetForm()
   var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
   $.ajax({
     url: "/members/profile/filtersets",
@@ -443,14 +445,14 @@ function createFilterset() {
       'X-CSRFToken': csrftoken,
     },
     data: {
-      'filters' : JSON.stringify(filters),
+      'form' : form,
     },
     method: 'post',
     beforeSend: function() {
-      $('#top_search_container .loading').show();
+      $('#lists_loading_container .loading').show();
     },
     complete: function() {
-      $('#top_search_container .loading').hide();
+      $('#lists_loading_container .loading').hide();
     },
     success: function (data) {
       $("#list_title").empty(); // Clear the title
@@ -469,6 +471,7 @@ function createFilterset() {
 
 // Add a title to the new filterset
 function addFiltersetTitle(title, pk) {
+  var form = getFiltersetForm();
   var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
   $.ajax({
     url: "/members/profile/filtersets",
@@ -476,16 +479,15 @@ function addFiltersetTitle(title, pk) {
         'X-CSRFToken': csrftoken,
     },
     data: {
-      'title' : title,
+      'form': form,
       'pk': pk,
     },
     method: 'POST',
-    dataType: 'json',
     beforeSend: function() {
-        $('#top_search_container .loading').show();
+        $('#lists_loading_container .loading').show();
     },
     complete: function() {
-        $('#top_search_container .loading').hide();
+        $('#lists_loading_container .loading').hide();
     },
     success: function (data) {
         // update list select
@@ -520,10 +522,10 @@ function deleteFilterset(pk) {
     method: 'POST',
     dataType: 'json',
     beforeSend: function() {
-        $('#top_search_container .loading').show();
+        $('#lists_loading_container .loading').show();
     },
     complete: function() {
-        $('#top_search_container .loading').hide();
+        $('#lists_loading_container .loading').hide();
     },
     success: function (data) {
       filters = []; // Remove all filters
@@ -542,6 +544,12 @@ function deleteFilterset(pk) {
         addAlertHTML("Unable to Delete List", 'danger');
     }
   });
+}
+
+function getFiltersetForm() {
+    $('#id_title').val($('#title_input').val());
+    $('#id_filters').val(JSON.stringify(filters));
+    return $('#list_form').serialize()
 }
 
 // Add a filterset's filters to active filters
@@ -618,10 +626,12 @@ function exportToExcel() {
 $('#tool_input_form').on('submit', function(event){
     event.preventDefault();
 });
+$('#list_form').on('submit', function(event) {
+    event.preventDefault();
+});
 $("#id_searchinput").on("keyup", function(){
   getProfiles();
 });
-
 $("#filter_by").change(function() {
   getFilterInputField($(this).val()); // Add an input field
 });

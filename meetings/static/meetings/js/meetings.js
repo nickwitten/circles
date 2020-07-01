@@ -232,7 +232,7 @@ var closeFunctions = {
 ////////////////////////// Top Level Functions ///////////////////////////////////
 
 $(document).ready(function(){
-    buildCalendar(monthOffset, null);
+    buildCalendar(monthOffset, 0);
     startListeners();
     expandTitle();
     setColorSelect('hsla(0.0, 93%, 64%, 0.3)');
@@ -241,7 +241,7 @@ $(document).ready(function(){
     $('#id_links').val('[]');
     document.addEventListener("click", function(e) {
         for (const id in closeFunctions) {
-            if ($(e.target).parents('#' + id).length == 0 && e.target.id != id) {
+            if (($(e.target).parents('#' + id).length == 0) && (e.target.id != id)) {
                 closeFunctions[id]();
             }
         }
@@ -366,7 +366,7 @@ function deleteMeeting(pk) {
         },
         success: function() {
             hideMeetingInfo();
-            buildCalendar();
+            buildCalendar(monthOffset, 0);
         },
         error: function() {
             addAlertHTML("Unable to Delete Meeting", "danger");
@@ -429,7 +429,7 @@ function selectSite(selected) {
         $('#calendar_menu .site_select').find('.all input').prop('checked', false);
     }
 
-    buildCalendar(monthOffset);
+    buildCalendar(monthOffset, 0);
 }
 
 ///////////////////// Helper Functions /////////////////////////////
@@ -759,7 +759,7 @@ function getUserFilterSets() {
   filterset_select_element.html(null); // Clear the drop down
   // Retrieve the user's filtersets
   $.ajax({
-    url: "/members/profile/get-filtersets",
+    url: "/members/profile/filtersets",
     dataType: 'json',
     beforeSend: function() {
         $('attendance_container .loading').show();
@@ -1065,7 +1065,7 @@ function startListeners() {
     $(".lists").on("click",function() {
         updatePeopleSelect();
     });
-    $("#date_container").on("click", function() {
+    $("#date_select_btn").on("click", function() {
         toggleDatePicker(parseInt($(this).attr('data-month_offset')));
     });
     $('#attendance_btn').on("click", function() {

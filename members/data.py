@@ -32,7 +32,7 @@ keywords = {
     'current_resource_team_role':'resource_team_role',
     # Training Data
     'excurrent_training':'subject',
-    'excurrent_not_training':'subject',
+    'current_training':'subject',
     # Child Data
     'all_children':'first_name',
     # Profile Data
@@ -59,6 +59,7 @@ form_display_text = {
     'current_resource_team':'Resource Team',
     'current_resource_team_role':'Resource Team Role',
     'excurrent_training':'Training',
+    'current_training': 'Incomplete Training',
     'email':'Email',
     'cell':'Cell',
     'circles_id':'ID',

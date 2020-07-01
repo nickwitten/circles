@@ -1,6 +1,6 @@
 import os
 
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 import json
 from django.shortcuts import render
 import datetime
@@ -14,15 +14,19 @@ from circles import settings
 import json
 
 def meetings(request):
+    if not request.user.is_authenticated:
+        raise Http404()
     site_access = request.user.userinfo.user_site_access_dict()
     context = {
-        'form': forms.MeetingCreationForm,
+        'form': forms.MeetingCreationForm(user=request.user),
         'site_access': site_access,
     }
     return render(request, 'meetings/meetings.html', context)
 
 
 def get_meetings(request):
+    if not request.user.is_authenticated:
+        raise Http404()
     sites = json.loads(request.GET.get('site_pks'))
     baseyear = int(request.GET.get('baseyear'))
     basemonth = int(request.GET.get('basemonth'))
@@ -42,6 +46,8 @@ def get_meetings(request):
     return JsonResponse(data)
 
 def get_meeting_info(request):
+    if not request.user.is_authenticated:
+        raise Http404()
     pk = request.GET.get('pk')
     lists = request.GET.get('lists')
     meetings = request.user.userinfo.user_meeting_access()
@@ -64,7 +70,7 @@ def get_meeting_info(request):
         attendees = []
         pk = type = start_date = start_time = end_time = list_pks = color = site = location = notes = links = files = None
     if not lists:
-        lists = [list.filterset for list in saved_lists]
+        lists = [list.filters for list in saved_lists]
     else:
         lists = [int(pk) for pk in json.loads(lists)]
         lists = [list.filterset for list in FilterSet.objects.filter(pk__in=lists)]
@@ -92,6 +98,8 @@ def get_meeting_info(request):
     return JsonResponse(data)
 
 def post_meeting_info(request, pk):
+    if not request.user.is_authenticated:
+        raise Http404()
     if request.method == 'POST':
         form_dict = QueryDict(request.POST.get('form'))
         dates = json.loads(request.POST.get('dates'))
@@ -105,8 +113,9 @@ def post_meeting_info(request, pk):
                 old_meeting = models.Meeting.objects.get(pk=pk)
                 meeting_files = old_meeting.files.all()  # Get attached files
             for i, date in enumerate(dates):
-                form = forms.MeetingCreationForm(form_dict)
+                form = forms.MeetingCreationForm(form_dict, user=request.user)
                 if form.is_valid():
+                    print(form.cleaned_data)
                     meeting = form.save(commit=False)
                     # Change Date
                     month = int(date[0:2])
@@ -140,21 +149,25 @@ def post_meeting_info(request, pk):
             # Update single meeting
             if pk:
                 meeting = models.Meeting.objects.get(pk=pk)
-                form = forms.MeetingCreationForm(form_dict, instance=meeting)
+                form = forms.MeetingCreationForm(form_dict, user=request.user, instance=meeting)
             # Create single meeting
             else:
-                form = forms.MeetingCreationForm(form_dict)
+                form = forms.MeetingCreationForm(form_dict, user=request.user)
             meeting = form.save() if form.is_valid() else None
             pks = [meeting.pk] if meeting else [0]
         data = {'pks':pks}
         return JsonResponse(data)
 
 def meeting_files(request, pk):
+    if not request.user.is_authenticated:
+        raise Http404()
     if request.method == 'POST':
         file_pk = request.POST.get('file_pk')
         # Delete file if pk in data
         if file_pk:
             MeetingFile = models.MeetingFile.objects.get(pk=file_pk)
+            if MeetingFile.meeting.site not in request.user.userinfo.user_site_access():
+                raise Http404('Access Denied')
             MeetingFile.delete_file()
             MeetingFile.delete()
             data = {
@@ -162,8 +175,10 @@ def meeting_files(request, pk):
             }
         # Create new file otherwise
         else:
-            files = request.FILES
             meeting = models.Meeting.objects.get(pk=pk)
+            if meeting.site not in request.user.userinfo.user_site_access():
+                raise Http404('Access Denied')
+            files = request.FILES
             created_files = []
             for title, file in files.items():
                 meeting_file = models.MeetingFile(meeting=meeting, file=file, title=title)
@@ -176,8 +191,12 @@ def meeting_files(request, pk):
         return JsonResponse(data)
 
 def delete_meeting(request, pk):
+    if not request.user.is_authenticated:
+        raise Http404()
+    meeting = models.Meeting.objects.get(pk=pk)
+    if meeting.site not in request.user.userinfo.user_site_access():
+        raise Http404('Access Denied')
     if request.method == 'POST':
-        meeting = models.Meeting.objects.get(pk=pk)
         for MeetingFile in meeting.files.all():
             MeetingFile.delete_file()
         meeting.delete()

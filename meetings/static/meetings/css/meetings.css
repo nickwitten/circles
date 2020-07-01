@@ -257,7 +257,7 @@
 #meeting_delete_btn {
     position: absolute;
     right: 0px;
-    bottom: 1.5vw;
+    bottom: 10px;
 }
 .confirm-delete,
 .modal {
@@ -300,7 +300,7 @@
     width: 15px;
     height: 15px;
     border-radius: 2px;
-    bottom: 1.4vw;
+    bottom: 10px;
     right: 20px;
 }
 #colors {
