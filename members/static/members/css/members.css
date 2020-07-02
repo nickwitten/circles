@@ -254,6 +254,8 @@ button:focus {
   height: 88vh;
   min-width: 350px;
   min-height: 430px;
+  padding: 10px 20px;
+  margin: 10px auto;
 }
 #top_search_container input,
 #tools_btn,

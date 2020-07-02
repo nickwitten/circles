@@ -111,7 +111,10 @@
 }
 #calendar_content .load-container {
     position: relative;
-    height: 80%
+    height: 80%;
+}
+#calendar_content .loading {
+    z-index: 1;
 }
 #days_container {
     height: 100%;

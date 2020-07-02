@@ -1,13 +1,10 @@
-import os
-
 from django.http import JsonResponse, Http404
-import json
 from django.shortcuts import render
 import datetime
 from . import models
 from . import forms
 from members.data import filter_profiles
-from members.models import Profile, FilterSet
+from members.models import FilterSet
 from django.http import QueryDict
 from django.core.files.base import ContentFile
 from circles import settings
@@ -103,7 +100,6 @@ def post_meeting_info(request, pk):
     if request.method == 'POST':
         form_dict = QueryDict(request.POST.get('form'))
         dates = json.loads(request.POST.get('dates'))
-        meeting = None
         pks = []
         # Create on multiple dates
         if len(dates) > 1:
