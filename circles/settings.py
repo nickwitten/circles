@@ -27,6 +27,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+STATICFILES_DIRS = [
+    BASE_DIR + '/users/static',
+    BASE_DIR + '/dashboard/static',
+    BASE_DIR + '/members/static',
+    BASE_DIR + '/meetings/static',
+    BASE_DIR + '/learning/static',
+]
 
 # Application definition
 
@@ -37,6 +44,7 @@ INSTALLED_APPS = [
     'members.apps.MembersConfig',
     'dashboard.apps.DashboardConfig',
     'meetings.apps.MeetingsConfig',
+    'learning.apps.LearningConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

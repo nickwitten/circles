@@ -1,9 +1,10 @@
 {% extends "dashboard/base.html" %}
+{% load static %}
 
 <!--------------- Nav Bar ------------------->
 
 {% block tabs %}
-  <link rel="stylesheet" type="text/css" href='/static/meetings/css/meetings.css'>
+  <link rel="stylesheet" type="text/css" href="{% static 'meetings/css/meetings.css' %}"/>
   {% include 'dashboard/tabs.html' with meetings=True %}
 {% endblock tabs %}
 

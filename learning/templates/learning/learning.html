@@ -1,0 +1,24 @@
+{% extends 'learning/base.html' %}
+{% load static %}
+
+{% block app_tabs %}
+<ul class="sub_tags bg-blue">
+    <li class=""><a class="blacklink sub_tabs" href="{% url 'learning' %}">Learning</a></li>
+</ul>
+{% endblock %}
+
+{% block content %}
+
+{{ role_types }}
+<div></div>
+{{ chapter_info }}
+<div></div>
+{{ programming_form }}
+{{ theme_form }}
+{{ module_form }}
+
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'learning/js/learning.js' %}"></script>
+{% endblock %}

@@ -557,7 +557,7 @@
 }
 #file_input .fa-file-upload,
 #link_upload {
-    margin-top: 8px;
+    margin: 8px 0;
 }
 #files, #links {
     display: flex;

@@ -1,5 +1,6 @@
 {% extends 'members/base.html' %}
 {% load members_tags %}
+{% load static %}
 
 
 <!--------------- Nav Bar ------------------->
@@ -124,5 +125,5 @@
   <script>
     var form_choices_text = JSON.parse("{{ form_choices_text_json|escapejs }}");
   </script>
-  <script src="/static/members/js/profiles.js"></script>
+  <script src="{% static 'members/js/profiles.js' %}"></script>
 {% endblock js %}

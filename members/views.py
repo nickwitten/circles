@@ -352,7 +352,7 @@ def profiles(request):
         raise Http404()
     filterset_objects = request.user.filtersets.all()
     form = forms.ProfilesToolsForm
-    list_form = forms.UserListForm
+    list_form = forms.UserListForm(auto_id="listform_%s")  # For unique ids
     context = {
         'form': form,
         'list_form': list_form,
@@ -391,11 +391,13 @@ def UserFiltersets(request):
                 filterset_object.delete()
             # Update title
             else:
+                print(form_dict)
                 form = forms.UserListForm(form_dict, instance=filterset_object)
                 if form.is_valid():
                     form.save(user=request.user)
         # Create new filterset if pk not provided
         else:
+            print(form_dict)
             form = forms.UserListForm(form_dict)
             if form.is_valid():
                 print('valid')

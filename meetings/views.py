@@ -70,7 +70,7 @@ def get_meeting_info(request):
         lists = [list.filters for list in saved_lists]
     else:
         lists = [int(pk) for pk in json.loads(lists)]
-        lists = [list.filterset for list in FilterSet.objects.filter(pk__in=lists)]
+        lists = [list.filters for list in FilterSet.objects.filter(pk__in=lists)]
     people_objs = []
     for filterset in lists:
         print(filterset)

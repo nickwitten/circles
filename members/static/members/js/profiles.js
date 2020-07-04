@@ -437,7 +437,7 @@ function createFilterset() {
   }
   $('#filter_by').val('');
   $('#filter_input').val('');
-  form = getFiltersetForm()
+  form = getFiltersetForm();
   var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
   $.ajax({
     url: "/members/profile/filtersets",
@@ -547,8 +547,8 @@ function deleteFilterset(pk) {
 }
 
 function getFiltersetForm() {
-    $('#id_title').val($('#title_input').val());
-    $('#id_filters').val(JSON.stringify(filters));
+    $('#listform_title').val($('#title_input').val());
+    $('#listform_filters').val(JSON.stringify(filters));
     return $('#list_form').serialize()
 }
 
