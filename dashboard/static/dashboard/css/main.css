@@ -216,6 +216,9 @@ header a{
   text-decoration: none;
 }
 .alert{
+  position: absolute;
+  width: 100%;
+  z-index: 5;
   text-align: center;
   padding: 0.1rem 1.5rem;
   margin: 0;

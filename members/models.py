@@ -15,6 +15,9 @@ class Site(models.Model):
     site = models.CharField(max_length=64)
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='sites', null=True)
 
+    def profiles(self):
+        return Profile.objects.filter(roles__site=self).distinct()
+
     def __str__(self):
         return f'{self.site}'
 
@@ -28,7 +31,7 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
     email_address = models.EmailField(blank=True,null=True)
     cell_phone = PhoneNumberField(blank=True,null=True)
     other_phone = PhoneNumberField(blank=True,null=True)
-    image = models.ImageField(default='default.jpg',upload_to='profile_pics')
+    image = models.ImageField(blank=True, null=True, default='default.jpg',upload_to='profile_pics')
     e_relationship = models.CharField(blank=True,null=True,max_length=10,choices=[('Friend','Friend',),('Parent','Parent'),('Sibling','Sibling')])
     e_first_name = models.CharField(blank=True,null=True,max_length=32)
     e_last_name = models.CharField(blank=True,null=True,max_length=32)
@@ -46,8 +49,8 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
     def get_absolute_url(self):
         return reverse('profile-detail',kwargs={'pk':self.pk})
 
-    def save(self):
-        super().save()
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
 
         img = Image.open(self.image.path)
 

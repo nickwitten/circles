@@ -117,7 +117,7 @@ def get_profiles(tool_inputs, user):
 def search_profiles(profiles,search_input):
     search = {}
     # Anotate each profile with 'firstname lastname'
-    annotated_queryset = profiles.annotate(fullname = Concat('first_name', Value(' '), 'last_name'))
+    annotated_queryset = profiles.annotate(fullname=Concat('first_name', Value(' '), 'last_name'))
     # Filter out elements that don't contain search input
     profiles = annotated_queryset.filter(fullname__icontains=search_input)
     return profiles

@@ -1,23 +1,24 @@
+from django.db.models import Value
+from django.db.models.functions import Concat
 from django.http import Http404, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views.generic.base import TemplateView, View, ContextMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.forms.models import model_to_dict
 import members.models as member_models
-from . import forms
+from . import forms, models
 
 
-class AjaxMixin(ContextMixin):
+class AjaxMixin:
 
     def setup(self, request, *args, **kwargs):
-        kwargs.update(dict(getattr(request, 'GET', None) or getattr(request, 'POST', None)))
+        data = dict(getattr(request, 'GET', None) or getattr(request, 'POST', None))
+        data = dict([(key, value[0]) for key, value in data.items()])
+        kwargs.update(data)
         super().setup(request, *args, **kwargs)
 
-    def response(self, **kwargs):
-        data = self.get_context_data(**kwargs)
-        return JsonResponse(data)
 
-
-class Learning(LoginRequiredMixin, TemplateView):
+class Learning(TemplateView):
 
     template_name = 'learning/learning.html'
 
@@ -47,23 +48,27 @@ class Learning(LoginRequiredMixin, TemplateView):
 
 
 class LearningModels(LoginRequiredMixin, AjaxMixin, View):
+    data = {}
+    models = {
+        'programming': models.Programming,
+        'theme': models.Theme,
+        'module': models.Module,
+    }
 
     def get(self, request, *args, **kwargs):
-        context = {}
         if self.kwargs.get('pk'):
             self.get_model_info()
-        elif self.kwargs.get('autocomplete_model'):
-            self.autocomplete()
-        elif self.kwargs.get('autocomplete_facilitator'):
-            self.autocomplete()
-        elif self.kwargs.get('models'):
+        elif self.kwargs.get('editing_models'):
             self.check_existing()
+        elif self.kwargs.get('autocomplete_search'):
+            self.autocomplete()
+        elif self.kwargs.get('autocomplete_facilitator_search'):
+            self.autocomplete_facilitator()
         else:
             raise Http404('No Matching Kwargs')
-        self.response(**context)
+        return JsonResponse(self.data)
 
     def post(self, request, *args, **kwargs):
-        context = {}
         for model in self.kwargs.get('models'):
             if model.get('pk'):
                 # Check if access and update model (don't
@@ -72,16 +77,48 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
             else:
                 # Check if access and create model
                 pass
-        self.response(**context)
 
     def get_model_info(self):
-        pass
+        """ Gets dictionary of model information if the user has access. """
+        pk = self.kwargs['pk']
+        cls = self.models.get(self.kwargs.get('model_type'))
+        model = None
+        if cls:
+            model = get_object_or_404(cls, pk=pk)
+        if not model or model.site not in self.request.user.userinfo.user_site_access():
+            raise Http404()
+        self.data = model.to_dict()
 
     def check_existing(self):
         pass
 
     def autocomplete(self):
-        pass
+        """" Gets names of similar models even without site access """
+        search = self.kwargs['autocomplete_search']
+        cls = self.models.get(self.kwargs.get('model_type'))
+        if not (search and cls):
+            raise Http404()
+        results = cls.objects.filter(title__icontains=search).values_list('title')
+        results = [match[0] for match in results]
+        # Sort by frequency
+        results = sorted(results, key=results.count, reverse=True)
+        # Get distinct while maintaining order
+        seen = set()
+        seen_add = seen.add
+        results = [x for x in results if not (x in seen or seen_add(x))]
+        self.data = {'results': results}
+
+    def autocomplete_facilitator(self):
+        search = self.kwargs['autocomplete_facilitator_search']
+        site = get_object_or_404(member_models.Site, pk=self.kwargs.get('site_pk'))
+        if site not in self.request.user.userinfo.user_site_access():
+            raise Http404()
+        results = member_models.Profile.objects.filter(roles__site=site)
+        results = results.annotate(fullname=Concat('first_name', Value(' '), 'last_name'))
+        results = results.filter(fullname__icontains=search).values_list('first_name', 'last_name', 'pk')
+        results = set(results)
+        results = [[match[0] + ' ' + match[1], match[2]] for match in results]
+        self.data = {'results': results}
 
 
 class LearningFiles(LoginRequiredMixin, AjaxMixin, View):
@@ -94,7 +131,6 @@ class LearningFiles(LoginRequiredMixin, AjaxMixin, View):
         else:
             # create file
             pass
-        self.response(**context)
 
 class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
 
@@ -108,7 +144,6 @@ class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
             pass
         else:
             raise Http404()
-        self.response(**context)
 
     def post(self, request, *args, **kwargs):
         context = {}
@@ -118,4 +153,3 @@ class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
         else:
             # add training to member
             pass
-        self.response(**context)

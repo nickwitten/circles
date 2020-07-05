@@ -73,7 +73,6 @@ def get_meeting_info(request):
         lists = [list.filters for list in FilterSet.objects.filter(pk__in=lists)]
     people_objs = []
     for filterset in lists:
-        print(filterset)
         people_objs += filter_profiles(request.user.userinfo.user_profile_access(), json.loads(filterset))
     people = list(set([(str(profile), profile.pk) for profile in people_objs]))
     data = {
@@ -111,7 +110,6 @@ def post_meeting_info(request, pk):
             for i, date in enumerate(dates):
                 form = forms.MeetingCreationForm(form_dict, user=request.user)
                 if form.is_valid():
-                    print(form.cleaned_data)
                     meeting = form.save(commit=False)
                     # Change Date
                     month = int(date[0:2])
@@ -179,7 +177,6 @@ def meeting_files(request, pk):
             for title, file in files.items():
                 meeting_file = models.MeetingFile(meeting=meeting, file=file, title=title)
                 meeting_file.save()
-                print(meeting_file.file.name)
                 created_files += [(title, meeting_file.pk, settings.MEDIA_URL + meeting_file.file.name)]
             data = {
                 'files': created_files

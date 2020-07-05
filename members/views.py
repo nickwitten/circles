@@ -370,7 +370,7 @@ def GetProfiles(request):
     tools_form = forms.ProfilesToolsForm(request.GET)
     if tools_form.is_valid():
         tool_inputs = tools_form.cleaned_data
-        data = get_profiles(tools_form.cleaned_data, request.user)
+        data = get_profiles(tool_inputs, request.user)
         return JsonResponse(data)
     print()
     print('FORM INVALID')
@@ -391,20 +391,14 @@ def UserFiltersets(request):
                 filterset_object.delete()
             # Update title
             else:
-                print(form_dict)
                 form = forms.UserListForm(form_dict, instance=filterset_object)
                 if form.is_valid():
                     form.save(user=request.user)
         # Create new filterset if pk not provided
         else:
-            print(form_dict)
             form = forms.UserListForm(form_dict)
             if form.is_valid():
-                print('valid')
                 filterset_object = form.save(user=request.user)
-                print(filterset_object)
-            else:
-                print(form.errors)
     # Get the objects associated to the current user
     filterset_objects = request.user.filtersets.all()
     filtersets = []
