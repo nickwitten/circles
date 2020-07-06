@@ -9,14 +9,14 @@ class CreateChaptersMixin:
 
     """ Creates two chapters:
     
-        chapter_access 
+        chapter_access1 
             site_access1
             site_access2
             site_noaccess_in_chapter_access1
             site_noaccess_in_chapter_access2
             
-        chapter_noaccess
-            site_noaccess """
+        chapter_noaccess1
+            site_noaccess1 """
 
     def create_chapters(self):
         for i in range(self.visible_chapter_ct):
