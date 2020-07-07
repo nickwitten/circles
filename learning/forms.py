@@ -1,8 +1,10 @@
+from django.core.exceptions import ValidationError
+
 from . import models
 from django import forms
 
 
-class SaveAttrsForm(forms.ModelForm):
+class LearningModelForm(forms.ModelForm):
 
     def save(self, **kwargs):
         super().save(commit=False)
@@ -10,24 +12,22 @@ class SaveAttrsForm(forms.ModelForm):
             setattr(self.instance, key, value)
         return super().save()
 
-
-class ProgrammingCreationForm(SaveAttrsForm):
+class ProgrammingCreationForm(LearningModelForm):
 
     class Meta:
         model = models.Programming
-        exclude = ('site', )
+        exclude = ('site', 'profiles')
 
 
-class ThemeCreationForm(SaveAttrsForm):
+class ThemeCreationForm(LearningModelForm):
 
     class Meta:
         model = models.Theme
-        exclude = ('site', )
+        exclude = ('site', 'profiles')
 
 
-class ModuleCreationForm(SaveAttrsForm):
+class ModuleCreationForm(LearningModelForm):
 
     class Meta:
         model = models.Module
-        exclude = ('site', 'theme')
-
+        exclude = ('site', 'theme', 'profiles')

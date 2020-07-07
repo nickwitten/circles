@@ -243,13 +243,14 @@ class TestLearningModelsView(CreateLearningModelsMixin, TestCase):
         self.sites['site_access1'].programming.get(title=title).delete()
         for site in sites:
             model = site.programming.filter(title=title).first()
-            model_info = {'site': site.pk, 'title': title}
+            model_info = {'site': site.pk}
             if model:
                 model_info['pk'] = model.pk
             models.append(model_info)
         form_data = {'description': 'Updated', 'title': title}
         form_data = urlencode(form_data)
-        request_data = {'model_type': 'programming', 'models': json.dumps(models), 'form': form_data}
+        request_data = {
+            'model_type': 'programming', 'models': json.dumps(models), 'form': form_data, 'fields': 'all'}
         response = self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
         self.assertEqual(response.status_code, 200)
         # model was added back
@@ -347,6 +348,35 @@ class TestLearningModelsView(CreateLearningModelsMixin, TestCase):
         # models were changed
         self.assertEqual(self.sites['site_access1'].modules.filter(title=title).count(), 0)
         self.assertNotEqual(self.sites['site_access1'].modules.filter(title=update_title).count(), 0)
+
+    def test_POST_update_models_module_title_existing_title(self):
+        site = self.sites['site_access1']
+        theme = site.themes.first()
+        model = theme.modules.get(title='module1')
+        replace_model = theme.modules.get(title='module2')
+        form_data = {'title':'module2'}
+        models = [{
+            'site': site.pk,
+            'theme': theme.pk,
+            'title': 'module1',
+            'pk': model.pk,
+            'replace_pk': replace_model.pk
+        }, ]
+        request_data = {'model_type': 'module', 'models': json.dumps(models), 'form': urlencode(form_data)}
+        response = self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        self.assertEqual(theme.modules.get(title='module2').pk, model.pk)
+
+    def test_POST_update_models_module_title_existing_title_no_pk(self):
+        form_data = {'title':'module2'}
+        site = self.sites['site_access1']
+        models = [{
+            'site': site.pk,
+            'theme': site.themes.first().pk,
+            'title': 'module1',
+        }, ]
+        request_data = {'model_type': 'module', 'models': json.dumps(models), 'form': urlencode(form_data)}
+        with self.assertRaises(ValidationError):
+            self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
 
     def test_POST_update_models_missing_args(self):
         args = ['model_type', 'models', 'form', 'site', 'theme', 'title', 'pk']

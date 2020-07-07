@@ -57,7 +57,6 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         'theme': (models.Theme, 'themes', forms.ThemeCreationForm),
         'module': (models.Module, 'modules', forms.ModuleCreationForm),
     }
-
     def get(self, request, *args, **kwargs):
         if self.kwargs.get('pk'):
             self.get_model_info()
@@ -135,6 +134,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         self.data = {'results': results}
 
     def autocomplete_facilitator(self):
+        """ Gets profiles from current site that autocomplete search """
         search = self.kwargs['autocomplete_facilitator_search']
         site = get_object_or_404(member_models.Site, pk=self.kwargs.get('site_pk'))
         if site not in self.request.user.userinfo.user_site_access():
@@ -151,46 +151,90 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
 
     def create_or_update_models(self):
         """ Takes {site, (theme), title, (pk)} objects for each
-            model that needs to be updated or created.          """
+            model that needs to be updated or created.  Theme
+            required if model is module.  Pk required if model
+            already exists.                                     """
+        model_type, form_data, model_infos = self._get_args()
+        for info in model_infos:
+            attrs, pk, replace_pk = self._get_model_info(model_type, info)
+            if pk:
+                self._update_model(model_type, attrs, pk,
+                                   replace_pk, form_data)
+            else:
+                self._create_model(model_type, attrs, form_data)
+
+    def _get_args(self):
+        """ Process create_or_update_models args """
         model_type = self.models.get(self.kwargs.get('model_type'))
         form_data = self.kwargs.get('form')
+        form_fields = self.kwargs.get('fields')
         model_infos = self.kwargs.get('models')
-        if not (model_type and form_data and model_infos):
+        if not (model_type and form_data and form_fields and model_infos):
             raise ValidationError('Insufficient Data', code=500)
         form_data = QueryDict(form_data)
+        # Only edit specified fields
+        if form_fields != 'all':
+            for field in form_data.keys():
+                if field not in form_fields:
+                    form_data.pop(field)
         model_infos = json.loads(model_infos)
-        for info in model_infos:
-            site = info.get('site')
-            theme = info.get('theme')
-            title = info.get('title')
-            pk = info.get('pk')
-            if model_type == 'module' and not theme:
-                raise ValidationError('Module Post Requires Theme', code=500)
-            if not (site and title):
-                raise ValidationError('Insufficient Model Info', code=500)
-            site = get_object_or_404(member_models.Site, pk=site)
-            if site not in self.request.user.userinfo.user_site_access():
-                raise PermissionDenied('Access Denied')
-            attrs = {'site': site}
-            if model_type[0] == models.Module:
-                theme = models.Theme.objects.get(pk=theme)
-                if theme.site != site:
-                    raise ValidationError('Theme Site Does Not Match Module Site', code=500)
-                attrs['theme'] = theme
-            if pk:
-                model = get_object_or_404(model_type[0], pk=pk)
-                if model.site not in self.request.user.userinfo.user_site_access():
-                    raise PermissionDenied('Access Denied')
-                form = model_type[2](form_data, instance=model)
-                if form.is_valid():
-                    form.save(**attrs)
+        return model_type, form_data, model_infos
+
+    def _get_model_info(self, model_type, info):
+        """ Unpack and validate model info """
+        site = info.get('site')
+        theme = info.get('theme')
+        pk = info.get('pk')
+        replace_pk = info.get('replace_pk')
+        site = get_object_or_404(member_models.Site, pk=site)
+        if site not in self.request.user.userinfo.user_site_access():
+            raise PermissionDenied('Access Denied')
+        attrs = {'site': site}
+        if model_type[0] == models.Module:
+            if not theme:
+                raise ValidationError('Module Requires Theme Title')
+            theme = models.Theme.objects.filter(title=theme, **attrs).first()
+            # Theme doesn't exist in this site so create
+            if not theme:
+                theme.objects.create(title=theme, **attrs)
+            if theme.site != site:
+                raise ValidationError('Theme Site Does Not Match Module Site', code=500)
+            attrs['theme'] = theme
+        return attrs, pk, replace_pk
+
+    def _update_model(self, model_type, attrs, pk, replace_pk, form_data):
+        """ Update model.  If model info exists,
+            replace it and merge some fields    """
+        model = get_object_or_404(model_type[0], pk=pk)
+        if model.site not in self.request.user.userinfo.user_site_access():
+            raise PermissionDenied('Access Denied')
+        form = model_type[2](form_data, instance=model)
+        if form.is_valid():
+            # Check for models with same info
+            replace = model_type[0].objects.filter(
+                title=form.cleaned_data['title'], **attrs
+            ).exclude(pk=pk).first()
+            if replace:
+                # Validate user meant to replace
+                if replace_pk != replace.pk:
+                    raise ValidationError('Unexpected Replacement')
+                model = form.save(**attrs)
+                for profile in replace.profiles.all():
+                    model.profiles.add(profile)
+                for profile in replace.facilitator_profiles.all():
+                    model.facilitator_profiles.add(profile)
+                replace.delete()
             else:
-                form = model_type[2](form_data)
-                # Verify that no model with this info exists
-                if model_type[0].objects.filter(title=title, **attrs):
-                    raise ValidationError('Model Already Exists', code=500)
-                if form.is_valid():
-                    model = form.save(**attrs)
+                model = form.save(**attrs)
+
+    @staticmethod
+    def _create_model(model_type, attrs, form_data):
+        form = model_type[2](form_data)
+        if form.is_valid():
+            # Verify that no model with this info exists
+            if model_type[0].objects.filter(title=form.cleaned_data['title'], **attrs):
+                raise ValidationError('Model Already Exists ID Required', code=500)
+            model = form.save(**attrs)
 
 
 class LearningFiles(LoginRequiredMixin, AjaxMixin, View):

@@ -31,6 +31,7 @@ class Theme(models.Model):
     site = models.ForeignKey(members_models.Site, on_delete=models.CASCADE, related_name='themes')
     profiles = models.ManyToManyField(members_models.Profile, related_name='themes', blank=True)
     title = models.CharField(max_length=128)
+    required_for = models.CharField(max_length=255, blank=True)
 
     def to_dict(self):
         return model_to_dict(self)
@@ -40,6 +41,6 @@ class Module(AbstractProgramming):
     site = models.ForeignKey(members_models.Site, on_delete=models.CASCADE, related_name='modules')
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, related_name='modules')
     profiles = models.ManyToManyField(members_models.Profile, related_name='modules', blank=True)
-    training_for = models.CharField(choices=members_models.Role.position_choices, max_length=32, blank=True)
+    required_for = models.CharField(max_length=255, blank=True)
     facilitator_profiles = models.ManyToManyField(members_models.Profile,
                                                   blank=True, related_name='facilitate_modules')

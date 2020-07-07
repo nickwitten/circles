@@ -29,10 +29,12 @@ class CreateLearningModelsMixin(CreateProfilesMixin, CreateChaptersMixin):
                     title="programming" + str(i+1),
                 )
                 programming.facilitator_profiles.add(facilitator)
+                setattr(self, 'programming' + str(i+1), programming)
                 theme = models.Theme.objects.create(
                     site=site,
                     title="theme" + str(i+1),
                 )
+                setattr(self, 'theme' + str(i+1), theme)
                 for j in range(self.model_ct):
                     module = models.Module.objects.create(
                         site=site,
@@ -40,3 +42,4 @@ class CreateLearningModelsMixin(CreateProfilesMixin, CreateChaptersMixin):
                         theme=theme,
                     )
                     module.facilitator_profiles.add(facilitator)
+                    setattr(self, 'theme' + str(i+1) + '_' + str(j+1), module)
