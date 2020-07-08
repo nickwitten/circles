@@ -3,8 +3,11 @@ from urllib.parse import urlencode
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, Client
 from django.urls import reverse
+
+from circles import settings
 from members import models as members_models
 from learning.tests.test_models import CreateLearningModelsMixin
 from learning import forms, models
@@ -35,6 +38,47 @@ class TestLearningView(CreateLearningModelsMixin, TestCase):
         self.assertEqual(response.context['chapter_info'][0]['sites'][0]['themes'][0]['theme'].title, 'theme1')
         self.assertEqual(response.context['chapter_info'][0]['sites'][0]['themes'][0]['modules'][0].title, 'module1')
 
+class TestLearningFiles(CreateLearningModelsMixin, TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user('testuser', password='password')
+        self.client = Client()
+        self.client.login(username='testuser', password='password')
+        self.files_url = reverse('learning-files')
+        self.create_learning_models()
+
+    def test_upload_file(self):
+        file = SimpleUploadedFile("media/default.jpg", b"file_content", content_type="image")
+        request_data = {
+            'model_type': 'programming',
+            'model_pk': self.programming1_1.pk,
+            'file': file,
+        }
+        response = self.client.post(self.files_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        data = json.loads(response.content)
+        self.assertEqual(data['files'], [['file', 1, '/media/learning_files/default.jpg']])
+        models.ProgrammingFile.objects.first().delete_file()
+
+    def test_delete_file(self):
+        with open(settings.MEDIA_ROOT + "/learning_files/test12345.txt", "w+") as f:
+            f.write('Test')
+            f.close()
+        programming_file = models.ProgrammingFile.objects.create(
+            file='learning_files/test12345.txt',
+            title='test.txt',
+            model=self.programming1_1
+        )
+        self.assertEqual(models.ProgrammingFile.objects.all().count(), 1)
+        request_data = {
+            'file_pk': 1,
+            'model_type': 'programming',
+        }
+        response = self.client.post(self.files_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        self.assertEqual(models.ProgrammingFile.objects.all().count(), 0)
+        with self.assertRaises(Exception):
+            open(settings.MEDIA_ROOT + "/learning_files/test12345.txt")
+
+
 
 class TestLearningModelsView(CreateLearningModelsMixin, TestCase):
 
@@ -42,7 +86,7 @@ class TestLearningModelsView(CreateLearningModelsMixin, TestCase):
         self.user = User.objects.create_user('testuser', password='password')
         self.client = Client()
         self.client.login(username='testuser', password='password')
-        self.models_url = reverse('models')
+        self.models_url = reverse('learning-models')
         self.create_learning_models()
         self.model_types = [('programming', 'programming'), ('themes', 'theme'), ('modules', 'module')]
 
@@ -234,186 +278,220 @@ class TestLearningModelsView(CreateLearningModelsMixin, TestCase):
         with self.assertRaises(ValidationError):
             self.client.get(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
 
-    def test_POST_update_models_programming(self):
-        # Should update programming 1 in each site and create if not there
-        title = 'programming1'
-        sites = self.user.userinfo.user_site_access()
-        models = []
-        # Delete to check if it's added
-        self.sites['site_access1'].programming.get(title=title).delete()
-        for site in sites:
-            model = site.programming.filter(title=title).first()
-            model_info = {'site': site.pk}
-            if model:
-                model_info['pk'] = model.pk
-            models.append(model_info)
-        form_data = {'description': 'Updated', 'title': title}
-        form_data = urlencode(form_data)
+    def test_POST_create_model_programming(self):
+        site = self.sites['site_access1']
+        title = 'programming' + str(self.model_ct+2)
+        form = urlencode({'description': 'Updated', 'title': title})
         request_data = {
-            'model_type': 'programming', 'models': json.dumps(models), 'form': form_data, 'fields': 'all'}
+            'model_type': 'programming',
+            'form': form,
+            'fields': 'description',
+            'models': json.dumps([{'site':site.pk,}, ])
+        }
         response = self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
         self.assertEqual(response.status_code, 200)
-        # model was added back
-        self.assertIsNotNone(self.sites['site_access1'].programming.get(title=title))
-        # models are updated
-        self.assertEqual(self.sites['site_access1'].programming.get(title=title).description, 'Updated')
-        self.assertEqual(self.sites['site_access2'].programming.get(title=title).description, 'Updated')
+        self.assertEqual(models.Programming.objects.filter(title=title).count(), 1)
 
-    def test_POST_update_models_programming_title(self):
-        # Should update programming1 to unused title in each site
-        title = 'programming1'
-        update_title = 'programming' + str(self.model_ct+2)
-        sites = self.user.userinfo.user_site_access()
-        models = []
-        for site in sites:
-            model = site.programming.get(title=title)
-            model_info = {'site': site.pk, 'title': title}
-            if model:
-                model_info['pk'] = model.pk
-            models.append(model_info)
-        form_data = {'description': 'Updated', 'title': update_title}
-        form_data = urlencode(form_data)
-        request_data = {'model_type': 'programming', 'models': json.dumps(models), 'form': form_data}
+    def test_POST_create_model_programming_no_access(self):
+        site = self.sites['site_noaccess1']
+        title = 'programming' + str(self.model_ct+2)
+        form = urlencode({'description': 'Updated', 'title': title})
+        request_data = {
+            'model_type': 'programming',
+            'form': form,
+            'fields': 'description',
+            'models': json.dumps([{'site':site.pk,}, ])
+        }
         response = self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
-        self.assertEqual(response.status_code, 200)
-        # model was changed
-        self.assertEqual(self.sites['site_access1'].programming.filter(title=title).count(), 0)
-        # models are updated
-        self.assertEqual(self.sites['site_access1'].programming.filter(title=update_title).count(), 1)
+        self.assertEqual(response.status_code, 403)
 
-    def test_POST_update_models_theme_title(self):
-        # Should update theme1 to unused title in each site
-        title = 'theme1'
-        update_title = 'theme' + str(self.model_ct+2)
-        sites = self.user.userinfo.user_site_access()
-        models = []
-        for site in sites:
-            model = site.themes.get(title=title)
-            model_info = {'site': site.pk, 'title': title}
-            if model:
-                model_info['pk'] = model.pk
-            models.append(model_info)
-        form_data = {'title': update_title}
-        form_data = urlencode(form_data)
-        request_data = {'model_type': 'theme', 'models': json.dumps(models), 'form': form_data}
-        response = self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
-        self.assertEqual(response.status_code, 200)
-        # model was changed
-        self.assertEqual(self.sites['site_access1'].themes.filter(title=title).count(), 0)
-        # models are updated
-        self.assertEqual(self.sites['site_access1'].themes.filter(title=update_title).count(), 1)
-
-    def test_POST_update_models_module(self):
-        # Should update module1 in each theme and create if not there
-        title = 'module1'
-        sites = self.user.userinfo.user_site_access()
-        models = []
-        # Delete to check if it's added
-        self.sites['site_access1'].modules.get(theme__title='theme1',title=title).delete()
-        for site in sites:
-            for theme in site.themes.all():
-                model = theme.modules.filter(title=title).first()
-                model_info = {'site': site.pk, 'theme': theme.pk, 'title': title}
-                if model:
-                    model_info['pk'] = model.pk
-                models.append(model_info)
-        form_data = {'description': 'Updated', 'title': title}
-        form_data = urlencode(form_data)
-        request_data = {'model_type': 'module', 'models': json.dumps(models), 'form': form_data}
-        response = self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
-        self.assertEqual(response.status_code, 200)
-        # model was added back
-        self.assertEqual(self.sites['site_access1'].modules.filter(theme__title='theme1', title=title).count(), 1)
-        # models are updated
-        self.assertEqual(self.sites['site_access2'].modules.first().description, 'Updated')
-
-    def test_POST_update_models_module_title(self):
-        # Should update theme1 to unused title in each site
-        title = 'module1'
-        update_title = 'module' + str(self.model_ct+2)
-        sites = self.user.userinfo.user_site_access()
-        models = []
-        for site in sites:
-            for theme in site.themes.all():
-                model = theme.modules.filter(title=title).first()
-                model_info = {'site': site.pk, 'theme': theme.pk, 'title': title}
-                if model:
-                    model_info['pk'] = model.pk
-                models.append(model_info)
-        form_data = {'title': update_title}
-        form_data = urlencode(form_data)
-        request_data = {'model_type': 'module', 'models': json.dumps(models), 'form': form_data}
-        response = self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
-        self.assertEqual(response.status_code, 200)
-        # models were changed
-        self.assertEqual(self.sites['site_access1'].modules.filter(title=title).count(), 0)
-        self.assertNotEqual(self.sites['site_access1'].modules.filter(title=update_title).count(), 0)
-
-    def test_POST_update_models_module_title_existing_title(self):
+    def test_POST_update_model_programming_description(self):
         site = self.sites['site_access1']
-        theme = site.themes.first()
-        model = theme.modules.get(title='module1')
-        replace_model = theme.modules.get(title='module2')
-        form_data = {'title':'module2'}
-        models = [{
-            'site': site.pk,
-            'theme': theme.pk,
-            'title': 'module1',
-            'pk': model.pk,
-            'replace_pk': replace_model.pk
-        }, ]
-        request_data = {'model_type': 'module', 'models': json.dumps(models), 'form': urlencode(form_data)}
+        programming = self.programming1_1
+        programming.links = '["google.com"]'
+        programming.save()
+        form = urlencode({'description': 'Updated', 'title': 'programming1', 'links': ''})
+        request_data = {
+            'model_type': 'programming',
+            'form': form,
+            'fields': 'description',
+            'models': json.dumps([{'site':site.pk, 'pk': programming.pk}, ])
+        }
         response = self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
-        self.assertEqual(theme.modules.get(title='module2').pk, model.pk)
+        programming = models.Programming.objects.get(pk=programming.pk)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(programming.description, 'Updated')
+        self.assertEqual(programming.links, '["google.com"]')
 
-    def test_POST_update_models_module_title_existing_title_no_pk(self):
-        form_data = {'title':'module2'}
+    def test_POST_update_model_programming_title_exists(self):
         site = self.sites['site_access1']
-        models = [{
-            'site': site.pk,
-            'theme': site.themes.first().pk,
-            'title': 'module1',
-        }, ]
-        request_data = {'model_type': 'module', 'models': json.dumps(models), 'form': urlencode(form_data)}
+        programming = self.programming1_1
+        replace_programming = self.programming1_2
+        form = urlencode({'description': 'Updated', 'title': 'programming2'})
+        request_data = {
+            'model_type': 'programming',
+            'form': form,
+            'fields': 'description',
+            'models': json.dumps([{'site':site.pk, 'pk': programming.pk, 'replace_pk': replace_programming.pk}, ])
+        }
+        response = self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        programming = models.Programming.objects.get(pk=programming.pk)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(programming.title, 'programming2')
+        self.assertEqual(site.programming.filter(title='programming2').count(), 1)
+
+    def test_POST_update_model_programming_title_exists_unexpected(self):
+        site = self.sites['site_access1']
+        programming = self.programming1_1
+        form = urlencode({'description': 'Updated', 'title': 'programming2'})
+        request_data = {
+            'model_type': 'programming',
+            'form': form,
+            'fields': 'description',
+            'models': json.dumps([{'site':site.pk, 'pk': programming.pk}, ])
+        }
         with self.assertRaises(ValidationError):
             self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
 
-    def test_POST_update_models_missing_args(self):
-        args = ['model_type', 'models', 'form', 'site', 'theme', 'title', 'pk']
-        for arg in args:
-            title = 'theme1'
-            update_title = 'theme' + str(self.model_ct+2)
-            sites = self.user.userinfo.user_site_access()
-            models = []
-            for site in sites:
-                for theme in site.themes.all():
-                    model = theme.modules.filter(title=title).first()
-                    model_info = {'site': site.pk, 'theme': theme.pk, 'title': title}
-                    if model:
-                        model_info['pk'] = model.pk
-                    model_info.pop(arg, None)
-                    models.append(model_info)
-            form_data = {'title': update_title}
-            form_data = urlencode(form_data)
-            request_data = {'model_type': 'theme', 'models': json.dumps(models), 'form': form_data}
-            request_data.pop(arg, None)
-            with self.assertRaises(ValidationError):
-                self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+    def test_POST_create_model_theme(self):
+        site = self.sites['site_access1']
+        title = 'theme' + str(self.model_ct+2)
+        form = urlencode({'title': title})
+        request_data = {
+            'model_type': 'theme',
+            'form': form,
+            'fields': 'all',
+            'models': json.dumps([{'site':site.pk,}, ])
+        }
+        response = self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(models.Theme.objects.filter(title=title).count(), 1)
 
-    def test_POST_update_models_no_site_access(self):
-        title = 'theme1'
-        update_title = 'theme' + str(self.model_ct+2)
-        sites = [self.sites['site_noaccess1']]
-        models = []
-        for site in sites:
-            for theme in site.themes.all():
-                model = theme.modules.filter(title=title).first()
-                model_info = {'site': site.pk, 'theme': theme.pk, 'title': title}
-                if model:
-                    model_info['pk'] = model.pk
-                models.append(model_info)
-        form_data = {'title': update_title}
-        form_data = urlencode(form_data)
-        request_data = {'model_type': 'theme', 'models': json.dumps(models), 'form': form_data}
+    def test_POST_update_model_theme_title_exists(self):
+        site = self.sites['site_access1']
+        theme = self.theme1_1
+        theme.profiles.add(members_models.Profile.objects.get(pk=1))
+        self.assertEqual(theme.profiles.count(), 1)
+        replace_theme = self.theme1_2
+        replace_theme.profiles.add(members_models.Profile.objects.get(pk=2))
+        form = urlencode({'description': 'Updated', 'title': 'theme2'})
+        request_data = {
+            'model_type': 'theme',
+            'form': form,
+            'fields': 'all',
+            'models': json.dumps([{'site':site.pk, 'pk': theme.pk, 'replace_pk': replace_theme.pk}, ])
+        }
+        response = self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        theme = models.Theme.objects.get(pk=theme.pk)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(theme.title, 'theme2')
+        self.assertEqual(site.themes.filter(title='theme2').count(), 1)
+        self.assertEqual(theme.profiles.count(), 2)
+
+    def test_POST_update_model_theme_title_exists_unexpected(self):
+        site = self.sites['site_access1']
+        theme = self.theme1_1
+        form = urlencode({'description': 'Updated', 'title': 'theme2'})
+        request_data = {
+            'model_type': 'theme',
+            'form': form,
+            'fields': 'description',
+            'models': json.dumps([{'site':site.pk, 'pk': theme.pk}, ])
+        }
+        with self.assertRaises(ValidationError):
+            self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+
+    def test_POST_create_model_module(self):
+        site = self.sites['site_access1']
+        title = 'module' + str(self.model_ct+2)
+        form = urlencode({'description': 'Updated', 'title': title})
+        request_data = {
+            'model_type': 'module',
+            'form': form,
+            'fields': 'description',
+            'models': json.dumps([{'site':site.pk, 'theme':'new_theme'}, ])
+        }
+        response = self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(models.Module.objects.filter(title=title).count(), 1)
+        self.assertEqual(models.Theme.objects.filter(title='new_theme').count(), 1)
+
+    def test_POST_update_model_module(self):
+        site = self.sites['site_access1']
+        programming = self.programming1_1
+        form = urlencode({'description': 'Updated', 'title': 'programming1'})
+        request_data = {
+            'model_type': 'programming',
+            'form': form,
+            'fields': 'description',
+            'models': json.dumps([{'site':site.pk, 'pk': programming.pk}, ])
+        }
+        response = self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        programming = models.Programming.objects.get(pk=programming.pk)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(programming.description, 'Updated')
+
+    def test_POST_update_model_module_title_exists(self):
+        site = self.sites['site_access1']
+        theme = self.theme1_1
+        module = self.module1_1_1
+        module.profiles.add(members_models.Profile.objects.get(pk=1))
+        self.assertEqual(module.profiles.count(), 1)
+        self.assertEqual(module.facilitator_profiles.count(), 1)
+        module.facilitators = '["John Doe"]'
+        replace_module = self.module1_1_2
+        replace_module.profiles.add(members_models.Profile.objects.get(pk=2))
+        replace_module.facilitator_profiles.add(members_models.Profile.objects.get(pk=2))
+        replace_module.facilitators = '["Sally Shoe"]'
+        self.assertEqual(replace_module.profiles.count(), 1)
+        self.assertEqual(replace_module.facilitator_profiles.count(), 2)
+        module.save()
+        replace_module.save()
+        form = urlencode({'description': 'Updated', 'title': 'module2'})
+        request_data = {
+            'model_type': 'module',
+            'form': form,
+            'fields': 'description',
+            'models': json.dumps([{'site':site.pk,'theme':theme.title, 'pk': module.pk, 'replace_pk': replace_module.pk}, ])
+        }
+        response = self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        module = models.Module.objects.get(pk=module.pk)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(module.title, 'module2')
+        self.assertEqual(theme.modules.filter(title='module2').count(), 1)
+        self.assertEqual(module.profiles.count(), 2)
+        self.assertEqual(module.facilitators, '["John Doe", "Sally Shoe"]')
+        self.assertEqual(module.facilitator_profiles.count(), 2)
+
+    def test_POST_update_model_module_title_exists_unexpected(self):
+        site = self.sites['site_access1']
+        module = self.module1_1_1
+        form = urlencode({'description': 'Updated', 'title': 'module2'})
+        request_data = {
+            'model_type': 'module',
+            'form': form,
+            'fields': 'description',
+            'models': json.dumps([{'site':site.pk, 'theme': 'theme1', 'pk': module.pk}, ])
+        }
+        with self.assertRaises(ValidationError):
+            self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+
+    def test_POST_delete_programming(self):
+        request_data = {
+            'delete': True,
+            'model_type': 'programming',
+            'models': json.dumps([{'pk': self.programming1_1.pk}]),
+        }
+        response = self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        self.assertEqual(self.sites['site_access1'].programming.filter(
+            title='programming1').count(), 0)
+
+    def test_POST_delete_programming_no_access(self):
+        programming = self.sites['site_noaccess1'].programming.get(title='programming1')
+        request_data = {
+            'delete': True,
+            'model_type': 'programming',
+            'models': json.dumps([{'pk': programming.pk}]),
+        }
         response = self.client.post(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
         self.assertEqual(response.status_code, 403)

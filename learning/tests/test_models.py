@@ -21,25 +21,35 @@ class CreateLearningModelsMixin(CreateProfilesMixin, CreateChaptersMixin):
     def create_learning_models(self):
         self.create_chapters()
         self.create_profiles()
+        i = -1
         for site in self.sites.values():
-            for i in range(self.model_ct):
+            access = site in self.user.userinfo.user_site_access()
+            if access:
+                i += 1
+            for j in range(self.model_ct):
                 facilitator = site.roles.first().profile
                 programming = models.Programming.objects.create(
                     site=site,
-                    title="programming" + str(i+1),
+                    title="programming" + str(j+1),
                 )
                 programming.facilitator_profiles.add(facilitator)
-                setattr(self, 'programming' + str(i+1), programming)
+                if access:
+                    setattr(self, 'programming' + str(i+1) + '_' + str(j+1), programming)
                 theme = models.Theme.objects.create(
                     site=site,
-                    title="theme" + str(i+1),
+                    title="theme" + str(j+1),
                 )
-                setattr(self, 'theme' + str(i+1), theme)
-                for j in range(self.model_ct):
+                if access:
+                    setattr(self, 'theme' + str(i+1) + '_' + str(j+1), theme)
+                for k in range(self.model_ct):
                     module = models.Module.objects.create(
                         site=site,
-                        title="module" + str(j+1),
+                        title="module" + str(k+1),
                         theme=theme,
                     )
                     module.facilitator_profiles.add(facilitator)
-                    setattr(self, 'theme' + str(i+1) + '_' + str(j+1), module)
+                    if access:
+                        setattr(
+                            self,
+                            'module' + str(i+1) + '_' + str(j+1) + '_' + str(k+1),
+                            module)

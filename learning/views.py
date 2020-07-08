@@ -1,5 +1,6 @@
 import json
 from django.db.models import Value
+from django.db import models as django_models
 from django.db.models.functions import Concat
 from django.http import Http404, HttpResponseServerError, JsonResponse, QueryDict
 from django.shortcuts import render, get_object_or_404
@@ -7,6 +8,7 @@ from django.views.generic.base import TemplateView, View, ContextMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.forms.models import model_to_dict
 import members.models as member_models
+from circles import settings
 from . import forms, models
 from django.core.exceptions import PermissionDenied, ValidationError
 
@@ -57,6 +59,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         'theme': (models.Theme, 'themes', forms.ThemeCreationForm),
         'module': (models.Module, 'modules', forms.ModuleCreationForm),
     }
+
     def get(self, request, *args, **kwargs):
         if self.kwargs.get('pk'):
             self.get_model_info()
@@ -67,7 +70,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         elif self.kwargs.get('autocomplete_facilitator_search'):
             self.autocomplete_facilitator()
         else:
-            raise ValidationError('No Matching Kwargs', code=500)
+            raise ValidationError('No Operation', code=500)
         return JsonResponse(self.data)
 
     def post(self, request, *args, **kwargs):
@@ -147,21 +150,39 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         self.data = {'results': results}
 
     def delete_model(self):
-        pass
+        """ Takes {site, (theme), pk} objects and deletes """
+        model_type = self.models.get(self.kwargs.get('model_type'))
+        models = self.kwargs.get('models')
+        if not (models and model_type):
+            raise ValidationError('Insufficient Data')
+        models = json.loads(models)
+        for model in models:
+            pk = model.get('pk')
+            model = get_object_or_404(model_type[0], pk=pk)
+            if model.site not in self.request.user.userinfo.user_site_access():
+                raise PermissionDenied()
+            if hasattr(model, 'files'):
+                for file in model.files.all():
+                    file.delete_file()
+            model.delete()
 
     def create_or_update_models(self):
-        """ Takes {site, (theme), title, (pk)} objects for each
+        """ Takes {site, (theme), (pk)} objects for each
             model that needs to be updated or created.  Theme
             required if model is module.  Pk required if model
             already exists.                                     """
         model_type, form_data, model_infos = self._get_args()
+        models = []
         for info in model_infos:
             attrs, pk, replace_pk = self._get_model_info(model_type, info)
             if pk:
-                self._update_model(model_type, attrs, pk,
-                                   replace_pk, form_data)
+                models += [self._update_model(model_type, attrs, pk,
+                                   replace_pk, form_data)]
             else:
-                self._create_model(model_type, attrs, form_data)
+                models += [self._create_model(model_type, attrs, form_data)]
+        # Commit changes
+        for model in models:
+            model.save()
 
     def _get_args(self):
         """ Process create_or_update_models args """
@@ -171,17 +192,29 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         model_infos = self.kwargs.get('models')
         if not (model_type and form_data and form_fields and model_infos):
             raise ValidationError('Insufficient Data', code=500)
-        form_data = QueryDict(form_data)
+        form_data = QueryDict(form_data).copy()
         # Only edit specified fields
         if form_fields != 'all':
+            ignore_fields = []
             for field in form_data.keys():
+                if field in model_type[2]().required_fields:
+                    continue
                 if field not in form_fields:
-                    form_data.pop(field)
+                    ignore_fields.append(field)
+            for field in ignore_fields:
+                form_data.pop(field)
         model_infos = json.loads(model_infos)
         return model_type, form_data, model_infos
 
     def _get_model_info(self, model_type, info):
-        """ Unpack and validate model info """
+        """ Unpack and validate model info. Target
+            values not current values.
+            INPUTS:
+            Site       - pk of model's site
+            Theme      - title of target theme if
+                         modeltype is module
+            pk         - pk of model to be updated
+            replace_pk - pk of model with target info """
         site = info.get('site')
         theme = info.get('theme')
         pk = info.get('pk')
@@ -193,10 +226,11 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         if model_type[0] == models.Module:
             if not theme:
                 raise ValidationError('Module Requires Theme Title')
-            theme = models.Theme.objects.filter(title=theme, **attrs).first()
+            temp_theme = models.Theme.objects.filter(title=theme, **attrs).first()
             # Theme doesn't exist in this site so create
-            if not theme:
-                theme.objects.create(title=theme, **attrs)
+            if not temp_theme:
+                temp_theme = models.Theme.objects.create(title=theme, **attrs)
+            theme = temp_theme
             if theme.site != site:
                 raise ValidationError('Theme Site Does Not Match Module Site', code=500)
             attrs['theme'] = theme
@@ -210,22 +244,52 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
             raise PermissionDenied('Access Denied')
         form = model_type[2](form_data, instance=model)
         if form.is_valid():
-            # Check for models with same info
-            replace = model_type[0].objects.filter(
-                title=form.cleaned_data['title'], **attrs
-            ).exclude(pk=pk).first()
-            if replace:
-                # Validate user meant to replace
-                if replace_pk != replace.pk:
-                    raise ValidationError('Unexpected Replacement')
-                model = form.save(**attrs)
-                for profile in replace.profiles.all():
-                    model.profiles.add(profile)
-                for profile in replace.facilitator_profiles.all():
-                    model.facilitator_profiles.add(profile)
-                replace.delete()
-            else:
-                model = form.save(**attrs)
+            model = self._check_and_replace(model_type, form,
+                                               attrs, pk, replace_pk)
+            # If replaced model save was handled
+            if not model:
+                model = form.save(commit=False, **attrs)
+            return model
+        else:
+            raise ValidationError('Invalid Form')
+
+    @staticmethod
+    def _check_and_replace(model_type, form, attrs, pk, replace_pk):
+        """ Check if model needs to be replaced and
+            if that was expected.  Merge fields from
+            replaced model and then delete.          """
+        # Check for models with same info
+        replace = model_type[0].objects.filter(
+            title=form.cleaned_data['title'], **attrs
+        ).exclude(pk=pk).first()
+        if replace:
+            # Validate user meant to replace
+            if replace_pk != replace.pk:
+                raise ValidationError('Unexpected Replacement')
+            model = form.save(commit=False, **attrs)
+            # Merge specified fields
+            for field in model_type[2].merge_fields:
+                if hasattr(replace, field):
+                    field_type = model_type[0]._meta.get_field(
+                        field).get_internal_type()
+                    if field_type == 'ManyToManyField':
+                        for related in getattr(replace, field).all():
+                            getattr(model, field).add(related)
+                    elif field_type == 'TextField':
+                        try:
+                            replace_objs = json.loads(getattr(replace, field))
+                            model_objs = json.loads(getattr(model, field))
+                            for obj in replace_objs:
+                                model_objs += [obj]
+                            setattr(model, field, json.dumps(model_objs))
+                        except Exception:
+                            pass
+                if hasattr(replace, 'files'):
+                    for file in replace.files.all():
+                        file.delete_file()
+            replace.delete()
+            return model
+        return False
 
     @staticmethod
     def _create_model(model_type, attrs, form_data):
@@ -234,32 +298,82 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
             # Verify that no model with this info exists
             if model_type[0].objects.filter(title=form.cleaned_data['title'], **attrs):
                 raise ValidationError('Model Already Exists ID Required', code=500)
-            model = form.save(**attrs)
+            return form.save(commit=False, **attrs)
+        else:
+            raise ValidationError('Invalid Form')
 
 
 class LearningFiles(LoginRequiredMixin, AjaxMixin, View):
+    models = {
+        'programming': (models.Programming, models.ProgrammingFile),
+        'module': (models.Module, models.ModuleFile),
+    }
+    data = {}
 
-    def post(self):
+    def post(self, request):
         context = {}
-        if self.kwargs.get('pk'):
-            # delete file
+        if self.kwargs.get('file_pk'):
+            self.delete_learning_file()
             pass
         else:
-            # create file
-            pass
+            self.create_learning_file()
+        return JsonResponse(self.data)
+
+    def create_learning_file(self):
+        model_type = self.models.get(self.kwargs.get('model_type'))
+        model_pk = self.kwargs.get('model_pk')
+        if not (model_type and model_pk):
+            raise ValidationError('Insufficient Data')
+        model = get_object_or_404(model_type[0], pk=model_pk)
+        if model.site not in self.request.user.userinfo.user_site_access():
+            raise PermissionDenied()
+        files = self.request.FILES
+        created_files = []
+        for title, file in files.items():
+            learning_file = model_type[1](model=model, file=file, title=title)
+            learning_file.save()
+            created_files += [(title, learning_file.pk, settings.MEDIA_URL + learning_file.file.name)]
+        self.data = {
+            'files': created_files
+        }
+
+    def delete_learning_file(self):
+        pk = self.kwargs.get('file_pk')
+        model_type = self.models.get(self.kwargs.get('model_type'))
+        if not model_type:
+            raise ValidationError('Insufficient Data')
+        learning_file = get_object_or_404(model_type[1], pk=pk)
+        if learning_file.model.site not in self.request.user.userinfo.user_site_access():
+            raise PermissionDenied()
+        learning_file.delete_file()
+        learning_file.delete()
+
 
 class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
+    data = {}
+    models = {
+        'programming': models.Programming,
+        'theme': models.Theme,
+        'module': models.Module,
+    }
 
     def get(self, request, *args, **kwargs):
         context = {}
-        site = self.kwargs.get('type')
-        model_type = self.kwargs.get('model_type')
-        model_pk = self.kwargs.get('model_pk')
-        if site and model_type and model_pk:
-            # Get members completed within site
-            pass
-        else:
-            raise Http404()
+        model_type = self.models.get(self.kwargs.get('model_type'))
+        pk = self.kwargs.get('pk')
+        if not (model_type and pk):
+            raise ValidationError('Insufficient Data')
+        # Get members completed within site
+        model = get_object_or_404(model_type, pk=pk)
+        if model.site not in self.request.user.userinfo.user_site_access():
+            raise PermissionDenied()
+        members_completed = []
+        for profile in model.profiles:
+            members_completed += [{'name': str(profile), 'pk': profile.pk}]
+        data = {
+            'profiles': json.dumps(members_completed)
+        }
+        return JsonResponse(self.data)
 
     def post(self, request, *args, **kwargs):
         context = {}

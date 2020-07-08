@@ -9,5 +9,9 @@ class TestUrls(SimpleTestCase):
         self.assertEqual(resolver.func.view_class, views.Learning)
 
     def test_manage_models_url(self):
-        resolver = resolve(reverse('models'))
+        resolver = resolve(reverse('learning-models'))
         self.assertEqual(resolver.func.view_class, views.LearningModels)
+
+    def test_manage_files_url(self):
+        resolver = resolve(reverse('learning-files'))
+        self.assertEqual(resolver.func.view_class, views.LearningFiles)
