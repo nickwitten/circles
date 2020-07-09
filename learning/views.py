@@ -253,8 +253,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         else:
             raise ValidationError('Invalid Form')
 
-    @staticmethod
-    def _check_and_replace(model_type, form, attrs, pk, replace_pk):
+    def _check_and_replace(self, model_type, form, attrs, pk, replace_pk):
         """ Check if model needs to be replaced and
             if that was expected.  Merge fields from
             replaced model and then delete.          """
@@ -275,6 +274,11 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
                     if field_type == 'ManyToManyField':
                         for related in getattr(replace, field).all():
                             getattr(model, field).add(related)
+                    elif field_type == 'ForeignKey':
+                        input()
+                        for related in getattr(replace, field).all():
+                            setattr(related, self.kwargs.get('model_type'), model)
+                            related.save()
                     elif field_type == 'TextField':
                         try:
                             replace_objs = json.loads(getattr(replace, field))
@@ -358,7 +362,7 @@ class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
     }
 
     def get(self, request, *args, **kwargs):
-        context = {}
+        """ Returns profile info for all profiles with completed model """
         model_type = self.models.get(self.kwargs.get('model_type'))
         pk = self.kwargs.get('pk')
         if not (model_type and pk):
@@ -368,9 +372,14 @@ class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
         if model.site not in self.request.user.userinfo.user_site_access():
             raise PermissionDenied()
         members_completed = []
-        for profile in model.profiles:
-            members_completed += [{'name': str(profile), 'pk': profile.pk}]
-        data = {
+        for profile_model in model.profiles.all():
+            if profile_model.date_completed:
+                members_completed += [{
+                    'name': str(profile_model.profile),
+                    'pk': profile_model.profile.pk,
+                    'date_completed': profile_model.date_completed.strftime('%m/%d/%Y'),
+                }]
+        self.data = {
             'profiles': json.dumps(members_completed)
         }
         return JsonResponse(self.data)
