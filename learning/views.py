@@ -275,7 +275,6 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
                         for related in getattr(replace, field).all():
                             getattr(model, field).add(related)
                     elif field_type == 'ForeignKey':
-                        input()
                         for related in getattr(replace, field).all():
                             setattr(related, self.kwargs.get('model_type'), model)
                             related.save()
@@ -356,10 +355,10 @@ class LearningFiles(LoginRequiredMixin, AjaxMixin, View):
 class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
     data = {}
     models = {
-        'programming': models.Programming,
-        'theme': models.Theme,
-        'module': models.Module,
+        'theme': (models.Theme, models.ProfileTheme),
+        'module': (models.Module, models.ProfileModule),
     }
+    model_type = None
 
     def get(self, request, *args, **kwargs):
         """ Returns profile info for all profiles with completed model """
@@ -368,7 +367,7 @@ class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
         if not (model_type and pk):
             raise ValidationError('Insufficient Data')
         # Get members completed within site
-        model = get_object_or_404(model_type, pk=pk)
+        model = get_object_or_404(model_type[0], pk=pk)
         if model.site not in self.request.user.userinfo.user_site_access():
             raise PermissionDenied()
         members_completed = []
@@ -385,10 +384,31 @@ class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
         return JsonResponse(self.data)
 
     def post(self, request, *args, **kwargs):
-        context = {}
+        """ Delete or add member to theme or modules members completed """
         if self.kwargs.get('delete'):
             # delete members training
-            pass
+            model, profile = self._get_args()
+            profile_model = get_object_or_404(model.profiles, profile=profile)
+            profile_model.delete()
         else:
             # add training to member
-            pass
+            model, profile = self._get_args()
+            attrs = {self.kwargs.get('model_type'): model, 'profile': profile}
+            profile_model = self.model_type[1](**attrs)
+            profile_model.save()
+        return JsonResponse(self.data)
+
+    def _get_args(self):
+        """ Get and validate arguments """
+        self.model_type = self.models.get(self.kwargs.get('model_type'))
+        pk = self.kwargs.get('pk')
+        profile_pk = self.kwargs.get('profile_pk')
+        if not (self.model_type and pk and profile_pk):
+            raise ValidationError('Insufficient Data')
+        model = get_object_or_404(self.model_type[0], pk=pk)
+        profile = get_object_or_404(member_models.Profile, pk=profile_pk)
+        if model.site not in self.request.user.userinfo.user_site_access():
+            raise PermissionDenied()
+        if profile not in self.request.user.userinfo.user_profile_access():
+            raise PermissionDenied()
+        return model, profile
