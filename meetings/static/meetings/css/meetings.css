@@ -208,11 +208,7 @@
 #meeting_form {
     align-items: center;
     flex-flow: column;
-    height: 93%;
-}
-#meeting_submit_btn {
-    margin-left: auto;
-    margin-right: 6%;
+    height: 100%;
 }
 #meeting_header {
     position: relative;
@@ -502,7 +498,6 @@
     display: flex;
     flex-flow: column;
     flex-grow:1;
-    padding:bottom: 15px;
 }
 #meeting_content .form-inputs {
     display: flex;
@@ -527,6 +522,11 @@
 }
 #meeting_content .fields {
     width: 85%
+}
+#meeting_content .buttons {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
 }
 #id_site, #id_location {
     display: block;
@@ -619,17 +619,6 @@
     left: 3em;
 }
 
-#meeting_submit_btn {
-    position: absolute;
-    bottom: 1%;
-    left: 2%;
-}
-
-#attendance_btn {
-    position: absolute;
-    bottom: 1%;
-    right: 2%;
-}
 #attendance_container {
     position: absolute;
     background-color: white;

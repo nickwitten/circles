@@ -634,6 +634,9 @@ $("#id_searchinput").on("keyup", function(){
 });
 $("#filter_by").change(function() {
   getFilterInputField($(this).val()); // Add an input field
+  if ($(this).val() == '') {
+    getProfiles();
+  }
 });
 $("#id_sortby").change(function() {
   getProfiles();
