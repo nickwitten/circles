@@ -27,7 +27,7 @@ class Programming(models.Model):
 class Theme(models.Model):
     site = models.ForeignKey(members_models.Site, on_delete=models.CASCADE, related_name='themes')
     title = models.CharField(max_length=128)
-    required_for = models.TextField(blank=True)
+    required_for = models.TextField(default='[]', blank=True)
 
     def to_dict(self):
         return model_to_dict(self)

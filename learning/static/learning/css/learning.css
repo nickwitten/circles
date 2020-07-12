@@ -1,0 +1,126 @@
+h3 {
+    font-size: calc(20px + 1vw);
+}
+
+
+#main_container {
+    display: flex;
+    position: relative;
+    flex-flow: column;
+    background-color: white;
+    height: 88vh;
+    margin: 10px auto;
+    padding: 10px 20px;
+    overflow: hidden;
+}
+
+
+#header {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    width: 100%;
+}
+#header .title {
+    margin: 15px;
+}
+
+
+#content {
+    display: flex;
+    flex-grow: 1;
+    overflow-y: hidden;
+}
+#content .left {
+    display: flex;
+    justify-content: center;
+    width: 50%;
+    overflow-y: auto;
+    padding: 0 0.5rem;
+}
+#content .right {
+    display: flex;
+    width: 50%;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+@media screen and (max-width: 770px) {
+    #content {
+        flex-flow: column;
+    }
+    #content .left {
+        flex-grow: 1;
+        width: 100%;
+        height: fit-content;
+    }
+    #content .right {
+        width: 100%;
+        height: fit-content;
+    }
+}
+
+
+
+
+#items {
+    display: flex;
+    flex-flow: column;
+}
+#items .item {
+    display: flex;
+    flex-flow: column;
+    margin: 0.5rem 0;
+    padding: 0.5rem 0;
+}
+#items .item a {
+    color: black;
+    font-size: calc(15px + 0.4vw);
+    margin: 0.5rem 0;
+}
+#content .item .sub-item {
+    color: black;
+    font-size: calc(10px + 0.4vw);
+    padding-left: 2rem;
+    margin: 0.5rem 0;
+}
+
+
+#item-info {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    position: absolute;
+    right: 0;
+    background-color: white;
+    padding: 0 0.5rem;
+}
+#item-info .title {
+    margin: 1.5rem 0;
+    padding-bottom: 0.5rem;
+}
+#item-info h6 {
+    font-size: calc(15px + 0.4vw);
+}
+#item-info .fields-container {
+    display: flex;
+    flex-grow: 1;
+    padding: 0 1rem;
+    width: 100%;
+}
+#item-info .fields-container p {
+    font-size: calc(10px + 0.4vw);
+}
+#item-info .labels {
+    margin-right: 2rem;
+}
+#item-info .fields {
+    display: flex;
+}
+
+
+#menu_btn {
+    position: absolute;
+    top: 6px;
+    left: 10px;
+}
