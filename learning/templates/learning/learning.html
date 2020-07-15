@@ -18,6 +18,7 @@
     <div id="content">
         <div class="left">
             <ul id="items">
+                <!-- JS -->
                 <li class="item">
                     <a href="#">Bridges Out of Poverty</a>
                     <a class="sub-item" href="#">Hidden Rules</a>
@@ -45,6 +46,7 @@
                     <a class="sub-item" href="#">Module</a>
                     <a class="sub-item" href="#">Module</a>
                 </li>
+                <!-- END JS -->
             </ul>
         </div>
         <div class="right">
@@ -53,31 +55,19 @@
                 <a href="#" class="btn btn-outline-secondary">+ Module</a>
             </div>
         </div>
-        <div id="item-info">
-            <div class="title border-bottom">
-                <h6>Bridges Out of Poverty - Hidden Rules</h6>
-            </div>
-            <div class="fields-container">
-                <div class="labels">
-                    <p>Site: </p>
-                    <p>Site: </p>
-                    <p>Site: </p>
-                    <p>Site: </p>
-                    <p>Site: </p>
-                </div>
-                <div class="fields">
-
-                </div>
-            </div>
-        </div>
+        {% for form in forms %}
+            {% include 'learning/learning_info.html' with type=form.0 form=form.1 %}
+        {% endfor %}
     </div>
 </div>
 
 {% endblock %}
 
 {% block js %}
+{{ data|json_script:"learning_data" }}
 <script>
     // Pass template variables into js file
+    var learning_data = JSON.parse($('#learning_data').text())[0];
     var url_learning_models = "{% url 'learning-models' %}"
     var url_learning_files = "{% url 'learning-files' %}"
     var url_members_completed = "{% url 'members-completed' %}"

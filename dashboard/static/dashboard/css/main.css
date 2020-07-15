@@ -428,3 +428,93 @@ header a{
         transform: rotate(360deg) translate(-50%);
     }
 }
+
+.multi-level-dropdown,
+.dropdown {
+    position: relative;
+    display: flex;
+    align-content: center;
+    padding: 4px 0;
+    border-bottom: 1px solid #dee2e6;
+}
+.multi-level-dropdown .pointer,
+.dropdown .pointer {
+    position: absolute;
+    right: 0;
+    font-size: 17px;
+    transition: all 0.2s ease-in-out;
+}
+.multi-level-dropdown .pointer.rotate,
+.dropdown .pointer.rotate {
+    transform: rotate(-90deg);
+}
+.multi-level-dropdown .show-wrapper,
+.dropdown .show-wrapper {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+.multi-level-dropdown .options,
+.dropdown .options {
+    visibility: hidden;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 200%;
+    overflow-y: hidden;
+    z-index: 1;
+}
+.multi-level-dropdown .options-wrapper,
+.dropdown .options-wrapper {
+    position: relative;
+    transition: all 0.2s ease-in-out;
+    width: 50%;
+    -webkit-box-shadow: 1px 1px 7px 0px #cccccc96;
+    -moz-box-shadow:   1px 1px 7px 0px #cccccc96;
+    box-shadow:        1px 1px 7px 0px #cccccc96;
+}
+.multi-level-dropdown .option,
+.dropdown .option {
+    position: relative;
+    display: flex;
+    align-content: center;
+    padding: 0.5rem;
+    width: 100%;
+    border: 1px solid #dee2e6;
+    background-color: white;
+}
+.multi-level-dropdown .option p,
+.dropdown .option p {
+    padding-left: 0.5rem;
+}
+.multi-level-dropdown .option:hover {
+    background-color: #f5f5f5;
+}
+.multi-level-dropdown .sub-options {
+    z-index: -1;
+    top: -1px;
+    position: absolute;
+    left: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+.multi-level-dropdown .option:hover .sub-options {
+    z-index: 1;
+}
+.multi-level-dropdown .sub-options-wrapper {
+    position: relative;
+    transition: all 0.2s ease-in-out;
+}
+.multi-level-dropdown .sub-option {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    background-color: white;
+}
+.multi-level-dropdown .sub-option p {
+    padding-left: 0.5rem;
+}

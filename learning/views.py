@@ -23,32 +23,48 @@ class AjaxMixin:
 
 
 class Learning(TemplateView):
-
+    positions = None
     template_name = 'learning/learning.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['role_types'] = member_models.Role.position_choices
-        context['programming_form'] = forms.ProgrammingCreationForm()
-        context['theme_form'] = forms.ThemeCreationForm()
-        context['module_form'] = forms.ModuleCreationForm()
-        context['chapter_info'] = self.chapter_info()
+        self.positions = member_models.Role.position_choices  # temporary need to get per site in future
+        context['forms'] = [
+            ('programming', forms.ProgrammingCreationForm()),
+            ('theme', forms.ThemeCreationForm()),
+            ('module', forms.ModuleCreationForm())
+        ]
+        data = self.get_data()
+        context['data'] = data
         return context
 
-    def chapter_info(self):
+    def get_data(self):
         chapters = self.request.user.userinfo.user_site_access_dict()
-        chapter_info = []
+        data = []
+        site_select_data = []
         for chapter in chapters:
-            temp_chapter = {'chapter': chapter['chapter'], 'sites': []}
+            temp_chapter = {
+                'chapter': (str(chapter['chapter']), chapter['chapter'].pk),
+                'sites': [],
+            }
             sites = chapter['sites']
             for site in sites:
-                temp_chapter['sites'] += [{
-                    'site': site,
-                    'programming': site.programming.all(),
-                    'themes': [{'theme': theme, 'modules': theme.modules.all()} for theme in site.themes.all()]
-                }]
-            chapter_info += [temp_chapter]
-        return chapter_info
+                temp_site = {
+                    'site': (str(site), site.pk),
+                    'programming': [(str(programming), programming.pk) for programming in site.programming.all()],
+                    'themes': [],
+                    'positions': self.positions,
+                }
+                themes = site.themes.all()
+                for theme in themes:
+                    temp_theme = {
+                        'theme': (str(theme), theme.pk),
+                        'modules': [(str(module), module.pk) for module in theme.modules.all()]
+                    }
+                    temp_site['themes'] += [temp_theme]
+                temp_chapter['sites'] += [temp_site]
+            data += [temp_chapter]
+        return data,
 
 
 class LearningModels(LoginRequiredMixin, AjaxMixin, View):

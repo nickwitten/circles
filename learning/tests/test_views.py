@@ -26,17 +26,17 @@ class TestLearningView(CreateLearningModelsMixin, TestCase):
         response = self.client.get(self.learning_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'learning/learning.html')
-        # Check chapter_info
-        self.assertEqual(len(response.context['chapter_info']), self.visible_chapter_ct)
-        self.assertEqual(len(response.context['chapter_info'][0]['sites']), self.visible_site_ct)
-        self.assertEqual(len(response.context['chapter_info'][0]['sites'][0]['programming']), self.model_ct)
-        self.assertEqual(len(response.context['chapter_info'][0]['sites'][0]['themes']), self.model_ct)
-        self.assertEqual(len(response.context['chapter_info'][0]['sites'][0]['themes'][0]['modules']), self.model_ct)
-        self.assertEqual(response.context['chapter_info'][0]['chapter'], self.chapters['chapter_access1'])
-        self.assertEqual(response.context['chapter_info'][0]['sites'][0]['site'], self.sites['site_access1'])
-        self.assertEqual(response.context['chapter_info'][0]['sites'][0]['programming'][0].title, 'programming1')
-        self.assertEqual(response.context['chapter_info'][0]['sites'][0]['themes'][0]['theme'].title, 'theme1')
-        self.assertEqual(response.context['chapter_info'][0]['sites'][0]['themes'][0]['modules'][0].title, 'module1')
+        # Check data
+        self.assertEqual(len(response.context['data']), self.visible_chapter_ct)
+        self.assertEqual(len(response.context['data'][0]['sites']), self.visible_site_ct)
+        self.assertEqual(len(response.context['data'][0]['sites'][0]['programming']), self.model_ct)
+        self.assertEqual(len(response.context['data'][0]['sites'][0]['themes']), self.model_ct)
+        self.assertEqual(len(response.context['data'][0]['sites'][0]['themes'][0]['modules']), self.model_ct)
+        self.assertEqual(response.context['data'][0]['chapter'][0], 'chapter_access1')
+        self.assertEqual(response.context['data'][0]['sites'][0]['site'][0], 'site_access1')
+        self.assertEqual(response.context['data'][0]['sites'][0]['programming'][0][0], 'programming1')
+        self.assertEqual(response.context['data'][0]['sites'][0]['themes'][0]['theme'][0], 'theme1')
+        self.assertEqual(response.context['data'][0]['sites'][0]['themes'][0]['modules'][0][0], 'module1')
 
 class TestLearningFiles(CreateLearningModelsMixin, TestCase):
 

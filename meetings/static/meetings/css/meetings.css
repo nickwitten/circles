@@ -559,6 +559,9 @@
 #link_upload {
     margin: 8px 0;
 }
+#file_input .fa-file-upload {
+    margin-right: 4px;
+}
 #files, #links {
     display: flex;
     flex-flow: row wrap;

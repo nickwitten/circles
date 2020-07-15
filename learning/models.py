@@ -23,6 +23,9 @@ class Programming(models.Model):
                                               model_info['facilitator_profiles']]
         return model_info
 
+    def __str__(self):
+        return f'{self.title}'
+
 
 class Theme(models.Model):
     site = models.ForeignKey(members_models.Site, on_delete=models.CASCADE, related_name='themes')
@@ -31,6 +34,9 @@ class Theme(models.Model):
 
     def to_dict(self):
         return model_to_dict(self)
+
+    def __str__(self):
+        return f'{self.title}'
 
 
 class ProfileTheme(models.Model):
@@ -56,6 +62,9 @@ class Module(models.Model):
         model_info['facilitator_profiles'] = [[str(profile), profile.pk] for profile in
                                               model_info['facilitator_profiles']]
         return model_info
+
+    def __str__(self):
+        return f'{self.title}'
 
 
 class ProfileModule(models.Model):

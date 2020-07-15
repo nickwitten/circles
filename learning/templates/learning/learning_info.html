@@ -1,0 +1,165 @@
+<div id="{{ type }}_info" class="item-info {% if type == 'module' %}show{% endif %}">
+    <div class="title border-bottom">
+        <!-- JS -->
+        <h6>Bridges Out of Poverty - Hidden Rules</h6>
+        <!-- END JS -->
+        <a href="#" class="edit-btn far fa-edit blacklink"></a>
+    </div>
+    <div class="content">
+        <div id="{{ type }}_detail" class="detail fields-container">
+            <table class="fields-table">
+                <!-- JS --->
+                <tr>
+                    <td class="label">Site:</td>
+                    <td class="field">Winter Garden</td>
+                </tr>
+                <tr>
+                    <td class="label">Theme:</td>
+                    <td class="field">Bridges Out of Poverty</td>
+                </tr>
+                <tr>
+                    <td class="label">Title:</td>
+                    <td class="field">Hidden Rules</td>
+                </tr>
+                <tr>
+                    <td class="label">Length:</td>
+                    <td class="field">1 Hour</td>
+                </tr>
+                <tr>
+                    <td class="label">Required For:</td>
+                    <td class="field">Circle Leaders</td>
+                </tr>
+                <tr>
+                    <td class="label">Description:</td>
+                    <td class="field">Training for circles leaders with extremely important long very long information it'll be a fun time this is long.</td>
+                </tr>
+                <tr>
+                    <td class="label">Facilitators:</td>
+                    <td class="field">John Doe, Nick Witten</td>
+                </tr>
+                <tr>
+                    <td class="label">Links:</td>
+                    <td class="field"></td>
+                </tr>
+                <tr>
+                    <td class="label">Files:</td>
+                    <td class="field"></td>
+                </tr>
+                <!-- END JS -->
+            </table>
+        </div>
+        <div id="{{ type }}_update" class="update fields-container" style="">
+            <form>
+                {{ csrf_token.as_hidden }}
+                {{ form.site.as_hidden }}
+                <table class="fields-table">
+                    <tr>
+                        <td class="label"><p>Site:</p></td>
+                        <td class="field site-select">
+                            <div id="{{ type }}_site_select" class="multi-level-dropdown"></div>
+                        </td>
+                    </tr>
+                    {% if type == 'module' %}
+                    {{ form.theme.as_hidden }}
+                    <tr>
+                        <td class="label"><p>Theme:</p></td>
+                        <td class="field">
+                            <div id="theme_select" class="dropdown">
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td class="label"><p>Title:</p></td>
+                        <td class="field">
+                            {{ form.title }}
+                        </td>
+                    </tr>
+                    {% if type == 'module' or type == 'programming' %}
+                    <tr>
+                        <td class="label"><p>Length:</p></td>
+                        <td class="field">
+                            {{ form.length }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% if type == 'module' or type == 'theme' %}
+                    <tr>
+                        <td class="label"><p>Required for:</p></td>
+                        <td class="field">
+                            <div id="{{ type }}_required_select" class="dropdown"></div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% if type == 'module' or type == 'programming' %}
+                    {{ form.facilitators.as_hidden }}
+                    <tr>
+                        <td class="label top"><p class="pt-1">Facilitators:</p></td>
+                        <td class="field facilitators">
+                            <div class="p-relative">
+                                <input type="text">
+                                <a href="#" class="add-facilitator-btn fas fa-plus blacklink"></a>
+                                <div class="autocomplete">
+                                    <div class="profile instruction">
+                                        <p>Select to Link Profile</p>
+                                    </div>
+                                    <div class="profile">
+                                        <a href="#" class="blacklink">John Doe</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="facilitator-list">
+                                <div class="profile">
+                                    <a href="/members/profile/1" target="_blank">Nick Witten</a>
+                                    <a href="#" class="fas fa-times blacklink"></a>
+                                </div>
+                                <div class="profile">
+                                    <p>John Doe</p>
+                                    <a href="#" class="fas fa-times blacklink"></a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label top"><p class="pt-1">Description:</p></td>
+                        <td class="field">
+                            {{ form.description }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                </table>
+                {% if type == 'module' or type == 'programming' %}
+                <div class="load-container">
+                    <div class="file-input">
+                        <input multiple id="{{type}}_file_upload" type="file">
+                        <label for="{{type}}_file_upload" class="fas fa-file-upload"></label>
+                        <div class="files">
+                            <div class="file">
+                                <a href="#" class="blacklink">fake_file.doc</a>
+                                <a href="#" class="delete fas fa-times"></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="loading" style="display: none;">
+                        <div class="center">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="link-input">
+                    <a href="#" class="link-upload fas fa-link blacklink"></a>
+                    <div class="links">
+                        <div class="link">
+                            <a class="blacklink" href="https://google.com" target="_blank">google</a>
+                            <a href="#" class="delete fas fa-times"></a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </form>
+            <div class="btn-container">
+                <a href="#" class="save-btn btn btn-outline-secondary mb-1">Save</a>
+            </div>
+        </div>
+    </div>
+</div>

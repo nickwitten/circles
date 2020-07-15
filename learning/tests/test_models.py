@@ -87,7 +87,7 @@ class TestModels(CreateLearningModelsMixin, TestCase):
             'id': 3,
             'site': 2,
             'title': 'theme1',
-            'required_for': ''
+            'required_for': '[]'
         })
 
     def test_module_to_dict(self):

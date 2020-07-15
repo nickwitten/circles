@@ -315,11 +315,16 @@ def create_excel(tools_form, sorted_profiles):
 
 
 def field_to_model(field):
-    if field in residence_data: return Residence
-    elif field in role_data: return Role
-    elif field in training_data: return Training
-    elif field in child_data: return Child
-    else: return Profile
+    if field in residence_data:
+        return Residence
+    elif field in role_data:
+        return Role
+    elif field in training_data:
+        return Training
+    elif field in child_data:
+        return Child
+    else:
+        return Profile
 
 
 

@@ -61,8 +61,6 @@ h3 {
 }
 
 
-
-
 #items {
     display: flex;
     flex-flow: column;
@@ -86,8 +84,15 @@ h3 {
 }
 
 
-#item-info {
-    display: flex;
+#menu_btn {
+    position: absolute;
+    top: 6px;
+    left: 10px;
+}
+
+
+.item-info {
+    display: none;
     flex-flow: column;
     align-items: center;
     position: absolute;
@@ -95,32 +100,193 @@ h3 {
     background-color: white;
     padding: 0 0.5rem;
 }
-#item-info .title {
-    margin: 1.5rem 0;
-    padding-bottom: 0.5rem;
-}
-#item-info h6 {
-    font-size: calc(15px + 0.4vw);
-}
-#item-info .fields-container {
+.item-info.show {
     display: flex;
-    flex-grow: 1;
-    padding: 0 1rem;
-    width: 100%;
 }
-#item-info .fields-container p {
-    font-size: calc(10px + 0.4vw);
-}
-#item-info .labels {
+.item-info .title {
+    position: relative;
+    margin: 1rem 0;
+    padding-bottom: 0.5rem;
     margin-right: 2rem;
 }
-#item-info .fields {
+.item-info .title .fa-edit {
+    position: absolute;
+    right: -1.5rem;
+    bottom: calc(0.65rem + 0.15vw);
+}
+.item-info h6 {
+    font-size: calc(15px + 0.4vw);
+}
+.item-info .content {
+    position: relative;
+    flex-grow: 1;
+    align-self: flex-start;
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.item-info .fields-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0 1rem;
+    background-color: white;
+}
+.item-info .update {
+    display: flex;
+    flex-flow: column;
+    z-index: 1;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+.item-info .btn-container {
+    display: flex;
+    flex-grow: 1;
+    justify-content: flex-end;
+    align-items: flex-end;
+}
+
+.fields-table {
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+}
+.fields-table p {
+    font-size: calc(8px + 0.3vw);
+}
+.fields-table .label {
+    vertical-align: top;
+    padding-right: 1rem;
+    white-space: nowrap;
+}
+.update .fields-table .label {
+    vertical-align: middle;
+}
+.fields-table .label.top {
+    vertical-align: top;
+}
+.fields-table .field {
+    width: 100%;
+}
+.fields-table input[type=text] {
+    border: 0;
+    border-bottom: 1px solid #dee2e6;
+    outline: 0;
+    font-size: calc(8px + 0.3vw);
+    width: 100%;
+}
+.fields-table .multi-level-dropdown,
+.fields-table .dropdown {
+    width: 50%;
+}
+.fields-table textarea {
+    outline: 0;
+    border: 1px solid #dee2e6;
+    width: 100%;
+    font-size: calc(8px + 0.3vw);
+}
+
+.facilitators {
+    position: relative;
+}
+.facilitators .add-facilitator-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 6px;
+}
+.facilitators input {
+    padding-right: 2rem;
+}
+.facilitators .autocomplete {
+    visibility: hidden;
+    top: 100%;
+    position: absolute;
+    background-color: white;
+    width: 100%;
+    -webkit-box-shadow: 0 3px 3px 3px #cccccc96;
+    -moz-box-shadow:   0 3px 3px 3px #cccccc96;
+    box-shadow:        0 3px 3px 3px #cccccc96;
+}
+.facilitators .autocomplete .profile {
+    border: 1px solid #dee2e6;
+}
+.facilitators .autocomplete .profile a,
+.facilitators .autocomplete .profile p {
+    display: flex;
+    font-size: calc(8px + 0.3vw);
+    padding: 0.5rem;
+}
+.facilitators .autocomplete .instruction {
+    display: flex;
+    justify-content: center;
+}
+.facilitators .autocomplete .instruction p {
+    color: #a5a5a5;
+    font-size: calc(6px + 0.3vw);
+}
+.facilitators .facilitator-list {
+    display: flex;
+    flex-flow: row wrap;
+    margin-top: 0.5rem;
+    max-height: 25px;
+    overflow-y: auto;
+}
+.facilitators .facilitator-list .profile {
+    display: flex;
+    align-items: center;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+    margin: 0 0.25rem;
+}
+.facilitators .facilitator-list .profile a,
+.facilitators .facilitator-list .profile p {
+    font-size: 10px;
+    padding: 0.25rem;
+}
+
+.file-input, .link-input {
     display: flex;
 }
-
-
-#menu_btn {
+.file-input input {
     position: absolute;
-    top: 6px;
-    left: 10px;
+    visibility: hidden;
 }
+.file-input .fa-file-upload,
+.link-upload {
+    margin: 8px 0;
+    font-size: medium;
+}
+.file-input .fa-file-upload {
+    margin-right: 4px;
+}
+.files, .links {
+    display: flex;
+    flex-flow: row wrap;
+    max-height: 33px;
+    overflow-y: auto;
+}
+.files label {
+    margin: 0;
+}
+.files .file,
+.links .link {
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    margin: 0.2em 0.5em;
+    padding: 0.1em 0.5em;
+    border: solid 1px #dee2e6;
+    border-radius: 3px;
+}
+.files a,
+.links a {
+    font-size: 10px;
+}
+.files .delete,
+.links .delete {
+    color: #848484;
+    font-size: small;
+    margin: 4px 0px 3px 10px;
+}
+
