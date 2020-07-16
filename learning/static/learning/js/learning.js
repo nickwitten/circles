@@ -1,9 +1,80 @@
+class LearningTypeDropdown extends MultiLevelDropdown {
+    build() {
+        var elements = super.build();
+        this.element.empty();
+        var value = $('<h4/>')
+            .text('Winter Garden Training')
+            .addClass('title');
+        this.element.append(value);
+        this.element.append(elements[1]);
+        this.element.append(elements[2]);
+        this.element.append(elements[3]);
+    }
+}
+
+
+class MenuSiteSelect extends JqueryElement {
+    constructor(id) {
+        super()
+        this.id = id;
+        this.element = $('#' + id);
+        this.listeners();
+        this.show_sites(this.element.find('.chapter')[0]);
+        this.select(this.element.find('.site')[0]);
+    }
+
+    listeners() {
+        $('#menu_btn').click({func: this.show, object: this}, this.dispatch);
+        this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
+        this.element.find('.chapter').click({func: this.show_sites, object: this}, this.dispatch);
+        this.element.find('.site').click({func: this.change, object: this}, this.dispatch);
+    }
+
+    show_sites(chapter) {
+        this.element.find('.site-select').children().each(function() {
+            $(this).find('.sites').hide();
+            $(this).removeClass('shadow')
+        })
+        $(chapter).addClass('shadow');
+        $(chapter).find('.sites').show();
+    }
+
+    change(site) {
+        this.select(site);
+        this.element.trigger(':changed');
+    }
+
+    select(site) {
+        this.element.find('.site input').each(function() {
+            $(this).prop("checked", false);
+        });
+        $(site).find('input').prop("checked", true);
+    }
+
+    show() {
+        this.element.addClass('show');
+        closeFunctions['#' + this.id] = this;
+    }
+
+    hide() {
+        this.element.removeClass('show');
+        delete closeFunctions['#' + this.id];
+    }
+}
+
 function show_update_info() {
     $(this).closest('item-info').find('update').show();
     $(this).hide();
 }
 
-function format_site_select_data() {
+function get_type_select_data() {
+    var training_options = [['All', 'All']].concat(role_positions);
+    training_options = training_options.slice(0, -1); // Remove Other option
+    var data = [['Training', 'Training', training_options], ['Programming', 'Programming', []]];
+    return data
+}
+
+function get_site_select_data() {
     var site_select_data = [];
     for (let i=0; i<learning_data.length; i++) {
         var chapter = learning_data[i];
@@ -14,7 +85,6 @@ function format_site_select_data() {
         }
         site_select_data.push(temp_chapter);
     }
-    console.log(site_select_data);
     return site_select_data
 }
 
@@ -44,24 +114,21 @@ document.addEventListener("click", function(e) {
 
 $(document).ready(function() {
     listeners();
-    styles();
-    site_select_data = format_site_select_data();
-    site_select = new MultiLevelDropdown('module_site_select', site_select_data, 'checkbox');
-    theme_select = new Dropdown('theme_select', [['option1', 1], ['option2', 2]], 'radio');
-    required_for_select = new Dropdown('module_required_select', [['option1', 1], ['option2', 2]], 'checkbox');
+    new MenuSiteSelect('menu');
+    type_select_data = get_type_select_data();
+    new LearningTypeDropdown('learning_type_select', type_select_data, 'radio');
+    site_select_data = get_site_select_data();
+    new MultiLevelDropdown('programming_site_select', site_select_data, 'checkbox');
+    new MultiLevelDropdown('theme_site_select', site_select_data, 'checkbox');
+    new MultiLevelDropdown('module_site_select', site_select_data, 'checkbox');
+    new Dropdown('theme_select', [['option1', 1], ['option2', 2]], 'checkbox');
+    new Dropdown('module_required_select', [['option1', 1], ['option2', 2]], 'checkbox');
+    new Modal('modal', 'Are You Sure?', ['Delete Programming?'], function() {console.log('action');});
+    resize_info_slides();
 });
 
-$(window).resize(function() {
-    resize_info_slides();
-    site_select.styles();
-    theme_select.styles();
-    required_for_select.styles();
-})
-
-function styles() {
-    resize_info_slides();
-}
 
 function listeners() {
     $('.edit-btn').on('click', show_update_info);
+    $(window).resize(resize_info_slides);
 }

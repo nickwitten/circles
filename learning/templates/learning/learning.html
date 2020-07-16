@@ -11,9 +11,12 @@
 <div id="main_container" class="shadow container">
     <a href="#" id="menu_btn" class="fas fa-bars blacklink"></a>
     <div id="header" class=" border-bottom">
-        <h3 class="title">
-            Winter Garden Training
-        </h3>
+        <div id="learning_type_select" class="multi-level-dropdown">
+
+        </div>
+<!--        <h3 class="title">-->
+<!--            Winter Garden Training-->
+<!--        </h3>-->
     </div>
     <div id="content">
         <div class="left">
@@ -59,15 +62,37 @@
             {% include 'learning/learning_info.html' with type=form.0 form=form.1 %}
         {% endfor %}
     </div>
+    <div id="menu">
+        <a href="#" class="fas fa-times back blacklink"></a>
+        <h3>Sites</h3>
+        <div class="site-select">
+            {% for chapter in data %}
+            <div class="chapter">
+                <a href="#" class="chapter-text blacklink">{{ chapter.chapter.0 }}</a>
+                <div class="sites" style="display: None;">
+                    {% for site in chapter.sites %}
+                    <div class="site">
+                        <input type="radio" data-pk="{{ site.site.1 }}">
+                        <a href="#" class="blacklink site-name">{{ site.site.0 }}</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </div>
+{% include 'dashboard/modal.html' with id='modal' %}
 
 {% endblock %}
 
 {% block js %}
 {{ data|json_script:"learning_data" }}
+{{ positions|json_script:"role_positions" }}
 <script>
     // Pass template variables into js file
-    var learning_data = JSON.parse($('#learning_data').text())[0];
+    var learning_data = JSON.parse($('#learning_data').text());
+    var role_positions = JSON.parse($('#role_positions').text());
     var url_learning_models = "{% url 'learning-models' %}"
     var url_learning_files = "{% url 'learning-files' %}"
     var url_members_completed = "{% url 'members-completed' %}"

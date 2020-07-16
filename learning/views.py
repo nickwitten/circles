@@ -23,12 +23,11 @@ class AjaxMixin:
 
 
 class Learning(TemplateView):
-    positions = None
     template_name = 'learning/learning.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        self.positions = member_models.Role.position_choices  # temporary need to get per site in future
+        context['positions'] = member_models.Role.position_choices
         context['forms'] = [
             ('programming', forms.ProgrammingCreationForm()),
             ('theme', forms.ThemeCreationForm()),
@@ -41,7 +40,6 @@ class Learning(TemplateView):
     def get_data(self):
         chapters = self.request.user.userinfo.user_site_access_dict()
         data = []
-        site_select_data = []
         for chapter in chapters:
             temp_chapter = {
                 'chapter': (str(chapter['chapter']), chapter['chapter'].pk),
@@ -53,7 +51,6 @@ class Learning(TemplateView):
                     'site': (str(site), site.pk),
                     'programming': [(str(programming), programming.pk) for programming in site.programming.all()],
                     'themes': [],
-                    'positions': self.positions,
                 }
                 themes = site.themes.all()
                 for theme in themes:
@@ -64,7 +61,7 @@ class Learning(TemplateView):
                     temp_site['themes'] += [temp_theme]
                 temp_chapter['sites'] += [temp_site]
             data += [temp_chapter]
-        return data,
+        return data
 
 
 class LearningModels(LoginRequiredMixin, AjaxMixin, View):

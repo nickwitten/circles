@@ -464,7 +464,7 @@ header a{
     left: 0;
     width: 200%;
     overflow-y: hidden;
-    z-index: 1;
+    z-index: 5;
 }
 .multi-level-dropdown .options-wrapper,
 .dropdown .options-wrapper {
@@ -485,15 +485,20 @@ header a{
     border: 1px solid #dee2e6;
     background-color: white;
 }
+.multi-level-dropdown .input-spacer,
+.dropdown .input-spacer {
+    width: 13px;
+}
 .multi-level-dropdown .option p,
 .dropdown .option p {
     padding-left: 0.5rem;
 }
-.multi-level-dropdown .option:hover {
+.multi-level-dropdown .option:hover,
+.dropdown .option:hover {
     background-color: #f5f5f5;
 }
 .multi-level-dropdown .sub-options {
-    z-index: -1;
+    visibility: hidden;
     top: -1px;
     position: absolute;
     left: 100%;
@@ -517,4 +522,60 @@ header a{
 }
 .multi-level-dropdown .sub-option p {
     padding-left: 0.5rem;
+}
+
+.modal-container {
+    z-index: 500;
+    visibility: hidden;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+.modal {
+    padding: 1rem;
+    position: absolute;
+    z-index: 1000;
+    display: flex;
+    flex-flow: column;
+    width: calc(180px + 10vw);
+    height: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -100%);
+    opacity: 0;
+    justify-content: space-between;
+    -webkit-box-shadow: rgba(0, 0, 0, 0.41) 0px 0px 0px 999em;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+    -moz-box-shadow:    rgba(0, 0, 0, 0.41) 0px 0px 0px 999em;  /* Firefox 3.5 - 3.6 */
+    box-shadow:         rgba(0, 0, 0, 0.41) 0px 0px 0px 999em;
+    background-color: white;
+    transition: all 0.3s ease-out;
+    border-radius: 5px;
+}
+.modal.show {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+}
+.modal .header {
+    display: flex;
+    justify-content: center;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 1rem;
+}
+.modal .content-container {
+    display: flex;
+    flex-flow: column;
+    border-bottom: 1px solid #dee2e6;
+    padding: 1rem;
+}
+.modal .content {
+    margin: 1rem 0;
+}
+.modal .buttons {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 1rem;
 }

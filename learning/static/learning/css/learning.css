@@ -20,9 +20,24 @@ h3 {
     justify-content: center;
     align-content: center;
     width: 100%;
+    padding: 1rem;
 }
-#header .title {
-    margin: 15px;
+#learning_type_select {
+    border: 0;
+    max-width: 50%;
+}
+#learning_type_select h4 {
+    font-size: calc(16px + 1vw);
+}
+#learning_type_select .pointer {
+    top: 50%;
+    transform: translate(15px, -50%);
+}
+#learning_type_select .pointer.rotate {
+    transform: translate(15px, -50%) rotate(-90deg);
+}
+#learning_type_select .show-wrapper {
+    right: -15px;
 }
 
 
@@ -58,6 +73,55 @@ h3 {
         width: 100%;
         height: fit-content;
     }
+}
+
+
+#menu {
+    position: absolute;
+    top: 0;
+    z-index: 1;
+    left: -700px;
+    height: 100%;
+    width: 35%;
+    min-width: 358px;
+    background-color: white;
+    -webkit-box-shadow: 3px 3px 3px 3px #cccccc96;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+    -moz-box-shadow:   3px 3px 3px 3px #cccccc96;  /* Firefox 3.5 - 3.6 */
+    box-shadow:        3px 3px 3px 3px #cccccc96;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
+    transition: all 0.3s ease-in-out;
+}
+#menu.show {
+    left: 0;
+}
+#menu h3 {
+    margin: 0.25rem 0.5rem;
+}
+#menu .site-select {
+    position: relative;
+}
+#menu .site-select .chapter {
+    display: flex;
+    width: 50%;
+    outline: 1px solid #dee2e6;
+    font-size: calc(12px, 0.5vw);
+}
+#menu .chapter-text {
+    padding: 10px;
+}
+#menu .site-select .sites {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 50%;
+}
+#menu .site-select .sites .site {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    outline: 1px solid #dee2e6;
+}
+#menu .site-select .sites input {
+    margin: 5px;
 }
 
 
