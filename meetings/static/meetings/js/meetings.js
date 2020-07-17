@@ -208,23 +208,23 @@ var meetings;
 var monthOffset = 0;
 var datePickerSelectedDates = [];
 var closeFunctions = {
-    'id_type': function() {
+    '#id_type': function() {
         $('#type_select').removeClass('visible');
         $('#type_select .container').removeClass('show');
     },
-    'color_select': function() {
+    '#color_select': function() {
         $('#colors').hide();
     },
-    'date_container': function() {
+    '#date_container': function() {
         $('#date_container').removeClass('shadow');
         $('#date_select_btn').addClass('hidden');
         $('#date_select').removeClass('show');
         $('#date_container .select-container').removeClass('visible');
     },
-    'lists_container': function() {
+    '#lists_container': function() {
         $('#attendance_container .lists').hide();
     },
-    'calendar_menu': function() {
+    '#calendar_menu': function() {
         $('#calendar_menu').removeClass('show');
     }
 }
@@ -239,13 +239,6 @@ $(document).ready(function(){
     showSites($('#calendar_menu .site_select').children().eq(1));
     $('#id_type').attr('readonly', 'readonly');
     $('#id_links').val('[]');
-    document.addEventListener("click", function(e) {
-        for (const id in closeFunctions) {
-            if (($(e.target).parents('#' + id).length == 0) && (e.target.id != id)) {
-                closeFunctions[id]();
-            }
-        }
-    }, true);
 });
 
 // parameters:

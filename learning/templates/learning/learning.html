@@ -72,7 +72,7 @@
                 <div class="sites" style="display: None;">
                     {% for site in chapter.sites %}
                     <div class="site">
-                        <input type="radio" data-pk="{{ site.site.1 }}">
+                        <input type="radio" value="{{ site.site.1 }}">
                         <a href="#" class="blacklink site-name">{{ site.site.0 }}</a>
                     </div>
                     {% endfor %}

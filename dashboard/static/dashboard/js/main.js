@@ -1,6 +1,19 @@
 var closeFunctions = {
 }
 
+document.addEventListener("click", function(e) {
+    for (const selector in closeFunctions) {
+        container = $(selector);
+        if (!container.is(e.target) && container.has(e.target).length === 0) {
+            if (typeof closeFunctions[selector] == 'object') {
+                closeFunctions[selector].hide();
+            } else {
+                closeFunctions[selector]();
+            }
+        }
+    }
+}, true);
+
 
 function addAlertHTML(message, type) {
     alert = $('<div/>')
@@ -31,6 +44,7 @@ class Dropdown extends JqueryElement {
         this.data = data;
         this.type = type;
         this.placeholder = placeholder;
+        this.text = '';
         this.value = [];
         this.build();
         this.styles();
@@ -81,6 +95,7 @@ class Dropdown extends JqueryElement {
             }
         }
         this.update_value();
+        this.element.trigger(":change");
     }
 
     update_value() {
@@ -89,17 +104,16 @@ class Dropdown extends JqueryElement {
         this.value = [];
         this.element.find('input').each(function() {
             if ($(this).is(':checked')) {
-                var text = $(this).siblings('p').text();
-                dropdown.value.push([text, $(this).attr('data-value')]);
+                dropdown.text = $(this).siblings('p').text();
+                dropdown.value.push($(this).val());
             }
         });
         if (this.value.length > 1) {
-            value_element.text('Multiple');
+            this.text = 'Multiple';
         } else if (this.value.length < 1) {
-            value_element.text(this.placeholder);
-        } else {
-            value_element.text(this.value[0][0]);
+            this.text = this.placeholder;
         }
+        value_element.text(this.text);
     }
 
     styles() {
@@ -131,7 +145,7 @@ class Dropdown extends JqueryElement {
                 .addClass('option');
             var input = $('<input/>')
                 .attr('type', this.type)
-                .attr('data-value', option_data[1])
+                .attr('value', option_data[1])
                 .prop('readonly', true);
             var option_text = $('<p/>')
                 .text(option_data[0]);
@@ -167,18 +181,15 @@ class MultiLevelDropdown extends Dropdown {
                 var all_checked = true;
                 $(option).find('.sub-option').each(function() {
                     if (!($(this).find('input').is(":checked"))) {
-                        console.log(this);
                         all_checked = false;
                     }
                 });
-                console.log(all_checked);
                 if (all_checked) {
                     option_checkbox.prop("checked", true);
                 } else {
                     option_checkbox.prop("checked", false);
                 }
             } else {
-                console.log(option_checkbox);
                 if (e.target.type != 'checkbox') {
                     option_checkbox.prop("checked", !option_checkbox.prop("checked"));
                 }
@@ -197,6 +208,7 @@ class MultiLevelDropdown extends Dropdown {
             }
         }
         this.update_value();
+        this.element.trigger(':change');
     }
 
     update_value() {
@@ -207,18 +219,17 @@ class MultiLevelDropdown extends Dropdown {
             if ($(this).is(':checked')) {
                 // Only take value if it is a sub-option or has no sub-options
                 if ($(this).parent().hasClass('.sub-option') || $(this).parent().find('.sub-option').length == 0) {
-                    var text = $(this).siblings('p').text();
-                    dropdown.value.push([text, $(this).attr('data-value')]);
+                    dropdown.text = $(this).siblings('p').text();
+                    dropdown.value.push($(this).val());
                 }
             }
         });
         if (this.value.length > 1) {
-            value_element.text('Multiple');
+            this.text = 'Multiple';
         } else if (this.value.length < 1) {
-            value_element.text(this.placeholder);
-        } else {
-            value_element.text(this.value[0][0]);
+            this.text = this.placeholder;
         }
+        value_element.text(this.text);
     }
 
     styles() {
@@ -275,7 +286,7 @@ class MultiLevelDropdown extends Dropdown {
                 .addClass('option');
             var input = $('<input/>')
                 .attr('type', this.type)
-                .attr('data-value', option_data[1]);
+                .attr('value', option_data[1]);
             var option_text = $('<p/>')
                 .text(option_data[0]);
             var sub_options = $('<div/>')

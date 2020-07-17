@@ -56,8 +56,15 @@ class Learning(TemplateView):
                 for theme in themes:
                     temp_theme = {
                         'theme': (str(theme), theme.pk),
-                        'modules': [(str(module), module.pk) for module in theme.modules.all()]
+                        'modules': []
                     }
+                    for module in theme.modules.all():
+                        try:
+                            required_for = json.loads(module.required_for)
+                        except:
+                            required_for = []
+                        temp_module = (str(module), module.pk, required_for)
+                        temp_theme['modules'] += [temp_module]
                     temp_site['themes'] += [temp_theme]
                 temp_chapter['sites'] += [temp_site]
             data += [temp_chapter]
