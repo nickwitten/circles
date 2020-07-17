@@ -19,25 +19,29 @@ function addAlertHTML(message, type) {
 class JqueryElement {
     dispatch(event) {
         var event_this = this;
-        event.data.func.call(event.data.object, event_this);
+        event.data.func.call(event.data.object, event_this, event);
     }
 }
 
 class Dropdown extends JqueryElement {
-    constructor(id, data, type) {
+    constructor(id, data, type, placeholder) {
         super();
         this.id = id;
         this.element = $('#' + this.id);
         this.data = data;
         this.type = type;
+        this.placeholder = placeholder;
+        this.value = [];
         this.build();
         this.styles();
+        this.update_value();
         this.listeners();
     }
 
     listeners() {
         var dropdown = this;
         this.element.find('.show-wrapper').click({func: this.show, object: this}, this.dispatch);
+        this.element.find('.option').click({func: this.select, object: this}, this.dispatch);
         $(window).resize({func: this.styles, object: this}, this.dispatch);
     }
 
@@ -65,6 +69,39 @@ class Dropdown extends JqueryElement {
         delete closeFunctions['#' + this.id + ' .option'];
     }
 
+    select(option, e) {
+        if (this.type == 'radio') {
+            this.element.find('input').prop("checked", false);
+            $(option).find('input').prop("checked", true);
+        } else if (this.type == 'checkbox') {
+            // Check if it's already been changed
+            if (e.target.type != 'checkbox') {
+                var input = $(option).find('input');
+                input.prop("checked", !input.prop("checked"));
+            }
+        }
+        this.update_value();
+    }
+
+    update_value() {
+        var dropdown = this;
+        var value_element = this.element.find('.value').first();
+        this.value = [];
+        this.element.find('input').each(function() {
+            if ($(this).is(':checked')) {
+                var text = $(this).siblings('p').text();
+                dropdown.value.push([text, $(this).attr('data-value')]);
+            }
+        });
+        if (this.value.length > 1) {
+            value_element.text('Multiple');
+        } else if (this.value.length < 1) {
+            value_element.text(this.placeholder);
+        } else {
+            value_element.text(this.value[0][0]);
+        }
+    }
+
     styles() {
         var dropdown = this.element;
         var options_wrapper = dropdown.find('.options-wrapper');
@@ -79,7 +116,6 @@ class Dropdown extends JqueryElement {
         var element = this.element;
         var value = $('<p/>')
             .addClass('value')
-            .text('Value');
         var pointer = $('<i/>')
             .addClass('pointer fas fa-caret-left');
         var show_wrapper = $('<a/>')
@@ -95,7 +131,8 @@ class Dropdown extends JqueryElement {
                 .addClass('option');
             var input = $('<input/>')
                 .attr('type', this.type)
-                .attr('data-value', option_data[1]);
+                .attr('data-value', option_data[1])
+                .prop('readonly', true);
             var option_text = $('<p/>')
                 .text(option_data[0]);
             option.append(input);
@@ -113,8 +150,75 @@ class Dropdown extends JqueryElement {
 
 
 class MultiLevelDropdown extends Dropdown {
-    constructor(id, data, type) {
-        super(id, data, type);
+    constructor(id, data, type, placeholder) {
+        super(id, data, type, placeholder);
+    }
+
+    select(option, e) {
+        var sub_option = $(e.target).closest('.sub-option'); // may not exist
+        if (this.type == 'checkbox') {
+            var option_checkbox = $(option).find('input').first();
+            if (sub_option.length) {
+                var sub_checkbox = sub_option.find('input')
+                if (e.target.type != 'checkbox') {
+                    sub_checkbox.prop("checked", !sub_checkbox.prop("checked"));
+                }
+                // Check if sub-options are now all selected
+                var all_checked = true;
+                $(option).find('.sub-option').each(function() {
+                    if (!($(this).find('input').is(":checked"))) {
+                        console.log(this);
+                        all_checked = false;
+                    }
+                });
+                console.log(all_checked);
+                if (all_checked) {
+                    option_checkbox.prop("checked", true);
+                } else {
+                    option_checkbox.prop("checked", false);
+                }
+            } else {
+                console.log(option_checkbox);
+                if (e.target.type != 'checkbox') {
+                    option_checkbox.prop("checked", !option_checkbox.prop("checked"));
+                }
+                if (option_checkbox.is(":checked")) {
+                    $(option).find('input').prop("checked", true);
+                } else {
+                    $(option).find('input').prop("checked", false);
+                }
+            }
+        } else if (this.type == 'radio') {
+            this.element.find('input').prop("checked", false);
+            if (sub_option.length) {
+                sub_option.find('input').prop("checked", true);
+            } else {
+                $(option).find('input').first().prop("checked", true);
+            }
+        }
+        this.update_value();
+    }
+
+    update_value() {
+        var dropdown = this;
+        var value_element = this.element.find('.value').first();
+        this.value = [];
+        this.element.find('input').each(function() {
+            if ($(this).is(':checked')) {
+                // Only take value if it is a sub-option or has no sub-options
+                if ($(this).parent().hasClass('.sub-option') || $(this).parent().find('.sub-option').length == 0) {
+                    var text = $(this).siblings('p').text();
+                    dropdown.value.push([text, $(this).attr('data-value')]);
+                }
+            }
+        });
+        if (this.value.length > 1) {
+            value_element.text('Multiple');
+        } else if (this.value.length < 1) {
+            value_element.text(this.placeholder);
+        } else {
+            value_element.text(this.value[0][0]);
+        }
     }
 
     styles() {

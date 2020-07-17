@@ -23,8 +23,11 @@ h3 {
     padding: 1rem;
 }
 #learning_type_select {
+    display: flex;
+    justify-content: center;
     border: 0;
     max-width: 50%;
+    min-width: 7rem;
 }
 #learning_type_select h4 {
     font-size: calc(16px + 1vw);
@@ -104,6 +107,11 @@ h3 {
     width: 50%;
     outline: 1px solid #dee2e6;
     font-size: calc(12px, 0.5vw);
+}
+#menu .site-select .chapter.shadow {
+    -webkit-box-shadow: 1px 0px 6px 1px #d0d0d0 !important;
+    -moz-box-shadow:   1px 0px 6px 1px #d0d0d0 !important;
+    box-shadow: 1px 0px 6px 1px #d0d0d0 !important;
 }
 #menu .chapter-text {
     padding: 10px;

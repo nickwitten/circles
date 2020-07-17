@@ -4,7 +4,8 @@ class LearningTypeDropdown extends MultiLevelDropdown {
         this.element.empty();
         var value = $('<h4/>')
             .text('Winter Garden Training')
-            .addClass('title');
+            .addClass('title')
+            .addClass('value');
         this.element.append(value);
         this.element.append(elements[1]);
         this.element.append(elements[2]);
@@ -116,14 +117,14 @@ $(document).ready(function() {
     listeners();
     new MenuSiteSelect('menu');
     type_select_data = get_type_select_data();
-    new LearningTypeDropdown('learning_type_select', type_select_data, 'radio');
+    new LearningTypeDropdown('learning_type_select', type_select_data, 'radio', 'Winter Garden Training');
     site_select_data = get_site_select_data();
-    new MultiLevelDropdown('programming_site_select', site_select_data, 'checkbox');
-    new MultiLevelDropdown('theme_site_select', site_select_data, 'checkbox');
-    new MultiLevelDropdown('module_site_select', site_select_data, 'checkbox');
-    new Dropdown('theme_select', [['option1', 1], ['option2', 2]], 'checkbox');
-    new Dropdown('module_required_select', [['option1', 1], ['option2', 2]], 'checkbox');
-    new Modal('modal', 'Are You Sure?', ['Delete Programming?'], function() {console.log('action');});
+    new MultiLevelDropdown('programming_site_select', site_select_data, 'checkbox', 'Site');
+    new MultiLevelDropdown('theme_site_select', site_select_data, 'checkbox', 'Site');
+    new MultiLevelDropdown('module_site_select', site_select_data, 'checkbox', 'Site');
+    new Dropdown('theme_select', [['option1', 1], ['option2', 2]], 'checkbox', 'Theme');
+    new Dropdown('module_required_select', [['option1', 1], ['option2', 2]], 'checkbox', 'Required For');
+//    new Modal('modal', 'Are You Sure?', ['Delete Programming?'], function() {console.log('action');});
     resize_info_slides();
 });
 
