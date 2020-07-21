@@ -13,14 +13,14 @@ class Programming(models.Model):
     length = models.CharField(max_length=32, blank=True)
     description = models.TextField(blank=True)
     facilitators = models.TextField(default='[]', blank=True)
-    facilitator_profiles = models.ManyToManyField(members_models.Profile,
+    facilitators_objects = models.ManyToManyField(members_models.Profile,
                                                   related_name='facilitate_programming', blank=True)
     links = models.TextField(default='[]', blank=True)
 
     def to_dict(self):
         model_info = model_to_dict(self)
-        model_info['facilitator_profiles'] = [[str(profile), profile.pk] for profile in
-                                              model_info['facilitator_profiles']]
+        model_info['facilitators_objects'] = [[str(profile), profile.pk] for profile in
+                                              model_info['facilitators_objects']]
         return model_info
 
     def __str__(self):
@@ -49,18 +49,18 @@ class Module(models.Model):
     site = models.ForeignKey(members_models.Site, on_delete=models.CASCADE, related_name='modules')
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, related_name='modules')
     required_for = models.TextField(default='[]', blank=True)
-    facilitator_profiles = models.ManyToManyField(members_models.Profile,
-                                                  blank=True, related_name='facilitate_modules')
     title = models.CharField(max_length=128)
     length = models.CharField(max_length=32, blank=True)
     description = models.TextField(blank=True)
     facilitators = models.TextField(default='[]', blank=True)
+    facilitators_objects = models.ManyToManyField(members_models.Profile,
+                                                  blank=True, related_name='facilitate_modules')
     links = models.TextField(default='[]', blank=True)
 
     def to_dict(self):
         model_info = model_to_dict(self)
-        model_info['facilitator_profiles'] = [[str(profile), profile.pk] for profile in
-                                              model_info['facilitator_profiles']]
+        model_info['facilitators_objects'] = [[str(profile), profile.pk] for profile in
+                                              model_info['facilitators_objects']]
         return model_info
 
     def __str__(self):

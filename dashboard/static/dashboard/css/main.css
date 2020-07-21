@@ -437,6 +437,10 @@ header a{
     padding: 4px 0;
     border-bottom: 1px solid #dee2e6;
 }
+.multi-level-dropdown .value,
+.dropdown .value {
+    min-height: calc(8px + 0.3vw);
+}
 .multi-level-dropdown .pointer,
 .dropdown .pointer {
     position: absolute;
@@ -578,4 +582,52 @@ header a{
     display: flex;
     justify-content: space-between;
     padding-top: 1rem;
+}
+
+
+.autocomplete-input {
+    position: relative;
+}
+.autocomplete-input input {
+    padding-right: 2rem;
+}
+.autocomplete-input .autocomplete {
+    padding: 0 5px 5px 5px;
+    margin: 0 -5px -5px -5px;
+    visibility: hidden;
+    top: 100%;
+    position: absolute;
+    width: calc(100% + 10px);
+    overflow-y: hidden;
+}
+.autocomplete-input .autocomplete .matches-wrapper {
+    position: relative;
+    top: -7rem;
+    transition: all 0.2s ease-out;
+    -webkit-box-shadow: 1px 1px 7px 0px #cccccc96;
+    -moz-box-shadow: 1px 1px 7px 0px #cccccc96;
+    box-shadow: 1px 1px 7px 0px #cccccc96;
+    background-color: white;
+}
+.autocomplete-input .autocomplete .matches-wrapper.show {
+    top: 0;
+}
+.autocomplete-input .autocomplete .no-match {
+    display: flex;
+    height: 3rem;
+}
+.autocomplete-input .autocomplete p {
+    margin: auto;
+}
+.autocomplete-input .autocomplete .item {
+    border: 1px solid #dee2e6;
+}
+.autocomplete-input .autocomplete .match:hover {
+    background-color: #f5f5f5;
+}
+.autocomplete-input .autocomplete .item a,
+.autocomplete-input .autocomplete .item p {
+    display: flex;
+    font-size: calc(8px + 0.3vw);
+    padding: 0.5rem;
 }

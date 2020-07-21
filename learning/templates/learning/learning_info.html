@@ -1,8 +1,7 @@
-<div id="{{ type }}_info" class="item-info {% if type == 'module' %}show{% endif %}">
+<div id="{{ type }}_info" class="item-info">
+    <a href="#" class="back fas fa-times"></a>
     <div class="title border-bottom">
-        <!-- JS -->
-        <h6>Bridges Out of Poverty - Hidden Rules</h6>
-        <!-- END JS -->
+        <h6 class="title-text"></h6>
         <a href="#" class="edit-btn far fa-edit blacklink"></a>
     </div>
     <div class="content">
@@ -49,22 +48,22 @@
             </table>
         </div>
         <div id="{{ type }}_update" class="update fields-container" style="">
-            <form>
+            <form id="{{ type }}_form">
                 {{ csrf_token.as_hidden }}
-                {{ form.site.as_hidden }}
                 <table class="fields-table">
                     <tr>
+                        {{ form.site.as_hidden }}
                         <td class="label"><p>Site:</p></td>
                         <td class="field site-select">
                             <div id="{{ type }}_site_select" class="multi-level-dropdown"></div>
                         </td>
                     </tr>
                     {% if type == 'module' %}
-                    {{ form.theme.as_hidden }}
                     <tr>
+                        {{ form.theme.as_hidden }}
                         <td class="label"><p>Theme:</p></td>
                         <td class="field">
-                            <div id="theme_select" class="dropdown">
+                            <div id="{{ type }}_theme_select" class="dropdown">
                             </div>
                         </td>
                     </tr>
@@ -75,16 +74,9 @@
                             {{ form.title }}
                         </td>
                     </tr>
-                    {% if type == 'module' or type == 'programming' %}
-                    <tr>
-                        <td class="label"><p>Length:</p></td>
-                        <td class="field">
-                            {{ form.length }}
-                        </td>
-                    </tr>
-                    {% endif %}
                     {% if type == 'module' or type == 'theme' %}
                     <tr>
+                        {{ form.required_for.as_hidden }}
                         <td class="label"><p>Required for:</p></td>
                         <td class="field">
                             <div id="{{ type }}_required_select" class="dropdown"></div>
@@ -92,19 +84,32 @@
                     </tr>
                     {% endif %}
                     {% if type == 'module' or type == 'programming' %}
-                    {{ form.facilitators.as_hidden }}
                     <tr>
+                        <td class="label"><p>Length:</p></td>
+                        <td class="field">
+                            {{ form.length }}
+                        </td>
+                    </tr>
+                    <tr>
+                        {{ form.facilitators.as_hidden }}
                         <td class="label top"><p class="pt-1">Facilitators:</p></td>
-                        <td class="field facilitators">
+                        <td id="{{ type }}_facilitator_input" class="field facilitators">
                             <div class="p-relative">
                                 <input type="text">
                                 <a href="#" class="add-facilitator-btn fas fa-plus blacklink"></a>
                                 <div class="autocomplete">
-                                    <div class="profile instruction">
-                                        <p>Select to Link Profile</p>
-                                    </div>
-                                    <div class="profile">
-                                        <a href="#" class="blacklink">John Doe</a>
+                                    <div class="matches-wrapper">
+                                        <div class="item instruction">
+                                            <p>Select to Link Profile</p>
+                                        </div>
+                                        <div class="item no-match">
+                                            <p href="#" class="blacklink">No Matches</p>
+                                        </div>
+                                        <div class="matches">
+                                            <div class="item match">
+                                                <a href="#" class="blacklink">John Doe</a>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

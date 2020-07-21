@@ -290,7 +290,7 @@ class TestLearningModelsView(CreateLearningModelsMixin, TestCase):
     def test_GET_autocomplete_facilitators(self):
         # Autocomplete facilitator field with profiles in current site
         site = self.sites['site_access1']
-        model = site.programming.first().facilitator_profiles.first()
+        model = site.programming.first().facilitators_objects.first()
         search = model.first_name
         result = site.profiles()
         request_data = {'autocomplete_facilitator_search': search, 'site_pk': site.pk}
@@ -566,7 +566,7 @@ class TestLearningModelsView(CreateLearningModelsMixin, TestCase):
             module=module,
         )
         self.assertEqual(module.profiles.count(), 1)
-        self.assertEqual(module.facilitator_profiles.count(), 1)
+        self.assertEqual(module.facilitators_objects.count(), 1)
         module.facilitators = '["John Doe"]'
         replace_module = self.module1_1_2
         profile = site.profiles().exclude(pk=profile.pk).first()
@@ -574,10 +574,10 @@ class TestLearningModelsView(CreateLearningModelsMixin, TestCase):
             profile=profile,
             module=replace_module,
         )
-        replace_module.facilitator_profiles.add(members_models.Profile.objects.get(pk=2))
+        replace_module.facilitators_objects.add(members_models.Profile.objects.get(pk=2))
         replace_module.facilitators = '["Sally Shoe"]'
         self.assertEqual(replace_module.profiles.count(), 1)
-        self.assertEqual(replace_module.facilitator_profiles.count(), 2)
+        self.assertEqual(replace_module.facilitators_objects.count(), 2)
         module.save()
         replace_module.save()
         form = urlencode({'description': 'Updated', 'title': 'module2'})
@@ -594,7 +594,7 @@ class TestLearningModelsView(CreateLearningModelsMixin, TestCase):
         self.assertEqual(theme.modules.filter(title='module2').count(), 1)
         self.assertEqual(module.profiles.count(), 2)
         self.assertEqual(module.facilitators, '["John Doe", "Sally Shoe"]')
-        self.assertEqual(module.facilitator_profiles.count(), 2)
+        self.assertEqual(module.facilitators_objects.count(), 2)
 
     def test_POST_update_model_module_title_exists_unexpected(self):
         site = self.sites['site_access1']

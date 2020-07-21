@@ -30,17 +30,24 @@ function addAlertHTML(message, type) {
 
 
 class JqueryElement {
+    constructor(id) {
+        this.id = id
+        this.element = $('#' + id);
+    }
+
     dispatch(event) {
         var event_this = this;
-        event.data.func.call(event.data.object, event_this, event);
+        var extra_data = null;
+        if (event.data.hasOwnProperty('extra_data')) {
+            extra_data = event.data.extra_data;
+        }
+        event.data.func.call(event.data.object, event_this, event, extra_data);
     }
 }
 
 class Dropdown extends JqueryElement {
     constructor(id, data, type, placeholder) {
-        super();
-        this.id = id;
-        this.element = $('#' + this.id);
+        super(id);
         this.data = data;
         this.type = type;
         this.placeholder = placeholder;
@@ -81,6 +88,29 @@ class Dropdown extends JqueryElement {
         dropdown.find('.show-wrapper').show();
         // Stop checking for clicks outside
         delete closeFunctions['#' + this.id + ' .option'];
+    }
+
+    set_value(values) {
+        // Uncheck all
+        this.element.find('input').prop("checked", false);
+        // Check if matches a value
+        for (let i=0; i<values.length; i++) {
+            var value = values[i];
+            var dropdown = this;
+            this.element.find('input').each(function() {
+                if (value.length == 2) {
+                    var match = (value[0] == $(this).siblings('p').text() && value[1] == $(this).val());
+                } else {
+                    var match = ($(this).val() == value);
+                }
+                if (match) {
+                    $(this).prop("checked", true);
+                }
+            });
+        }
+        // Update this.value and displayed value
+        this.update_value();
+        this.element.trigger(":change");
     }
 
     select(option, e) {
@@ -159,6 +189,19 @@ class Dropdown extends JqueryElement {
         element.append(show_wrapper);
         element.append(options);
         return [value, pointer, show_wrapper, options]
+    }
+}
+
+
+class JsonDropdown extends Dropdown {
+    set_value(value) {
+        value = JSON.parse(value);
+        super.set_value(value);
+    }
+
+    update_value() {
+        super.update_value();
+        this.value = JSON.stringify(this.value)
     }
 }
 
@@ -325,10 +368,10 @@ class MultiLevelDropdown extends Dropdown {
     }
 }
 
+
 class Modal extends JqueryElement {
     constructor(id, header, content, action_func) {
-        super();
-        this.element = $('#' + id);
+        super(id);
         this.modal_element = this.element.find('.modal');
         this.header_text = header;
         this.content_text = content;
@@ -363,5 +406,138 @@ class Modal extends JqueryElement {
             var content_element = $('<p/>').addClass('content').text(this.content_text[i]);
             content_container.append(content_element);
         }
+    }
+}
+
+
+class CustomForm extends JqueryElement {
+    constructor(id, custom_fields, field_prefix) {
+        super(id);
+        this.custom_fields = custom_fields;
+        this.field_prefix = field_prefix;
+        this.listeners();
+    }
+
+    set_data(data) {
+    // Sets all fields of form to data object.
+        for (const field in data) {
+            if (this.custom_fields.hasOwnProperty(field)) {
+                // must have set_value method
+                // must trigger ":change" event to update form
+                this.custom_fields[field].set_value(data[field]);
+            } else {
+                this.element.find('#' + this.field_prefix + field).val(data[field]);
+            }
+        }
+    }
+
+    update_form(element, e, extra_data) {
+        var form_field = this.element.find('#' + this.field_prefix + extra_data['field_name']);
+        form_field.val(extra_data['custom_object'].value);
+    }
+
+    listeners() {
+        // custom fields on ":change" update form
+        for (const field in this.custom_fields) {
+            var custom_info = {'field_name': field, 'custom_object': this.custom_fields[field]};
+            this.custom_fields[field].element.on(":change", {
+                func: this.update_form, object: this, extra_data: custom_info
+            }, this.dispatch);
+        }
+    }
+}
+
+
+class AutocompleteInput extends JqueryElement {
+    constructor(id, url) {
+        super(id);
+        this.url = url;
+        this.value = [];
+        this.xhr = null;
+        this.input = this.element.find('input');
+        this.listeners();
+    }
+
+    set_value() {
+
+    }
+
+    get_query_data() {
+        data = {
+            'q': this.input.val(),
+        }
+        return data
+    }
+
+    autocomplete_send(input, e, site_select) {
+        this.show();
+        if (this.xhr) {
+            this.xhr.abort();
+        }
+        var q = $(input).val();
+        if (!q.length) {
+            return this.hide();
+        }
+        var data = this.get_query_data();
+        this.xhr = $.ajax({
+            url: url,
+            method: 'GET',
+            data: data,
+            context: this,
+            success: this.autocomplete_receive
+        });
+    }
+
+    autocomplete_receive(data) {
+        this.xhr = null;
+        this.build_matches(data['results']);
+    }
+
+    autocomplete_select(match) {
+        this.input.val($(match).attr("value"));
+        this.hide();
+    }
+
+    show() {
+        this.element.find('.autocomplete').addClass('visible');
+        this.element.find('.matches-wrapper').addClass('show');
+        closeFunctions['#' + this.id] = this;
+    }
+
+    hide() {
+        this.element.find('.matches-wrapper').removeClass('show');
+        this.element.find('.autocomplete').removeClass('visible');
+        delete closeFunctions['#' + this.id]
+    }
+
+    listeners() {
+        this.input.on("input", {func: this.autocomplete_send, object: this}, this.dispatch);
+        this.item_listeners();
+    }
+
+    item_listeners() {
+        this.element.find('.autocomplete a').click({func: this.autocomplete_select, object: this}, this.dispatch);
+    }
+
+    build_matches(data) {
+        this.element.find('.matches').empty();
+        for (let i=0; i<data.length; i++) {
+            var match_container = $('<div/>')
+                .addClass("match")
+                .addClass("item");
+            var match = $("<a/>")
+                .text(data[i][0])
+                .attr("value", data[i][1])
+                .addClass("blacklink")
+                .attr("href", "#");
+            match_container.append(match);
+            this.element.find('.matches').append(match_container);
+        }
+        if (!data.length) {
+            this.element.find('.no-match').show();
+        } else {
+            this.element.find('.no-match').hide();
+        }
+        this.item_listeners();
     }
 }

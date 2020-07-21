@@ -20,37 +20,7 @@
     </div>
     <div id="content">
         <div class="left">
-            <ul id="items">
-                <!-- JS -->
-                <li class="item">
-                    <a href="#">Bridges Out of Poverty</a>
-                    <a class="sub-item" href="#">Hidden Rules</a>
-                    <a class="sub-item" href="#">Causes of Poverty</a>
-                    <a class="sub-item" href="#">Language</a>
-                    <a class="sub-item" href="#">the Eleven Resources</a>
-                    <a class="sub-item" href="#">Mental Models of Class</a>
-                </li>
-                <li class="item">
-                    <a href="#">Theme llllllllllll</a>
-                    <a class="sub-item" href="#">Module</a>
-                    <a class="sub-item" href="#">Module</a>
-                    <a class="sub-item" href="#">Module</a>
-                    <a class="sub-item" href="#">Module</a>
-                    <a class="sub-item" href="#">Module</a>
-                    <a class="sub-item" href="#">Module</a>
-                    <a class="sub-item" href="#">Module</a>
-                    <a class="sub-item" href="#">Module</a>
-                    <a class="sub-item" href="#">Module</a>
-                </li>
-                <li class="item">
-                    <a href="#">Theme llllllllllll</a>
-                    <a class="sub-item" href="#">Module</a>
-                    <a class="sub-item" href="#">Module</a>
-                    <a class="sub-item" href="#">Module</a>
-                    <a class="sub-item" href="#">Module</a>
-                </li>
-                <!-- END JS -->
-            </ul>
+            <ul id="items"></ul>
         </div>
         <div class="right">
             <div class="mt-4">
@@ -96,6 +66,7 @@
     var url_learning_models = "{% url 'learning-models' %}"
     var url_learning_files = "{% url 'learning-files' %}"
     var url_members_completed = "{% url 'members-completed' %}"
+    var url_profile_detail = "{% url 'profile-detail' pk=0 %}"
 </script>
 <script src="{% static 'learning/js/learning.js' %}"></script>
 {% endblock %}

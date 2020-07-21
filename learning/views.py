@@ -29,9 +29,9 @@ class Learning(TemplateView):
         context = super().get_context_data(**kwargs)
         context['positions'] = member_models.Role.position_choices
         context['forms'] = [
-            ('programming', forms.ProgrammingCreationForm()),
-            ('theme', forms.ThemeCreationForm()),
-            ('module', forms.ModuleCreationForm())
+            ('programming', forms.ProgrammingCreationForm(auto_id="programming_%s")),
+            ('theme', forms.ThemeCreationForm(auto_id="theme_%s")),
+            ('module', forms.ModuleCreationForm(auto_id="module_%s")),
         ]
         data = self.get_data()
         context['data'] = data

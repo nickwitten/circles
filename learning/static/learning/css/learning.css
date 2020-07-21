@@ -138,18 +138,18 @@ h3 {
     display: flex;
     flex-flow: column;
 }
-#items .item {
+#items .item-container {
     display: flex;
     flex-flow: column;
     margin: 0.5rem 0;
     padding: 0.5rem 0;
 }
-#items .item a {
+#items .item-container a {
     color: black;
     font-size: calc(15px + 0.4vw);
     margin: 0.5rem 0;
 }
-#content .item .sub-item {
+#content .item-container .sub-item {
     color: black;
     font-size: calc(10px + 0.4vw);
     padding-left: 2rem;
@@ -169,17 +169,25 @@ h3 {
 
 
 .item-info {
-    display: none;
+    visibility: hidden;
+    display: flex;
     flex-flow: column;
     align-items: center;
     position: absolute;
-    right: 0;
+    right: -55%;
     background-color: white;
     padding: 0 0.5rem;
     border-left: 1px solid #dee2e6;
+    transition: all 0.3s ease-out;
 }
 .item-info.show {
-    display: flex;
+    right: 0;
+    visibility: visible;
+}
+.item-info .back {
+    z-index: 0;
+    left: 0;
+    top: 0;
 }
 .item-info .title {
     position: relative;
@@ -271,26 +279,49 @@ h3 {
 .facilitators .add-facilitator-btn {
     position: absolute;
     right: 0.5rem;
-    top: 6px;
+    top: 0;
+    padding-top: 6px;
+    font-size: calc(9px + 0.1vw);
 }
 .facilitators input {
     padding-right: 2rem;
 }
 .facilitators .autocomplete {
+    padding: 0 5px 5px 5px;
+    margin: 0 -5px -5px -5px;
     visibility: hidden;
     top: 100%;
     position: absolute;
-    background-color: white;
-    width: 100%;
-    -webkit-box-shadow: 0 3px 3px 3px #cccccc96;
-    -moz-box-shadow:   0 3px 3px 3px #cccccc96;
-    box-shadow:        0 3px 3px 3px #cccccc96;
+    width: calc(100% + 10px);
+    overflow-y: hidden;
 }
-.facilitators .autocomplete .profile {
+.facilitators .autocomplete .matches-wrapper {
+    position: relative;
+    top: -7rem;
+    transition: all 0.2s ease-out;
+    -webkit-box-shadow: 1px 1px 7px 0px #cccccc96;
+    -moz-box-shadow: 1px 1px 7px 0px #cccccc96;
+    box-shadow: 1px 1px 7px 0px #cccccc96;
+    background-color: white;
+}
+.facilitators .autocomplete .matches-wrapper.show {
+    top: 0;
+}
+.facilitators .autocomplete .no-match {
+    display: flex;
+    height: 3rem;
+}
+.facilitators .autocomplete p {
+    margin: auto;
+}
+.facilitators .autocomplete .item {
     border: 1px solid #dee2e6;
 }
-.facilitators .autocomplete .profile a,
-.facilitators .autocomplete .profile p {
+.facilitators .autocomplete .match:hover {
+    background-color: #f5f5f5;
+}
+.facilitators .autocomplete .item a,
+.facilitators .autocomplete .item p {
     display: flex;
     font-size: calc(8px + 0.3vw);
     padding: 0.5rem;
@@ -307,7 +338,7 @@ h3 {
     display: flex;
     flex-flow: row wrap;
     margin-top: 0.5rem;
-    max-height: 25px;
+    max-height: 30px;
     overflow-y: auto;
 }
 .facilitators .facilitator-list .profile {
@@ -315,7 +346,7 @@ h3 {
     align-items: center;
     border-radius: 5px;
     border: 1px solid #dee2e6;
-    margin: 0 0.25rem;
+    margin: 0.25rem;
 }
 .facilitators .facilitator-list .profile a,
 .facilitators .facilitator-list .profile p {

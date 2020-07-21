@@ -39,7 +39,7 @@ class CreateLearningModelsMixin(CreateProfilesMixin, CreateChaptersMixin):
                     site=site,
                     title="programming" + str(j + 1),
                 )
-                programming.facilitator_profiles.add(facilitator)
+                programming.facilitators_objects.add(facilitator)
                 if access:
                     setattr(self, 'programming' + str(i + 1) + '_' + str(j + 1), programming)
                 theme = models.Theme.objects.create(
@@ -54,7 +54,7 @@ class CreateLearningModelsMixin(CreateProfilesMixin, CreateChaptersMixin):
                         title="module" + str(k + 1),
                         theme=theme,
                     )
-                    module.facilitator_profiles.add(facilitator)
+                    module.facilitators_objects.add(facilitator)
                     if access:
                         setattr(
                             self,
@@ -78,7 +78,7 @@ class TestModels(CreateLearningModelsMixin, TestCase):
             'description': '',
             'facilitators': '[]',
             'links': '[]',
-            'facilitator_profiles': [['profile 1', 3]]
+            'facilitators_objects': [['profile 1', 3]]
         })
 
     def test_theme_to_dict(self):
@@ -102,7 +102,7 @@ class TestModels(CreateLearningModelsMixin, TestCase):
             'description': '',
             'facilitators': '[]',
             'links': '[]',
-            'facilitator_profiles': [['profile 1', 3]]
+            'facilitators_objects': [['profile 1', 3]]
         })
 
     def test_programming_file_delete(self):
