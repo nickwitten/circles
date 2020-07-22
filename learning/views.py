@@ -151,9 +151,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         # Sort by frequency
         results = sorted(results, key=results.count, reverse=True)
         # Get distinct while maintaining order
-        seen = set()
-        seen_add = seen.add
-        results = [x for x in results if not (x in seen or seen_add(x))]
+        results = unique_maintain_order(results)
         self.data = {'results': results}
 
     def autocomplete_facilitator(self):
@@ -299,14 +297,16 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
                             setattr(related, self.kwargs.get('model_type'), model)
                             related.save()
                     elif field_type == 'TextField':
-                        try:
-                            replace_objs = json.loads(getattr(replace, field))
-                            model_objs = json.loads(getattr(model, field))
-                            for obj in replace_objs:
-                                model_objs += [obj]
-                            setattr(model, field, json.dumps(model_objs))
-                        except Exception:
-                            pass
+                        # try:
+                        replace_objs = json.loads(getattr(replace, field))
+                        model_objs = json.loads(getattr(model, field))
+                        for obj in replace_objs:
+                            model_objs += [obj]
+                        model_objs = unique_maintain_order(model_objs)
+                        setattr(model, field, json.dumps(model_objs))
+                        # except Exception as e:
+                        #     print(e)
+                        #     pass
                 if hasattr(replace, 'files'):
                     for file in replace.files.all():
                         file.delete_file()
@@ -432,3 +432,10 @@ class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
         if profile not in self.request.user.userinfo.user_profile_access():
             raise PermissionDenied()
         return model, profile
+
+
+def unique_maintain_order(x):
+    seen = list()
+    seen_add = seen.append
+    z = [y for y in x if not (y in seen or seen_add(y))]
+    return z

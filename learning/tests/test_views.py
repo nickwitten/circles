@@ -567,15 +567,16 @@ class TestLearningModelsView(CreateLearningModelsMixin, TestCase):
         )
         self.assertEqual(module.profiles.count(), 1)
         self.assertEqual(module.facilitators_objects.count(), 1)
-        module.facilitators = '["John Doe"]'
+        module.facilitators = json.dumps(["John Doe"] + json.loads(module.facilitators))
         replace_module = self.module1_1_2
         profile = site.profiles().exclude(pk=profile.pk).first()
         models.ProfileModule.objects.create(
             profile=profile,
             module=replace_module,
         )
-        replace_module.facilitators_objects.add(members_models.Profile.objects.get(pk=2))
-        replace_module.facilitators = '["Sally Shoe"]'
+        replace_facilitator = site.profiles().exclude(pk=3).first()
+        replace_module.facilitators_objects.add(replace_facilitator)
+        replace_module.facilitators = json.dumps(["Sally Shoe"] + json.loads(replace_module.facilitators) + [{"pk": replace_facilitator.pk, "name": str(replace_facilitator)}])
         self.assertEqual(replace_module.profiles.count(), 1)
         self.assertEqual(replace_module.facilitators_objects.count(), 2)
         module.save()
@@ -593,7 +594,7 @@ class TestLearningModelsView(CreateLearningModelsMixin, TestCase):
         self.assertEqual(module.title, 'module2')
         self.assertEqual(theme.modules.filter(title='module2').count(), 1)
         self.assertEqual(module.profiles.count(), 2)
-        self.assertEqual(module.facilitators, '["John Doe", "Sally Shoe"]')
+        self.assertEqual(len(json.loads(module.facilitators)), 4)
         self.assertEqual(module.facilitators_objects.count(), 2)
 
     def test_POST_update_model_module_title_exists_unexpected(self):

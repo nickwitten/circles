@@ -225,7 +225,7 @@ class InfoSlide extends JqueryElement {
         this.loader.show();
         this.site_select.set_value(site);
         if (theme) {
-            this.model_infos[0]['theme'] = theme[1];
+            this.model_infos[0]['theme'] = theme[0];
             title = theme[0] + ' - ' + title;
             if (this.theme_select) {
                 this.theme_select.element.empty(); // delete previous

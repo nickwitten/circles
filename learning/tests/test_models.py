@@ -38,6 +38,7 @@ class CreateLearningModelsMixin(CreateProfilesMixin, CreateChaptersMixin):
                 programming = models.Programming.objects.create(
                     site=site,
                     title="programming" + str(j + 1),
+                    facilitators='[{"pk": ' + str(facilitator.pk) + ', "name": "' + str(facilitator) + '"}]',
                 )
                 programming.facilitators_objects.add(facilitator)
                 if access:
@@ -53,6 +54,7 @@ class CreateLearningModelsMixin(CreateProfilesMixin, CreateChaptersMixin):
                         site=site,
                         title="module" + str(k + 1),
                         theme=theme,
+                        facilitators='[{"pk": ' + str(facilitator.pk) + ', "name": "' + str(facilitator) + '"}]',
                     )
                     module.facilitators_objects.add(facilitator)
                     if access:
@@ -76,7 +78,7 @@ class TestModels(CreateLearningModelsMixin, TestCase):
             'title': 'programming1',
             'length': '',
             'description': '',
-            'facilitators': '[{"name": "profile 1", "pk": 3}]',
+            'facilitators': '[{"pk": 3, "name": "profile 1"}]',
             'links': '[]',
         })
 
@@ -99,9 +101,17 @@ class TestModels(CreateLearningModelsMixin, TestCase):
             'title': 'module1',
             'length': '',
             'description': '',
-            'facilitators': '[{"name": "profile 1", "pk": 3}]',
+            'facilitators': '[{"pk": 3, "name": "profile 1"}]',
             'links': '[]',
         })
+
+    def test_programming_facilitators_save(self):
+        programming = self.programming1_1
+        programming.facilitators_objects.clear()
+        self.assertEqual(programming.facilitators_objects.count(), 0)
+        programming.facilitators = '[{"pk":3, "name": "profile 1"}]'
+        programming.save()
+        self.assertEqual(programming.facilitators_objects.count(), 1)
 
     def test_programming_file_delete(self):
         with open(settings.MEDIA_ROOT + "/learning_files/test12345.txt", "w+") as f:

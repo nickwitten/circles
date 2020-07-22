@@ -24,30 +24,14 @@ class TestForms(CreateLearningModelsMixin, TestCase):
         self.assertEqual(module.site, self.sites['site_access1'])
         self.assertEqual(module.theme, self.theme1_1)
 
-    def test_form_save_facilitators(self):
-        site = self.sites['site_access1']
-        facilitator_profile = site.profiles().first()
-        form_data = {
-            'title': 'PROGRAM',
-            'facilitators': '["John Doe", {"pk": ' + str(facilitator_profile.pk) + ', "name": "profile 1"}]'
-        }
-        attrs = {'site': site, 'theme': self.theme1_1}
-        form = ModuleCreationForm(form_data)
-        if form.is_valid():
-            module = form.save(**attrs)
-        self.assertEqual(module.facilitators_objects.first(), facilitator_profile)
-        self.assertEqual(module.facilitators, '["John Doe"]')
-
     def test_form_save_facilitator_pk_not_in_site(self):
         site = self.sites['site_access1']
         facilitator_profile = self.sites['site_noaccess1'].profiles().first()
         form_data = {
             'title': 'PROGRAM',
-            'facilitators': '["John Doe", {"pk": ' + str(facilitator_profile.pk) + ', "name": "profile 1"}]'
         }
         attrs = {'site': site, 'theme': self.theme1_1}
         form = ModuleCreationForm(form_data)
         if form.is_valid():
             module = form.save(**attrs)
         self.assertEqual(module.facilitators_objects.count(), 0)
-        self.assertEqual(module.facilitators, '["John Doe"]')
