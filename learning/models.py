@@ -1,3 +1,4 @@
+import json
 import os
 
 from django.db import models
@@ -7,7 +8,21 @@ import members.models as members_models
 from circles import settings
 
 
-class Programming(models.Model):
+class JsonM2MFieldMixin:
+    JsonM2MFields = []
+
+    def to_dict(self):
+        model_info = model_to_dict(self)
+        for field in self.JsonM2MFields:
+            value = json.loads(model_info[field])
+            value_objects = [{"name": str(model), "pk":model.pk} for model in model_info[field+'_objects']]
+            model_info[field] = json.dumps(value_objects + value)
+            model_info.pop(field+'_objects')
+        return model_info
+
+
+class Programming(JsonM2MFieldMixin, models.Model):
+    JsonM2MFields = ['facilitators']
     site = models.ForeignKey(members_models.Site, on_delete=models.CASCADE, related_name='programming')
     title = models.CharField(max_length=128)
     length = models.CharField(max_length=32, blank=True)
@@ -16,12 +31,6 @@ class Programming(models.Model):
     facilitators_objects = models.ManyToManyField(members_models.Profile,
                                                   related_name='facilitate_programming', blank=True)
     links = models.TextField(default='[]', blank=True)
-
-    def to_dict(self):
-        model_info = model_to_dict(self)
-        model_info['facilitators_objects'] = [[str(profile), profile.pk] for profile in
-                                              model_info['facilitators_objects']]
-        return model_info
 
     def __str__(self):
         return f'{self.title}'
@@ -45,7 +54,8 @@ class ProfileTheme(models.Model):
     date_completed = models.DateField(blank=True, null=True)
 
 
-class Module(models.Model):
+class Module(JsonM2MFieldMixin, models.Model):
+    JsonM2MFields = ['facilitators']
     site = models.ForeignKey(members_models.Site, on_delete=models.CASCADE, related_name='modules')
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, related_name='modules')
     required_for = models.TextField(default='[]', blank=True)
@@ -56,12 +66,6 @@ class Module(models.Model):
     facilitators_objects = models.ManyToManyField(members_models.Profile,
                                                   blank=True, related_name='facilitate_modules')
     links = models.TextField(default='[]', blank=True)
-
-    def to_dict(self):
-        model_info = model_to_dict(self)
-        model_info['facilitators_objects'] = [[str(profile), profile.pk] for profile in
-                                              model_info['facilitators_objects']]
-        return model_info
 
     def __str__(self):
         return f'{self.title}'

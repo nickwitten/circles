@@ -66,17 +66,12 @@ class MenuSiteSelect extends JqueryElement {
 }
 
 
-class FacilitatorInput extends JqueryElement {
-    constructor(id, info_slide) {
-        super(id);
-        this.value = [];
-        this.xhr = null;
-        this.input = this.element.find('input');
-        this.listeners();
-    }
-
-    set_value() {
-
+class FacilitatorInput extends AutocompleteInput {
+    constructor(id, site_select) {
+        super(id, url_learning_models);
+        this.site_select = site_select;
+        this.list = this.element.find('.facilitator-list');
+        this.update_value();
     }
 
     add_facilitator_str(element, e) {
@@ -86,103 +81,87 @@ class FacilitatorInput extends JqueryElement {
                 return
             }
             this.build_item(this.input.val());
+            this.update_value();
             this.input.val('');
             this.hide();
+            this.scroll_list();
         }
     }
 
-    add_facilitator_profile(option) {
-        console.log(option);
-        this.build_item([$(option).text(), $(option).attr('value')]);
+    autocomplete_select(option) {
+        this.build_item({'name': $(option).text(), 'pk': $(option).attr('value')});
+        this.update_value();
         this.input.val('');
         this.hide();
+        this.scroll_list();
     }
 
-    autocomplete_send(input, e, site_select) {
-        this.show();
-        if (this.xhr) {
-            this.xhr.abort();
-        }
-        var q = $(input).val();
-        if (!q.length) {
-            return this.hide();
-        }
-        var data = {
-            'autocomplete_facilitator_search': q,
-            'site_pk': site_select.value[0],
-        }
-        this.xhr = $.ajax({
-            url: url_learning_models,
-            method: 'GET',
-            data: data,
-            context: this,
-            success: this.autocomplete_receive
+    delete_facilitator(btn) {
+        $(btn).closest('.profile').remove();
+        this.update_value();
+    }
+
+    update_value() {
+        var value = [];
+        this.list.find('.profile').each(function() {
+            var item = $(this).children().first();
+            var name = item.text();
+            var pk = item.attr("value");
+            if (pk) {
+                value.push({'name': name, 'pk': pk});
+            } else {
+                value.push(name);
+            }
         });
+        this.value = JSON.stringify(value);
+        this.element.trigger(":change");
     }
 
-    show() {
-        this.element.find('.autocomplete').addClass('visible');
-        this.element.find('.matches-wrapper').addClass('show');
-        closeFunctions['.facilitators'] = this;
+    set_value(value) {
+        this.list.empty();
+        value = JSON.parse(value);
+        for (let i=0; i<value.length; i++) {
+            this.build_item(value[i]);
+        }
+        this.update_value();
     }
 
-    hide() {
-        this.element.find('.matches-wrapper').removeClass('show');
-        this.element.find('.autocomplete').removeClass('visible');
-        delete closeFunctions['.facilitators']
+    scroll_list() {
+        this.list.animate({ scrollTop: this.list.prop("scrollHeight")}, 1000);
     }
 
-    autocomplete_receive(data) {
-        this.xhr = null;
-        console.log(data);
-        this.build_matches(data['results']);
+    get_query_data() {
+        var data = {
+            "site_pk": this.site_select.value[0],
+            "autocomplete_facilitator_search": this.input.val(),
+        };
+        this.query_data = data;
     }
 
     listeners() {
+        super.listeners();
         this.element.find('.add-facilitator-btn').click({func: this.add_facilitator_str, object: this}, this.dispatch);
         this.input.keypress({func: this.add_facilitator_str, object: this}, this.dispatch);
         this.item_listeners();
     }
 
     item_listeners() {
-        this.element.find('.autocomplete a').click({func: this.add_facilitator_profile, object: this}, this.dispatch);
-        console.log('listeners');
-        this.element.find('.profile fa-times').click({func: this.delete_facilitator, object: this}, this.dispatch);
-    }
-
-    build_matches(data) {
-        this.element.find('.matches').empty();
-        for (let i=0; i<data.length; i++) {
-            var match_container = $('<div/>')
-                .addClass("match")
-                .addClass("item");
-            var match = $("<a/>")
-                .text(data[i][0])
-                .attr("value", data[i][1])
-                .addClass("blacklink")
-                .attr("href", "#");
-            match_container.append(match);
-            this.element.find('.matches').append(match_container);
-        }
-        if (!data.length) {
-            this.element.find('.no-match').show();
-        } else {
-            this.element.find('.no-match').hide();
-        }
-        this.item_listeners();
+        this.element.find('.profile .fa-times').off("click");
+        this.element.find('.profile .fa-times').click({func: this.delete_facilitator, object: this}, this.dispatch);
     }
 
     build_item(info) {
         var profile_container = $('<div/>')
             .addClass('profile');
-        if (Array.isArray(info)) {
-            var profile = $('<a/>')
-                .attr("href", url_profile_detail.slice(0,-1) + toString(info[1]))
-                .attr("target", '_blank')
-                .text(info[0]);
-        } else {
+        if (typeof(info) == 'string') {
             var profile = $('<p/>')
                 .text(info);
+        } else {
+            var profile = $('<a/>')
+                .attr("href", url_profile_detail.slice(0,-2) + info['pk'])
+                .attr("value", info["pk"])
+                .attr("target", '_blank')
+                .text(info['name']);
         }
         var delete_btn = $('<a/>')
             .attr("href", "#")
@@ -190,7 +169,25 @@ class FacilitatorInput extends JqueryElement {
             .addClass("blacklink");
         profile_container.append(profile);
         profile_container.append(delete_btn);
-        this.element.find('.facilitator-list').append(profile_container);
+        this.list.append(profile_container);
+        this.item_listeners();
+    }
+
+    build() {
+        var temp_element = this.element;
+        this.element = this.element.find('.autocomplete-input');
+        super.build();
+        this.element = temp_element;
+        var add_btn = $("<a/>")
+            .attr("href", "#")
+            .addClass("fas fa-plus add-facilitator-btn blacklink");
+        var match_instruction_container = $('<div/>')
+            .addClass("item instruction");
+        var match_instruction = $('<p/>')
+            .text("Select to Link Profile");
+        match_instruction_container.append(match_instruction);
+        this.element.find(".no-match").before(match_instruction_container);
+        this.element.find(".autocomplete-input").append(add_btn);
     }
 }
 
@@ -199,6 +196,7 @@ class InfoSlide extends JqueryElement {
     constructor(id, type) {
         super(id)
         this.type = type;
+        this.model_infos = [];
         var site_select_data = get_site_select_data();
         this.site_select = new MultiLevelDropdown(type + '_site_select', site_select_data, 'checkbox', '');
         this.theme_select = null; // Will be created on module show
@@ -209,16 +207,25 @@ class InfoSlide extends JqueryElement {
             custom_fields['required_for'] = this.required_select;
         }
         if (this.element.find('#' + type + '_facilitator_input')) {
-            this.facilitator_input = new FacilitatorInput(type + '_facilitator_input');
-//            custom_fields['facilitators'] = this.facilitator_input;
+            this.facilitator_input = new FacilitatorInput(type + '_facilitator_input', this.site_select);
+            custom_fields['facilitators'] = this.facilitator_input;
+        }
+        if (this.element.find('#' + type + '_link_input')) {
+            this.link_input = new LinkInput(type + '_link_input');
+            custom_fields['links'] = this.link_input;
         }
         this.update_form = new CustomForm(type + '_form', custom_fields, type + '_');
+        this.loader = this.element.find('.loading');
         this.listeners();
+        this.resize();
     }
 
     show(pk, title, site, theme_options=null, theme=null) {
+        this.model_infos = [{'site': site[0], 'pk': pk}]
+        this.loader.show();
         this.site_select.set_value(site);
         if (theme) {
+            this.model_infos[0]['theme'] = theme[1];
             title = theme[0] + ' - ' + title;
             if (this.theme_select) {
                 this.theme_select.element.empty(); // delete previous
@@ -236,9 +243,28 @@ class InfoSlide extends JqueryElement {
             url: url_learning_models,
             method: 'GET',
             data: data,
-            context: this.update_form,
-            success: this.update_form.set_data,
+            context: this,
+            success: this.model_info_success,
+            complete: this.model_info_complete,
+            error: this.model_info_error,
         });
+    }
+
+    model_info_success(data) {
+        this.update_form.set_data(data);
+    }
+
+    model_info_complete(self, timeup) {
+        if (timeup=='timeup') {
+            self.loader.hide();
+        } else {
+            setTimeout(this.model_info_complete, 300, this, timeup='timeup');
+        }
+    }
+
+    model_info_error() {
+        this.hide();
+        addAlertHTML("Something Went Wrong", 'danger');
     }
 
     hide() {
@@ -246,16 +272,61 @@ class InfoSlide extends JqueryElement {
         this.element.removeClass('show');
     }
 
+    submit_form() {
+        var data = {
+            'form': this.update_form.element.serialize(),
+            'model_type': this.type,
+            'fields': 'all',
+            'models': JSON.stringify(this.model_infos),
+        }
+        var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
+        $.ajax({
+            url: url_learning_models,
+            type: 'post',
+            headers: {
+                'X-CSRFToken': csrftoken,
+            },
+            data: data,
+            context: this,
+            beforeSend: function() {
+                this.loader.show();
+            },
+            success: function (data) {
+                console.log(data)
+            },
+            complete: function () {
+                this.loader.hide();
+            },
+            error: function() {
+                console.log("error");
+            },
+        });
+    }
+
+    show_update_info() {
+        $(this).closest('item-info').find('update').show();
+        $(this).hide();
+    }
+
     erase_data() {
+    }
+
+    resize() {
+        var height = $('#content').height();
+        if ($(window).width() > 770) {
+            var width = $('#content').width()/2 + 5;
+        } else {
+            var width = $('#content').width() + 25;
+        }
+        this.element.width(width);
+        this.element.height(height);
     }
 
     listeners() {
         this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
-        this.facilitator_input.element.find('input').on("input", {
-            object: this.facilitator_input,
-            func: this.facilitator_input.autocomplete_send,
-            extra_data: this.site_select,
-        }, this.dispatch);
+        this.element.find('.edit-btn').click({func: this.show_update_info, object: this}, this.dispatch);
+        this.element.find('.save-btn').click({func: this.submit_form, object: this}, this.dispatch);
+        $(window).resize({func: this.resize, object: this}, this.dispatch);
     }
 }
 
@@ -269,6 +340,7 @@ class LearningList extends JqueryElement {
         this.programming_slide = new InfoSlide('programming_info', 'programming');
         this.theme_slide = new InfoSlide('theme_info', 'theme');
         this.module_slide = new InfoSlide('module_info', 'module');
+        this.slides = [this.programming_slide, this.theme_slide, this.module_slide]
         this.update_items();
         this.listeners();
     }
@@ -297,10 +369,11 @@ class LearningList extends JqueryElement {
 
     update_items() {
         this.update_title(); // Update title with items
-        resize_info_slides(); // Could change size with new title
-        this.programming_slide.hide(); // Hide all slides
-        this.theme_slide.hide();
-        this.module_slide.hide();
+        // hide and resize all slides
+        for (let i=0; i<this.slides.length; i++) {
+            this.slides[i].hide();
+            this.slides[i].resize();
+        }
         var site_data = null;
         var site_pk = this.site_select.value[0];
         var type = this.type_select.value[0];
@@ -385,7 +458,7 @@ class LearningList extends JqueryElement {
             var item_data = items[i];
             var item_container = $('<li/>').addClass('item-container');
             var item_element = $('<a/>')
-                .addClass('item')
+                .addClass('item blacklink')
                 .attr('href', '#')
                 .attr('value', item_data[1])
                 .text(item_data[0]);
@@ -395,7 +468,7 @@ class LearningList extends JqueryElement {
             for (let j=0; j<sub_items.length; j++) {
                 var sub_data = sub_items[j];
                 var sub_element = $('<a/>')
-                    .addClass('sub-item')
+                    .addClass('sub-item blacklink')
                     .addClass(sub_data[2])
                     .attr('href', '#')
                     .attr('value', sub_data[1])
@@ -412,10 +485,6 @@ class LearningList extends JqueryElement {
 
 
 
-function show_update_info() {
-    $(this).closest('item-info').find('update').show();
-    $(this).hide();
-}
 
 function get_site_select_data() {
     var site_select_data = [];
@@ -431,27 +500,24 @@ function get_site_select_data() {
     return site_select_data
 }
 
-function resize_info_slides() {
-    var height = $('#content').height();
-    if ($(window).width() > 770) {
-        var width = $('#content').width()/2 + 5;
-    } else {
-        var width = $('#content').width() + 25;
-    }
-    $('.item-info').width(width);
-    $('.item-info').height(height);
-}
+//function resize_info_slides() {
+//    var height = $('#content').height();
+//    if ($(window).width() > 770) {
+//        var width = $('#content').width()/2 + 5;
+//    } else {
+//        var width = $('#content').width() + 25;
+//    }
+//    $('.item-info').width(width);
+//    $('.item-info').height(height);
+//}
 
 $(document).ready(function() {
     new LearningList('items');
-    listeners();
-    new Dropdown('theme_select', [['option1', 1], ['option2', 2]], 'checkbox', 'Theme');
-//    new Modal('modal', 'Are You Sure?', ['Delete Programming?'], function() {console.log('action');});
-    resize_info_slides();
+//    listeners();
+//    resize_info_slides();
 });
 
 
 function listeners() {
-    $('.edit-btn').on('click', show_update_info);
     $(window).resize(resize_info_slides);
 }

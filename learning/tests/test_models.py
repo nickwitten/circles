@@ -76,9 +76,8 @@ class TestModels(CreateLearningModelsMixin, TestCase):
             'title': 'programming1',
             'length': '',
             'description': '',
-            'facilitators': '[]',
+            'facilitators': '[{"name": "profile 1", "pk": 3}]',
             'links': '[]',
-            'facilitators_objects': [['profile 1', 3]]
         })
 
     def test_theme_to_dict(self):
@@ -100,9 +99,8 @@ class TestModels(CreateLearningModelsMixin, TestCase):
             'title': 'module1',
             'length': '',
             'description': '',
-            'facilitators': '[]',
+            'facilitators': '[{"name": "profile 1", "pk": 3}]',
             'links': '[]',
-            'facilitators_objects': [['profile 1', 3]]
         })
 
     def test_programming_file_delete(self):

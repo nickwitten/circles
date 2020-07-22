@@ -21,7 +21,7 @@ class JsonMany2ManyFieldForm(forms.ModelForm):
             # Grab and remove dicts from json string
             try:
                 field_value = json.loads(self.cleaned_data[field[0]])
-            except Exception as e:
+            except:
                 field_value = None
             if field_value:
                 pks = []

@@ -145,12 +145,10 @@ h3 {
     padding: 0.5rem 0;
 }
 #items .item-container a {
-    color: black;
     font-size: calc(15px + 0.4vw);
     margin: 0.5rem 0;
 }
 #content .item-container .sub-item {
-    color: black;
     font-size: calc(10px + 0.4vw);
     padding-left: 2rem;
     margin: 0.5rem 0;
@@ -273,9 +271,6 @@ h3 {
     font-size: calc(8px + 0.3vw);
 }
 
-.facilitators {
-    position: relative;
-}
 .facilitators .add-facilitator-btn {
     position: absolute;
     right: 0.5rem;
@@ -285,46 +280,6 @@ h3 {
 }
 .facilitators input {
     padding-right: 2rem;
-}
-.facilitators .autocomplete {
-    padding: 0 5px 5px 5px;
-    margin: 0 -5px -5px -5px;
-    visibility: hidden;
-    top: 100%;
-    position: absolute;
-    width: calc(100% + 10px);
-    overflow-y: hidden;
-}
-.facilitators .autocomplete .matches-wrapper {
-    position: relative;
-    top: -7rem;
-    transition: all 0.2s ease-out;
-    -webkit-box-shadow: 1px 1px 7px 0px #cccccc96;
-    -moz-box-shadow: 1px 1px 7px 0px #cccccc96;
-    box-shadow: 1px 1px 7px 0px #cccccc96;
-    background-color: white;
-}
-.facilitators .autocomplete .matches-wrapper.show {
-    top: 0;
-}
-.facilitators .autocomplete .no-match {
-    display: flex;
-    height: 3rem;
-}
-.facilitators .autocomplete p {
-    margin: auto;
-}
-.facilitators .autocomplete .item {
-    border: 1px solid #dee2e6;
-}
-.facilitators .autocomplete .match:hover {
-    background-color: #f5f5f5;
-}
-.facilitators .autocomplete .item a,
-.facilitators .autocomplete .item p {
-    display: flex;
-    font-size: calc(8px + 0.3vw);
-    padding: 0.5rem;
 }
 .facilitators .autocomplete .instruction {
     display: flex;
@@ -353,49 +308,3 @@ h3 {
     font-size: 10px;
     padding: 0.25rem;
 }
-
-.file-input, .link-input {
-    display: flex;
-}
-.file-input input {
-    position: absolute;
-    visibility: hidden;
-}
-.file-input .fa-file-upload,
-.link-upload {
-    margin: 8px 0;
-    font-size: medium;
-}
-.file-input .fa-file-upload {
-    margin-right: 4px;
-}
-.files, .links {
-    display: flex;
-    flex-flow: row wrap;
-    max-height: 33px;
-    overflow-y: auto;
-}
-.files label {
-    margin: 0;
-}
-.files .file,
-.links .link {
-    display: flex;
-    flex-flow: row;
-    align-items: center;
-    margin: 0.2em 0.5em;
-    padding: 0.1em 0.5em;
-    border: solid 1px #dee2e6;
-    border-radius: 3px;
-}
-.files a,
-.links a {
-    font-size: 10px;
-}
-.files .delete,
-.links .delete {
-    color: #848484;
-    font-size: small;
-    margin: 4px 0px 3px 10px;
-}
-

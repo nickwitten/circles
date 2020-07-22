@@ -1,4 +1,9 @@
 <div id="{{ type }}_info" class="item-info">
+    <div class="loading" style="display: none;">
+        <div class="center">
+            <div class="spinner"></div>
+        </div>
+    </div>
     <a href="#" class="back fas fa-times"></a>
     <div class="title border-bottom">
         <h6 class="title-text"></h6>
@@ -49,7 +54,7 @@
         </div>
         <div id="{{ type }}_update" class="update fields-container" style="">
             <form id="{{ type }}_form">
-                {{ csrf_token.as_hidden }}
+                {% csrf_token %}
                 <table class="fields-table">
                     <tr>
                         {{ form.site.as_hidden }}
@@ -94,34 +99,9 @@
                         {{ form.facilitators.as_hidden }}
                         <td class="label top"><p class="pt-1">Facilitators:</p></td>
                         <td id="{{ type }}_facilitator_input" class="field facilitators">
-                            <div class="p-relative">
-                                <input type="text">
-                                <a href="#" class="add-facilitator-btn fas fa-plus blacklink"></a>
-                                <div class="autocomplete">
-                                    <div class="matches-wrapper">
-                                        <div class="item instruction">
-                                            <p>Select to Link Profile</p>
-                                        </div>
-                                        <div class="item no-match">
-                                            <p href="#" class="blacklink">No Matches</p>
-                                        </div>
-                                        <div class="matches">
-                                            <div class="item match">
-                                                <a href="#" class="blacklink">John Doe</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="autocomplete-input">
                             </div>
                             <div class="facilitator-list">
-                                <div class="profile">
-                                    <a href="/members/profile/1" target="_blank">Nick Witten</a>
-                                    <a href="#" class="fas fa-times blacklink"></a>
-                                </div>
-                                <div class="profile">
-                                    <p>John Doe</p>
-                                    <a href="#" class="fas fa-times blacklink"></a>
-                                </div>
                             </div>
                         </td>
                     </tr>
@@ -137,11 +117,11 @@
                 <div class="load-container">
                     <div class="file-input">
                         <input multiple id="{{type}}_file_upload" type="file">
-                        <label for="{{type}}_file_upload" class="fas fa-file-upload"></label>
+                        <label for="{{type}}_file_upload" class="fas fa-file-upload blacklink"></label>
                         <div class="files">
                             <div class="file">
                                 <a href="#" class="blacklink">fake_file.doc</a>
-                                <a href="#" class="delete fas fa-times"></a>
+                                <a href="#" class="delete fas fa-times blacklink"></a>
                             </div>
                         </div>
                     </div>
@@ -151,14 +131,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="link-input">
-                    <a href="#" class="link-upload fas fa-link blacklink"></a>
-                    <div class="links">
-                        <div class="link">
-                            <a class="blacklink" href="https://google.com" target="_blank">google</a>
-                            <a href="#" class="delete fas fa-times"></a>
-                        </div>
-                    </div>
+                {{ form.links.as_hidden }}
+                <div id="{{ type }}_link_input" class="link-input">
                 </div>
                 {% endif %}
             </form>

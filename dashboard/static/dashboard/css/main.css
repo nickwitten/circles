@@ -84,8 +84,14 @@ header a{
   border-radius: 3px;
   margin: 1vh 2vw;
 }
+.black {
+  color: #000000;
+}
+.black:hover {
+  color: #000000;
+}
 .blacklink{
-  color:#000000;
+  color: #5b5b5b;;
 }
 .blacklink:hover{
   color:#000000;
@@ -417,6 +423,8 @@ header a{
     transform-origin: left;
 }
 .loading .small.spinner {
+    border: 1px solid #707070;
+    border-top-color: white;
     height: 10px;
     width: 10px;
 }
@@ -539,13 +547,13 @@ header a{
     overflow-x: hidden;
     overflow-y: auto;
 }
-.modal {
+.modal-container .modal {
     padding: 1rem;
     position: absolute;
     z-index: 1000;
     display: flex;
     flex-flow: column;
-    width: calc(180px + 10vw);
+    width: calc(250px + 10vw);
     height: auto;
     top: 50%;
     left: 50%;
@@ -559,29 +567,42 @@ header a{
     transition: all 0.3s ease-out;
     border-radius: 5px;
 }
-.modal.show {
+.modal-container .modal.show {
     opacity: 1;
     transform: translate(-50%, -50%);
 }
-.modal .header {
+.modal-container .modal .header {
     display: flex;
     justify-content: center;
     border-bottom: 1px solid #dee2e6;
     padding-bottom: 1rem;
 }
-.modal .content-container {
+.modal-container .modal .content-container {
     display: flex;
     flex-flow: column;
     border-bottom: 1px solid #dee2e6;
     padding: 1rem;
 }
-.modal .content {
+.modal-container .modal .content {
     margin: 1rem 0;
 }
-.modal .buttons {
+.modal-container .modal .buttons {
     display: flex;
     justify-content: space-between;
     padding-top: 1rem;
+}
+
+
+#link_modal input {
+    width: -webkit-fill-available;
+    border: 0;
+    outline: 0;
+    border-bottom: 1px solid #dee2e6;
+    margin: 1rem;
+    font-size: calc(10px + 0.3vw);
+}
+#link_modal .label {
+    white-space: nowrap;
 }
 
 
@@ -599,6 +620,11 @@ header a{
     position: absolute;
     width: calc(100% + 10px);
     overflow-y: hidden;
+}
+.autocomplete-input .autocomplete .loading {
+    width: calc(100% - 10px);
+    height: calc(100% - 5px);
+    margin-left: 5px;
 }
 .autocomplete-input .autocomplete .matches-wrapper {
     position: relative;
@@ -631,3 +657,50 @@ header a{
     font-size: calc(8px + 0.3vw);
     padding: 0.5rem;
 }
+
+
+.file-input, .link-input {
+    display: flex;
+}
+.file-input input {
+    position: absolute;
+    visibility: hidden;
+}
+.file-input .fa-file-upload,
+.link-upload {
+    margin: 8px 0;
+    font-size: medium;
+}
+.file-input .fa-file-upload {
+    margin-right: 4px;
+}
+.files, .links {
+    display: flex;
+    flex-flow: row wrap;
+    max-height: 33px;
+    overflow-y: auto;
+}
+.files label {
+    margin: 0;
+}
+.files .file,
+.links .link {
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    margin: 0.2em 0.5em;
+    padding: 0.1em 0.5em;
+    border: solid 1px #dee2e6;
+    border-radius: 3px;
+}
+.files a,
+.links a {
+    font-size: 10px;
+}
+.files .delete,
+.links .delete {
+    font-size: small;
+    margin: 4px 0px 3px 10px;
+}
+
+

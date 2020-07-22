@@ -3,7 +3,7 @@
 
 {% block app_tabs %}
 <ul class="sub_tags bg-blue">
-    <li class=""><a class="blacklink sub_tabs" href="{% url 'learning' %}">Learning</a></li>
+    <li class=""><a class="black sub_tabs" href="{% url 'learning' %}">Learning</a></li>
 </ul>
 {% endblock %}
 
@@ -53,6 +53,7 @@
     </div>
 </div>
 {% include 'dashboard/modal.html' with id='modal' %}
+{% include 'dashboard/attach_link_modal.html' %}
 
 {% endblock %}
 

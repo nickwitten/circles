@@ -110,7 +110,6 @@ class Dropdown extends JqueryElement {
         }
         // Update this.value and displayed value
         this.update_value();
-        this.element.trigger(":change");
     }
 
     select(option, e) {
@@ -125,7 +124,6 @@ class Dropdown extends JqueryElement {
             }
         }
         this.update_value();
-        this.element.trigger(":change");
     }
 
     update_value() {
@@ -144,6 +142,7 @@ class Dropdown extends JqueryElement {
             this.text = this.placeholder;
         }
         value_element.text(this.text);
+        this.element.trigger(":change");
     }
 
     styles() {
@@ -201,7 +200,8 @@ class JsonDropdown extends Dropdown {
 
     update_value() {
         super.update_value();
-        this.value = JSON.stringify(this.value)
+        this.value = JSON.stringify(this.value);
+        this.element.trigger(":change");
     }
 }
 
@@ -251,7 +251,6 @@ class MultiLevelDropdown extends Dropdown {
             }
         }
         this.update_value();
-        this.element.trigger(':change');
     }
 
     update_value() {
@@ -273,6 +272,7 @@ class MultiLevelDropdown extends Dropdown {
             this.text = this.placeholder;
         }
         value_element.text(this.text);
+        this.element.trigger(":change");
     }
 
     styles() {
@@ -370,42 +370,45 @@ class MultiLevelDropdown extends Dropdown {
 
 
 class Modal extends JqueryElement {
-    constructor(id, header, content, action_func) {
+    constructor(id, action_func, action_data, build_func=null) {
         super(id);
         this.modal_element = this.element.find('.modal');
-        this.header_text = header;
-        this.content_text = content;
         this.action_func = action_func;
+        this.action_data = action_data;
         this.offset_height = 30;
-        this.build();
+        if (build_func) {
+            build_func.call(this);
+        }
         this.listeners();
         this.show();
     }
 
+    check_submit(element, e) {
+        if (e.which == 13) {
+            this.element.find('.action.btn').trigger("click");
+        }
+    }
+
+
     listeners() {
+        this.element.find('.btn').off("click");
+        this.element.off("keypress");
         this.element.find('.cancel.btn').click({object: this, func: this.hide}, this.dispatch);
-        this.element.find('.action').click({object: this, func: this.hide}, this.dispatch);
-        this.element.find('.action').click(this.action_func);
+        this.element.find('.action.btn').click({object: this, func: this.hide}, this.dispatch);
+        this.element.find('.action.btn').click(this.action_data ,this.action_func);
+        this.element.keypress({object: this, func: this.check_submit}, this.dispatch);
     }
 
     show() {
         this.element.addClass('visible');
         this.modal_element.addClass('show');
+        closeFunctions['.modal'] = this;
     }
 
     hide() {
         this.modal_element.removeClass('show');
         this.element.removeClass('visible');
-    }
-
-    build() {
-        var header = this.element.find('.header');
-        header.text(this.header_text);
-        var content_container = this.element.find('.content-container');
-        for (let i=0; i<this.content_text.length; i++) {
-            var content_element = $('<p/>').addClass('content').text(this.content_text[i]);
-            content_container.append(content_element);
-        }
+        delete closeFunctions['.modal'];
     }
 }
 
@@ -451,46 +454,67 @@ class CustomForm extends JqueryElement {
 class AutocompleteInput extends JqueryElement {
     constructor(id, url) {
         super(id);
+        this.build();
         this.url = url;
-        this.value = [];
+        this.value = null;
+        this.query_data = null;
+        this.pending_xhr = null;
         this.xhr = null;
         this.input = this.element.find('input');
+        this.loader = this.element.find('.loading');
         this.listeners();
     }
 
-    set_value() {
+    set_value(value) {
+        this.input.val(value);
+        this.update_value();
+    }
 
+    update_value(value) {
+        this.value = this.input.val();
+        this.trigger(":change");
     }
 
     get_query_data() {
         data = {
             'q': this.input.val(),
         }
-        return data
+        this.query_data = data;
     }
 
-    autocomplete_send(input, e, site_select) {
+    autocomplete_initiate(input, e, site_select) {
+        this.loader.show();
         this.show();
         if (this.xhr) {
             this.xhr.abort();
+        }
+        if (this.pending_xhr) {
+            clearTimeout(this.pending_xhr);
+            this.pending_xhr = null;
         }
         var q = $(input).val();
         if (!q.length) {
             return this.hide();
         }
-        var data = this.get_query_data();
-        this.xhr = $.ajax({
-            url: url,
+        this.get_query_data();
+        this.pending_xhr = setTimeout(this.autocomplete_send, 200, this);
+    }
+
+    autocomplete_send(self) {
+        this.pending_xhr = null;
+        self.xhr = $.ajax({
+            url: self.url,
             method: 'GET',
-            data: data,
-            context: this,
-            success: this.autocomplete_receive
+            data: self.query_data,
+            context: self,
+            success: self.autocomplete_receive,
         });
     }
 
     autocomplete_receive(data) {
         this.xhr = null;
         this.build_matches(data['results']);
+        this.loader.hide();
     }
 
     autocomplete_select(match) {
@@ -511,11 +535,12 @@ class AutocompleteInput extends JqueryElement {
     }
 
     listeners() {
-        this.input.on("input", {func: this.autocomplete_send, object: this}, this.dispatch);
-        this.item_listeners();
+        this.input.on("input", {func: this.autocomplete_initiate, object: this}, this.dispatch);
+        this.input.change({func: this.update_value, object: this}, this.dispatch);
+        this.match_listeners();
     }
 
-    item_listeners() {
+    match_listeners() {
         this.element.find('.autocomplete a').click({func: this.autocomplete_select, object: this}, this.dispatch);
     }
 
@@ -538,6 +563,133 @@ class AutocompleteInput extends JqueryElement {
         } else {
             this.element.find('.no-match').hide();
         }
+        this.match_listeners();
+    }
+
+    build() {
+        var input = $('<input/>')
+            .attr("type", "text");
+        var loading = $('<div/>')
+            .addClass('loading')
+            .css("display", "none");
+        var spinner_container = $('<div/>')
+            .addClass('center');
+        var loading_spinner = $('<div/>')
+            .addClass('small spinner');
+        var autocomplete_container = $('<div/>')
+            .addClass("autocomplete");
+        var matches_wrapper = $('<div/>')
+            .addClass('matches-wrapper');
+        var no_match_container = $('<div/>')
+            .addClass('item no-match');
+        var no_match = $('<p/>')
+            .text("No Matches");
+        var matches_container = $('<div/>')
+            .addClass("matches");
+        no_match_container.append(no_match);
+        matches_wrapper.append(no_match_container);
+        matches_wrapper.append(matches_container);
+        spinner_container.append(loading_spinner);
+        loading.append(spinner_container);
+        autocomplete_container.append(matches_wrapper);
+        autocomplete_container.append(loading);
+        this.element.append(input);
+        this.element.append(autocomplete_container);
+    }
+}
+
+class LinkInput extends JqueryElement {
+    constructor(id) {
+        super(id);
+        this.modal_id = "link_modal";
+        this.modal_element = $('#' + this.modal_id);
+        this.build();
+        this.list = this.element.find('.links');
+        this.listeners();
+        this.modal = null;
+    }
+
+    set_value(value) {
+        this.list.empty();
+        value = JSON.parse(value);
+        for (let i=0; i<value.length; i++) {
+            this.build_item(value[i]);
+        }
+        this.update_value();
+    }
+
+    update_value() {
+        var value = [];
+        this.list.find('.link').each(function() {
+            var item = $(this).children().first();
+            var name = item.text();
+            var url = item.attr("href");
+            value.push([name, url]);
+        });
+        this.value = JSON.stringify(value);
+        this.element.trigger(":change");
+    }
+
+    modal() {
+        this.modal_element.find('input').val(''); // reset values if modal has been used
+        this.modal = new Modal(this.modal_id, this.dispatch, {object: this, func: this.add_link});
+    }
+
+    add_link() {
+        var url = this.modal.element.find('.link-url').val();
+        var name = this.modal.element.find('.link-name').val();
+        if (url == '') {
+            return
+        }
+        if (url.slice(0,8) != "https://") {
+            url = "https://" + url;
+        }
+        if (name == '') {
+            name = url;
+        }
+        var item_info = [name, url]
+        this.build_item(item_info);
+        this.update_value();
+    }
+
+    delete_link(delete_btn) {
+        $(delete_btn).closest('.link').remove();
+        this.update_value();
+    }
+
+    build_item(item) {
+        var container = $('<div/>')
+            .addClass('link')
+        var link = $('<a/>')
+            .addClass("blacklink")
+            .attr("href", item[1])
+            .attr("target", "_blank")
+            .text(item[0]);
+        var delete_btn = $('<a/>')
+            .attr("href", "#")
+            .addClass('delete fas fa-times blacklink');
+        container.append(link);
+        container.append(delete_btn);
+        this.list.append(container);
         this.item_listeners();
+    }
+
+    listeners() {
+        this.element.find('.link-upload').click({object: this, func: this.modal}, this.dispatch);
+    }
+
+    item_listeners() {
+        this.element.find('.delete').off("click");
+        this.element.find('.delete').click({object: this, func: this.delete_link}, this.dispatch);
+    }
+
+    build() {
+        var btn = $('<a/>')
+            .attr("href", "#")
+            .addClass("link-upload fas fa-link blacklink");
+        var links_container = $('<div/>')
+            .addClass("links");
+        this.element.append(btn);
+        this.element.append(links_container);
     }
 }
