@@ -83,13 +83,16 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
     def get(self, request, *args, **kwargs):
         if self.kwargs.get('pk'):
             self.get_model_info()
-        elif self.kwargs.get('check_existing'):
-            self.check_existing()
+        elif self.kwargs.get('get_site_models'):
+            self.get_site_models()
+        elif self.kwargs.get('build_infos'):
+            self.build_infos()
         elif self.kwargs.get('autocomplete_search'):
             self.autocomplete()
         elif self.kwargs.get('autocomplete_facilitator_search'):
             self.autocomplete_facilitator()
         else:
+            print(self.kwargs.get('pk'))
             raise ValidationError('No Operation', code=500)
         return JsonResponse(self.data)
 
@@ -111,34 +114,95 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
             raise PermissionDenied()
         self.data = model.to_dict()
 
-    def check_existing(self):
-        """ Gets existing models in each site """
-        sites = self.kwargs.get('sites')
-        model_type = self.models.get(self.kwargs.get('model_type'))
-        title = self.kwargs.get('title')
-        theme = None
-        if not (sites and model_type and title):
-            raise ValidationError('Insufficient Data', code=500)
-        if model_type[0] == models.Module:
-            theme = self.kwargs.get('theme')
-            if not theme:
-                raise ValidationError('Theme Required for Module', code=500)
+    def get_site_models(self):
+        site_pk = self.kwargs.get('site', None)
+        site = get_object_or_404(member_models.Site, pk=site_pk)
+        if site not in self.request.user.userinfo.user_site_access():
+            raise PermissionDenied()
+        temp_site = {
+            'site': (str(site), site.pk),
+            'programming': [(str(programming), programming.pk) for programming in site.programming.all()],
+            'themes': [],
+        }
+        themes = site.themes.all()
+        for theme in themes:
+            temp_theme = {
+                'theme': (str(theme), theme.pk),
+                'modules': []
+            }
+            for module in theme.modules.all():
+                try:
+                    required_for = json.loads(module.required_for)
+                except:
+                    required_for = []
+                temp_module = (str(module), module.pk, required_for)
+                temp_theme['modules'] += [temp_module]
+            temp_site['themes'] += [temp_theme]
+        self.data = {'site_data': temp_site}
+
+    def build_infos(self):
+        """ Builds target model infos and checks if models exist """
+        model_type, base_info, sites, target_themes, target_title = self._info_args()
+        # Initialize results and mode
+        mode = self._set_mode(base_info, target_title, target_themes)
         results = []
-        sites = self.request.user.userinfo.user_site_access().filter(pk__in=json.loads(sites))
+        sites = self.request.user.userinfo.user_site_access().filter(pk__in=sites)
+        if base_info.get('theme', None):
+            base_info['theme__title'] = base_info.pop('theme')
         for site in sites:
-            queryset = getattr(site, model_type[1]).filter(title=title)
-            if theme:
-                queryset = queryset.filter(theme__title=theme)
-            if queryset.count() > 1:
-                raise ValidationError('Duplicate Learning Models', code=500)
-            if queryset.count() < 1:
-                continue
-            model = queryset.first()
-            result = {'site': site.pk, 'model': model.pk}
-            if theme:
-                result['theme'] = theme
-            results.append(result)
-        self.data['results'] = results
+            base_pk = None
+            if mode == 'move':
+                base_model = model_type[0].objects.filter(site=site, **base_info).first()
+                base_pk = base_model.pk if base_model else None
+            for target_theme in target_themes or [None]:
+                model_info = {'site': site.pk, 'title': target_title}
+                query = model_info.copy()
+                if target_theme:
+                    model_info['theme'] = target_theme
+                    query['theme__title'] = target_theme
+                target_model = model_type[0].objects.filter(**query)
+                if target_model.count() > 1:
+                    raise ValidationError('Duplicate Learning Models', code=500)
+                target_model = target_model.first()
+                if base_pk:
+                    model_info['pk'] = base_pk
+                    if target_model:
+                        model_info['replace_pk'] = target_model.pk
+                elif target_model:
+                    model_info['pk'] = target_model.pk
+                results += [model_info]
+        self.data = {'results': results, 'mode': mode}
+
+    def _info_args(self):
+        """ Get and validate args for build_infos """
+        model_type = self.models.get(self.kwargs.get('model_type'))
+        base_info = self.kwargs.get('base_info')
+        sites = self.kwargs.get('sites')
+        target_themes = self.kwargs.get('themes')
+        target_title = self.kwargs.get('title')
+        if not (sites and model_type and target_title and base_info):
+            raise ValidationError('Insufficient Data', code=500)
+        if model_type[0] == models.Module and not target_themes:
+            raise ValidationError('Theme Required for Module', code=500)
+        base_info = json.loads(base_info)
+        sites = json.loads(sites)
+        if target_themes:
+            target_themes = json.loads(target_themes)
+        return model_type, base_info, sites, target_themes, target_title
+
+    @staticmethod
+    def _set_mode(base_info, target_title, target_themes):
+        """ Set model update mode """
+        mode = 'update'
+        if base_info['title'] != target_title:
+            mode = 'move'
+        if base_info.get('theme', None) and base_info['theme'] not in target_themes:
+            mode = 'move'
+        if target_themes and len(target_themes) > 1:
+            if mode == 'move':
+                raise ValidationError('Cannot Move and Copy', code=500)
+            mode = 'copy'
+        return mode
 
     def autocomplete(self):
         """" Gets names of similar models even without site access """
@@ -191,6 +255,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
             already exists.                                     """
         model_type, form_data, model_infos = self._get_args()
         models = []
+        self.data['infos'] = []
         for info in model_infos:
             attrs, pk, replace_pk = self._get_model_info(model_type, info)
             if pk:
@@ -201,6 +266,10 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         # Commit changes
         for model in models:
             model.save()
+            info = {'pk': model.pk, 'title': model.title}
+            if hasattr(model, 'theme'):
+                info['theme'] = str(model.theme)
+            self.data['infos'] += [info]
 
     def _get_args(self):
         """ Process create_or_update_models args """

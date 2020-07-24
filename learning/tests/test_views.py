@@ -331,69 +331,119 @@ class TestLearningModelsView(CreateLearningModelsMixin, TestCase):
         response = self.client.get(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
         self.assertEqual(response.status_code, 404)
 
-    def test_GET_check_existing(self):
-        # Search with model identifiers.  This test queries all sites with access.
-        # Return [{site: pk, model: pk}, ]
-        for related, model_type in self.model_types:
-            sites = list(self.user.userinfo.user_site_access().values_list('pk', flat=True))
-            search = model_type + '1'
-            request_data = {'check_existing':True, 'sites': json.dumps(sites), 'model_type': model_type, 'title': search}
-            if model_type == 'module':
-                request_data['theme'] = 'theme1'
-            response = self.client.get(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
-            results = []
-            sites = self.user.userinfo.user_site_access()
-            for site in sites:
-                result = {}
-                model = getattr(site, related).filter(title=search).first()
-                result['site'] = site.pk
-                if model_type == 'module':
-                    result['theme'] = 'theme1'
-                result['model'] = model.pk
-                results.append(result)
-            self.assertEqual(response.status_code, 200)
-            self.assertCountEqual(json.loads(response.content)['results'], results)
+    def test_GET_build_infos_update_module(self):
+        base_info = {'theme': 'theme1', 'title': 'module1'}
+        sites = [self.sites['site_access1'].pk, self.sites['site_access2'].pk]
+        themes = ['theme1']
+        title = 'module1'
+        request_data = {
+            'build_infos': True,
+            'model_type': 'module',
+            'base_info': json.dumps(base_info),
+            'sites': json.dumps(sites),
+            'themes': json.dumps(themes),
+            'title': title,
+        }
+        response = self.client.get(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        model_infos = json.loads(response.content)['results']
+        self.assertEqual(json.loads(response.content)['mode'], 'update')
+        self.assertEqual(len(model_infos), 2)
+        self.assertEqual(model_infos[0]['site'], self.sites['site_access1'].pk)
+        self.assertEqual(model_infos[0]['theme'], 'theme1')
+        self.assertEqual(model_infos[0]['title'], 'module1')
+        self.assertEqual(model_infos[0]['pk'], self.module1_1_1.pk)
 
-    def test_GET_check_existing_module_insufficient_kwargs(self):
-        # Should 404 because required data was popped
-        for key in ['sites', 'model_type', 'title']:
-            for related, model_type in self.model_types:
-                sites = list(self.user.userinfo.user_site_access().values_list('pk', flat=True))
-                search = model_type + '1'
-                request_data = {'check_existing': True, 'sites': json.dumps(sites), 'model_type': model_type,
-                                'title': search}
-                if model_type == 'module':
-                    request_data['theme'] = 'theme1'
-                request_data.pop(key)
-                with self.assertRaises(ValidationError):
-                    response = self.client.get(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+    def test_GET_build_infos_update_programming_doesnt_exist(self):
+        base_info = {'title': 'programming1'}
+        sites = [self.sites['site_access1'].pk, self.sites['site_access2'].pk]
+        title = 'programming1'
+        request_data = {
+            'build_infos': True,
+            'model_type': 'programming',
+            'base_info': json.dumps(base_info),
+            'sites': json.dumps(sites),
+            'title': title,
+        }
+        self.programming1_1.delete()
+        response = self.client.get(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        model_infos = json.loads(response.content)['results']
+        self.assertEqual(json.loads(response.content)['mode'], 'update')
+        self.assertEqual(len(model_infos), 2)
+        self.assertEqual(model_infos[0]['site'], self.sites['site_access1'].pk)
+        self.assertEqual(model_infos[0]['title'], 'programming1')
+        self.assertEqual(model_infos[0].get('pk', None), None)
+        self.assertEqual(model_infos[1]['pk'], self.programming2_1.pk)
 
-    def test_GET_check_existing_no_sites(self):
-        # Should return empty list
-        for related, model_type in self.model_types:
-            search = model_type + '1'
-            request_data = {'check_existing': True, 'sites': json.dumps([]), 'model_type': model_type,
-                            'title': search, 'theme': 'theme1'}
-            response = self.client.get(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
-            self.assertCountEqual(json.loads(response.content)['results'], [])
+    def test_GET_build_infos_copy_replace_module(self):
+        base_info = {'theme': 'theme1', 'title': 'module1'}
+        sites = [self.sites['site_access1'].pk, self.sites['site_access2'].pk]
+        themes = ['theme1', 'theme2']
+        title = 'module1'
+        request_data = {
+            'build_infos': True,
+            'model_type': 'module',
+            'base_info': json.dumps(base_info),
+            'sites': json.dumps(sites),
+            'themes': json.dumps(themes),
+            'title': title,
+        }
+        response = self.client.get(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        model_infos = json.loads(response.content)['results']
+        self.assertEqual(json.loads(response.content)['mode'], 'copy')
+        self.assertEqual(len(model_infos), 4)
+        self.assertEqual(model_infos[0]['site'], self.sites['site_access1'].pk)
+        self.assertEqual(model_infos[0]['theme'], 'theme1')
+        self.assertEqual(model_infos[0]['title'], 'module1')
+        self.assertEqual(model_infos[0]['pk'], self.module1_1_1.pk)
+        self.assertEqual(model_infos[1]['theme'], 'theme2')
+        self.assertEqual(model_infos[1]['title'], 'module1')
+        self.assertEqual(model_infos[1]['pk'], self.module1_2_1.pk)
 
-    def test_GET_check_existing_no_site_access(self):
-        # Should return empty list
-        for related, model_type in self.model_types:
-            sites = [self.sites['site_noaccess1'].pk, ]
-            search = model_type + '1'
-            request_data = {'check_existing': True, 'sites': json.dumps(sites), 'model_type': model_type,
-                            'title': search, 'theme': 'theme1'}
-            response = self.client.get(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
-            self.assertCountEqual(json.loads(response.content)['results'], [])
+    def test_GET_build_infos_move_replace_module(self):
+        base_info = {'theme': 'theme1', 'title': 'module1'}
+        sites = [self.sites['site_access1'].pk, self.sites['site_access2'].pk]
+        themes = ['theme2']
+        title = 'module1'
+        request_data = {
+            'build_infos': True,
+            'model_type': 'module',
+            'base_info': json.dumps(base_info),
+            'sites': json.dumps(sites),
+            'themes': json.dumps(themes),
+            'title': title,
+        }
+        response = self.client.get(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        model_infos = json.loads(response.content)['results']
+        self.assertEqual(json.loads(response.content)['mode'], 'move')
+        self.assertEqual(len(model_infos), 2)
+        self.assertEqual(model_infos[0]['site'], self.sites['site_access1'].pk)
+        self.assertEqual(model_infos[0]['theme'], 'theme2')
+        self.assertEqual(model_infos[0]['title'], 'module1')
+        self.assertEqual(model_infos[0]['pk'], self.module1_1_1.pk)
+        self.assertEqual(model_infos[0]['replace_pk'], self.module1_2_1.pk)
 
-    def test_GET_check_existing_module_no_theme(self):
-        # Should return empty list
-        model_type = 'module'
-        search = model_type + '1'
-        request_data = {'check_existing': True, 'sites': json.dumps([]), 'model_type': model_type, 'title': search}
-        with self.assertRaises(ValidationError):
-            self.client.get(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+    def test_GET_build_infos_move_replace_programming(self):
+        base_info = {'title': 'programming1'}
+        sites = [self.sites['site_access1'].pk, self.sites['site_access2'].pk]
+        title = 'programming2'
+        request_data = {
+            'build_infos': True,
+            'model_type': 'programming',
+            'base_info': json.dumps(base_info),
+            'sites': json.dumps(sites),
+            'title': title,
+        }
+        self.programming2_2.delete()
+        response = self.client.get(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        model_infos = json.loads(response.content)['results']
+        self.assertEqual(len(model_infos), 2)
+        self.assertEqual(model_infos[0]['site'], self.sites['site_access1'].pk)
+        self.assertEqual(model_infos[0]['title'], 'programming2')
+        self.assertEqual(model_infos[0]['pk'], self.programming1_1.pk)
+        self.assertEqual(model_infos[0]['replace_pk'], self.programming1_2.pk)
+        self.assertEqual(model_infos[1]['title'], 'programming2')
+        self.assertEqual(model_infos[1]['pk'], self.programming2_1.pk)
+        self.assertEqual(model_infos[1].get('replace_pk', None), None)
 
     def test_POST_create_model_programming(self):
         site = self.sites['site_access1']
