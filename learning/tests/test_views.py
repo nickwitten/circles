@@ -27,16 +27,10 @@ class TestLearningView(CreateLearningModelsMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'learning/learning.html')
         # Check data
-        self.assertEqual(len(response.context['data']), self.visible_chapter_ct)
-        self.assertEqual(len(response.context['data'][0]['sites']), self.visible_site_ct)
-        self.assertEqual(len(response.context['data'][0]['sites'][0]['programming']), self.model_ct)
-        self.assertEqual(len(response.context['data'][0]['sites'][0]['themes']), self.model_ct)
-        self.assertEqual(len(response.context['data'][0]['sites'][0]['themes'][0]['modules']), self.model_ct)
-        self.assertEqual(response.context['data'][0]['chapter'][0], 'chapter_access1')
-        self.assertEqual(response.context['data'][0]['sites'][0]['site'][0], 'site_access1')
-        self.assertEqual(response.context['data'][0]['sites'][0]['programming'][0][0], 'programming1')
-        self.assertEqual(response.context['data'][0]['sites'][0]['themes'][0]['theme'][0], 'theme1')
-        self.assertEqual(response.context['data'][0]['sites'][0]['themes'][0]['modules'][0][0], 'module1')
+        self.assertEqual(len(response.context['sites']), self.visible_chapter_ct)
+        self.assertEqual(len(response.context['sites'][0]['sites']), self.visible_site_ct)
+        self.assertEqual(response.context['sites'][0]['chapter'][0], 'chapter_access1')
+        self.assertEqual(response.context['sites'][0]['sites'][0][0], 'site_access1')
 
 class TestLearningFiles(CreateLearningModelsMixin, TestCase):
 
@@ -254,7 +248,7 @@ class TestLearningModelsView(CreateLearningModelsMixin, TestCase):
             response = self.client.get(self.models_url, request_data, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
             self.assertEqual(response.status_code, 200)
             self.assertCountEqual(json.loads(response.content)['results'],
-                                  [model_type+str(i+1) for i in range(self.model_ct)])
+                                  [[model_type+str(i+1), model_type+str(i+1)] for i in range(self.model_ct)])
 
     def test_GET_autocomplete_no_results(self):
         # No results

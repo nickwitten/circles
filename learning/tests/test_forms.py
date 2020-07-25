@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from learning.forms import ProgrammingCreationForm, ModuleCreationForm
+from learning.forms import ProgrammingCreationForm, ModuleCreationForm, ThemeCreationForm
 from learning.tests.test_models import CreateLearningModelsMixin
 
 
@@ -35,3 +35,7 @@ class TestForms(CreateLearningModelsMixin, TestCase):
         if form.is_valid():
             module = form.save(**attrs)
         self.assertEqual(module.facilitators_objects.count(), 0)
+
+    def test_form_get_fields(self):
+        form = ThemeCreationForm()
+        self.assertEqual(form.get_fields(), ['title', 'required_for'])

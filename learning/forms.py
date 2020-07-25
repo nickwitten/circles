@@ -24,23 +24,38 @@ class LearningModelForm(forms.ModelForm):
             setattr(self.instance, key, value)
         return super().save(commit)
 
+    def get_fields(self):
+        fields_fieldtype = {}
+        fields = list(self.base_fields)
+        for field in list(self.declared_fields):
+            if field not in fields:
+                fields.append(field)
+        for field in fields:
+            widget = self.fields[field].widget
+            if hasattr(widget, 'input_type'):
+                input_type = widget.input_type
+            else:
+                input_type = 'text'
+            fields_fieldtype[field] = input_type
+        return fields_fieldtype
+
 
 class ProgrammingCreationForm(LearningModelForm):
 
     class Meta:
         model = models.Programming
-        exclude = ('site', 'profiles', 'facilitators_objects')
+        exclude = ('site', 'facilitators_objects')
 
 
 class ThemeCreationForm(LearningModelForm):
 
     class Meta:
         model = models.Theme
-        exclude = ('site', 'profiles')
+        exclude = ('site', )
 
 
 class ModuleCreationForm(LearningModelForm):
 
     class Meta:
         model = models.Module
-        exclude = ('site', 'theme', 'profiles', 'facilitators_objects')
+        exclude = ('site', 'theme', 'facilitators_objects')

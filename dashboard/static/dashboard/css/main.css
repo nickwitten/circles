@@ -628,6 +628,7 @@ header a{
 }
 .autocomplete-input .autocomplete .matches-wrapper {
     position: relative;
+    z-index: 1;
     top: -7rem;
     transition: all 0.2s ease-out;
     -webkit-box-shadow: 1px 1px 7px 0px #cccccc96;

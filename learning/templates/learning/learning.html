@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block app_tabs %}
-<ul class="sub_tags bg-blue">
+<ul class="sub_tags bg-blue" xmlns:style="http://www.w3.org/1999/xhtml" xmlns:style="http://www.w3.org/1999/xhtml">
     <li class=""><a class="black sub_tabs" href="{% url 'learning' %}">Learning</a></li>
 </ul>
 {% endblock %}
@@ -24,8 +24,9 @@
         </div>
         <div class="right">
             <div class="mt-4">
-                <a href="#" class="btn btn-outline-secondary">+ Theme</a>
-                <a href="#" class="btn btn-outline-secondary">+ Module</a>
+                <a id="create_programming" href="#" class="btn btn-outline-secondary">+ Programming</a>
+                <a id="create_theme" href="#" class="btn btn-outline-secondary">+ Theme</a>
+                <a id="create_module" href="#" class="btn btn-outline-secondary">+ Module</a>
             </div>
         </div>
         {% for form in forms %}
@@ -36,14 +37,14 @@
         <a href="#" class="fas fa-times back blacklink"></a>
         <h3>Sites</h3>
         <div class="site-select">
-            {% for chapter in data %}
+            {% for chapter in sites %}
             <div class="chapter">
                 <a href="#" class="chapter-text blacklink">{{ chapter.chapter.0 }}</a>
                 <div class="sites" style="display: None;">
                     {% for site in chapter.sites %}
                     <div class="site">
-                        <input type="radio" value="{{ site.site.1 }}">
-                        <a href="#" class="blacklink site-name">{{ site.site.0 }}</a>
+                        <input type="radio" value="{{ site.1 }}">
+                        <a href="#" class="blacklink site-name">{{ site.0 }}</a>
                     </div>
                     {% endfor %}
                 </div>
@@ -58,12 +59,20 @@
 {% endblock %}
 
 {% block js %}
-{{ data|json_script:"learning_data" }}
+{{ sites|json_script:"user_sites" }}
 {{ positions|json_script:"role_positions" }}
+{{ forms.0.2|json_script:"programming_fields" }}
+{{ forms.1.2|json_script:"theme_fields" }}
+{{ forms.2.2|json_script:"module_fields" }}
 <script>
     // Pass template variables into js file
-    var learning_data = JSON.parse($('#learning_data').text());
+    var user_sites = JSON.parse($('#user_sites').text());
     var role_positions = JSON.parse($('#role_positions').text());
+    var form_fields = {
+        'programming': JSON.parse($('#programming_fields').text()),
+        'theme': JSON.parse($('#theme_fields').text()),
+        'module': JSON.parse($('#module_fields').text()),
+    }
     var url_learning_models = "{% url 'learning-models' %}"
     var url_learning_files = "{% url 'learning-files' %}"
     var url_members_completed = "{% url 'members-completed' %}"

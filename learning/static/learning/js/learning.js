@@ -69,6 +69,8 @@ class MenuSiteSelect extends JqueryElement {
 class FacilitatorInput extends AutocompleteInput {
     constructor(id, site_select) {
         super(id, url_learning_models);
+        this.value = "[]";
+        this.default_value = "[]";
         this.site_select = site_select;
         this.list = this.element.find('.facilitator-list');
         this.update_value();
@@ -191,19 +193,34 @@ class FacilitatorInput extends AutocompleteInput {
     }
 }
 
+class ModelTitleAutocomplete extends AutocompleteInput {
+    constructor(id, type) {
+        super(id, url_learning_models);
+        this.type = type
+        this.default_value = '';
+    }
+
+    get_query_data() {
+        this.query_data = {
+            'model_type': this.type,
+            'autocomplete_search': this.input.val(),
+        }
+    }
+}
+
 
 class InfoSlide extends JqueryElement {
     constructor(id, type) {
         super(id)
         this.type = type;
         this.model_infos = [];
-        var site_select_data = get_site_select_data();
-        this.site_select = new MultiLevelDropdown(type + '_site_select', site_select_data, 'checkbox', '');
+        this.site_select = new MultiLevelDropdown(type + '_site_select', this.get_site_select_data());
+        this.title_input = new ModelTitleAutocomplete(type + '_title_input', type);
         this.theme_select = null; // Will be created on module show
         this.required_select = null;
-        var custom_fields = {};
+        var custom_fields = {'title': this.title_input};
         if (this.element.find('#' + type + '_required_select')) {
-            this.required_select = new JsonDropdown(type + '_required_select', role_positions.slice(0,-1), 'checkbox', '');
+            this.required_select = new JsonDropdown(type + '_required_select', role_positions.slice(0,-1));
             custom_fields['required_for'] = this.required_select;
         }
         if (this.element.find('#' + type + '_facilitator_input')) {
@@ -214,16 +231,19 @@ class InfoSlide extends JqueryElement {
             this.link_input = new LinkInput(type + '_link_input');
             custom_fields['links'] = this.link_input;
         }
-        this.update_form = new CustomForm(type + '_form', custom_fields, type + '_');
+        this.update_form = new CustomForm(type + '_form', custom_fields, form_fields[type], type + '_');
         this.loader_element = this.element.find('.loading');
-        this.title_element = this.element.find('#' + this.type + '_title');
         this.listeners();
         this.resize();
     }
 
-    show(pk, title, site, theme_options=null, theme=null) {
-        this.base_info = {'title': title, "pk": pk};
-        console.log(this.base_info)
+    show() {
+        this.element.addClass('show');
+    }
+
+    show_model(pk, title, site, theme_options=null, theme=null) {
+        this.info_update_listeners_off();
+        this.base_info = {'site': site, 'title': title, "pk": pk};
         this.loader_element.show();
         this.site_select.set_value(site);
         if (theme) {
@@ -232,7 +252,7 @@ class InfoSlide extends JqueryElement {
             if (this.theme_select) {
                 this.theme_select.element.empty(); // delete previous
             }
-            this.theme_select = new Dropdown(this.type + '_theme_select', theme_options, 'checkbox', '');
+            this.theme_select = new Dropdown(this.type + '_theme_select', theme_options);
             this.theme_select.set_value(theme);
         }
         this.element.find('.title-text').first().text(title);
@@ -241,40 +261,47 @@ class InfoSlide extends JqueryElement {
             'pk': pk,
             'model_type': this.type,
         }
-        console.log(data)
         $.ajax({
             url: url_learning_models,
             method: 'GET',
             data: data,
             context: this,
             success: this.model_info_success,
-            complete: this.model_info_complete,
             error: this.model_info_error,
         });
     }
 
     model_info_success(data) {
+        this.loader_element.hide();
         this.update_form.set_data(data);
         this.item_listeners(); // Item specific listeners
-        this.update_model_infos();
     }
 
-    model_info_complete(self, timeup) {
+    delayed_loader_hide(self, timeup) {
         if (timeup=='timeup') {
             self.loader_element.hide();
         } else {
-            setTimeout(this.model_info_complete, 300, this, timeup='timeup');
+            setTimeout(this.delayed_loader_hide, 300, this, timeup='timeup');
         }
     }
 
     model_info_error() {
         this.hide();
         addAlertHTML("Something Went Wrong", 'danger');
+        this.delayed_loader_hide();
     }
 
-    hide() {
-        this.erase_data();
+    hide(delay) {
         this.element.removeClass('show');
+        this.delayed_erase_data(this, "timeup");
+    }
+
+    delayed_erase_data(self, timeup) {
+        if (timeup=='timeup') {
+            self.update_form.erase_data();
+        } else {
+            setTimeout(this.delayed_erase_data, 300, this, 'timeup');
+        }
     }
 
     update_model_infos() {
@@ -282,7 +309,7 @@ class InfoSlide extends JqueryElement {
         if (this.theme_select) {
             var themes = this.theme_select.value;
         }
-        var title = this.title_element.val();
+        var title = this.title_input.input.val();
         var data = {
             'build_infos': true,
             'model_type': this.type,
@@ -296,16 +323,91 @@ class InfoSlide extends JqueryElement {
             method: 'GET',
             data: data,
             context: this,
-            success: function(data) {
-                this.model_infos = data['results'];
-                this.mode = data['mode'];
-                console.log(this.model_infos);
+            beforeSend: function() {
+                this.loader_element.show();
+            },
+            success: this.build_model_infos_success,
+            error: this.build_model_infos_error,
+            complete: function() {
+                this.loader_element.hide();
             },
         });
     }
 
+    build_model_infos_success(data) {
+        this.model_infos = data['results'];
+        this.mode = data['mode'];
+        this.alert_overwrite();
+    }
+
+    alert_overwrite() {
+        var overwrite_warnings = [];
+        for (let i=0; i<this.model_infos.length; i++) {
+            var info = this.model_infos[i];
+            // Pass notifying about base model and created models
+            if ((info.pk == parseInt(this.base_info.pk) && !info.hasOwnProperty('replace_pk'))
+                || (!info.hasOwnProperty('pk'))) {
+                continue
+            }
+            var title = info['title'];
+            var site = info['site_str'];
+            delete info['site_str'];
+            if (info.hasOwnProperty('theme')) {
+                title = info['theme'] + ' - ' + title;
+            }
+            var added = false;
+            for (let j=0; j<overwrite_warnings.length; j++) {
+                if (site == overwrite_warnings[j]['site']) {
+                    overwrite_warnings[j]['items'].push(title);
+                    added = true;
+                }
+            }
+            if (!added) {
+                overwrite_warnings.push({'site': site, 'items': [title]});
+            }
+        }
+        var modal_build_func = function() {
+            this.element.find('.header').children().first().text('Would You Like to Overwrite the Following?');
+            this.modal_element.find('.content-container').empty();
+            for (let i=0; i<overwrite_warnings.length; i++) {
+                var container = $('<div/>').addClass('m-2');
+                container.append(
+                    $('<h6/>').text(overwrite_warnings[i]['site']).addClass('mb-2 mt-2')
+                );
+                for (let j=0; j<overwrite_warnings[i]['items'].length; j++) {
+                    container.append(
+                        $('<p/>').text(overwrite_warnings[i]['items'][j]).addClass('m-1')
+                    );
+                }
+                this.modal_element.find('.content-container').append(container);
+            }
+        }
+        if (overwrite_warnings.length) {
+            new Modal('modal', {
+                build_func: modal_build_func,
+                cancel_func:this.dispatch,
+                cancel_data:{object: this, func: this.reset_model_info},
+                escapable:false
+            });
+        }
+    }
+
+    build_model_infos_error() {
+        addAlertHTML("Something Went Wrong", 'danger');
+        this.reset_model_info();
+    }
+
+    reset_model_info() {
+        this.info_update_listeners_off();
+        this.site_select.set_value([this.base_info["site"]]);
+        if (this.theme_select) {
+            this.theme_select.set_value([this.base_info["theme"]]);
+        }
+        this.title_input.set_value(this.base_info["title"]);
+        this.item_listeners();
+    }
+
     submit_form() {
-        console.log(this.model_infos);
         var data = {
             'form': this.update_form.element.serialize(),
             'model_type': this.type,
@@ -348,16 +450,12 @@ class InfoSlide extends JqueryElement {
             title = this.base_info.theme + ' - ' + title;
         }
         this.element.find('.title-text').first().text(title);
-        this.title_element
         this.element.trigger(":submit");
     }
 
     show_update_info() {
         $(this).closest('item-info').find('update').show();
         $(this).hide();
-    }
-
-    erase_data() {
     }
 
     resize() {
@@ -371,6 +469,28 @@ class InfoSlide extends JqueryElement {
         this.element.height(height);
     }
 
+    get_site_select_data() {
+        var site_select_data = [];
+        for (let i=0; i<user_sites.length; i++) {
+            var chapter = user_sites[i];
+            var temp_chapter = [chapter.chapter[0], chapter.chapter[1], []];
+            for (let j=0; j<chapter.sites.length; j++) {
+                var site = chapter.sites[j];
+                temp_chapter[2].push([site[0], site[1]]);
+            }
+            site_select_data.push(temp_chapter);
+        }
+        return site_select_data
+    }
+
+    info_update_listeners_off() {
+        if (this.theme_select) {
+            this.theme_select.element.off(":change");
+        }
+        this.site_select.element.off(":change");
+        this.title_input.input.off("change");
+    }
+
     listeners() {
         this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
         this.element.find('.edit-btn').click({func: this.show_update_info, object: this}, this.dispatch);
@@ -379,14 +499,14 @@ class InfoSlide extends JqueryElement {
     }
 
     item_listeners() {
+        this.info_update_listeners_off(); // reset
         if (this.theme_select) {
-            this.theme_select.element.off(":change");
             this.theme_select.element.on(":change", {func: this.update_model_infos, object: this}, this.dispatch);
         }
-        this.site_select.element.off(":change");
         this.site_select.element.on(":change", {func: this.update_model_infos, object: this}, this.dispatch);
-        this.title_element.off("change");
-        this.title_element.change({func: this.update_model_infos, object: this}, this.dispatch);
+        // :change is already used by custom form for title input
+        this.title_input.input.change({func: this.update_model_infos, object: this}, this.dispatch);
+        this.title_input.input.change({func: this.title_input.update_value, object: this.title_input}, this.dispatch);
     }
 }
 
@@ -397,12 +517,15 @@ class LearningList extends JqueryElement {
         this.site_data = null;
         this.site_select = new MenuSiteSelect('menu');
         var type_data = this.get_type_select_data();
-        this.type_select = new LearningTypeDropdown('learning_type_select', type_data, 'radio', 'Winter Garden Training');
+        this.type_select = new LearningTypeDropdown('learning_type_select', type_data, {type: 'radio'});
         this.programming_slide = new InfoSlide('programming_info', 'programming');
         this.theme_slide = new InfoSlide('theme_info', 'theme');
         this.module_slide = new InfoSlide('module_info', 'module');
         this.slides = [this.programming_slide, this.theme_slide, this.module_slide]
         this.active_slide = null;
+        this.create_programming = $('#create_programming');
+        this.create_theme = $('#create_theme');
+        this.create_module = $('#create_module');
         this.get_items();
         this.listeners();
     }
@@ -415,7 +538,7 @@ class LearningList extends JqueryElement {
         this.theme_slide.hide();
         this.module_slide.hide();
         if (type == 'Programming') {
-            this.programming_slide.show(pk, title, this.site_select.value);
+            this.programming_slide.show_model(pk, title, this.site_select.value);
             this.active_slide = this.programming_slide;
         } else if ($(item).hasClass('sub-item')) {
             var theme_options = [];
@@ -424,11 +547,21 @@ class LearningList extends JqueryElement {
             });
             var theme = $(item).siblings('.item')
             var theme_value = [theme.text(), theme.attr("value")];
-            this.module_slide.show(pk, title, this.site_select.value, theme_options, theme_value);
+            this.module_slide.show_model(pk, title, this.site_select.value, theme_options, theme_value);
             this.active_slide = this.module_slide
         } else {
-            this.theme_slide.show(pk, title, this.site_select.value);
+            this.theme_slide.show_model(pk, title, this.site_select.value);
             this.active_slide = this.theme_slide;
+        }
+    }
+
+    create_model(button) {
+        if (button.id == 'create_programming') {
+            this.programming_slide.show();
+        } else if (button.id == 'create_theme') {
+            this.theme_slide.show();
+        } else if (button.id == 'create_module') {
+            this.module_slide.show();
         }
     }
 
@@ -456,7 +589,13 @@ class LearningList extends JqueryElement {
         }
         if (type == 'Programming') {
             var items = this.site_data.programming
+            this.create_programming.show();
+            this.create_theme.hide();
+            this.create_module.hide();
         } else {
+            this.create_programming.hide();
+            this.create_theme.show();
+            this.create_module.show();
             var items = [];
             // Filter for trainings that contain required position
             for (let i=0; i<this.site_data.themes.length; i++) {
@@ -518,9 +657,13 @@ class LearningList extends JqueryElement {
         for (let i=0; i<this.slides.length; i++) {
             this.slides[i].element.on(":submit", {func: this.get_items, object: this}, this.dispatch);
         }
+        this.create_programming.click({func: this.create_model, object: this}, this.dispatch);
+        this.create_theme.click({func: this.create_model, object: this}, this.dispatch);
+        this.create_module.click({func: this.create_model, object: this}, this.dispatch);
     }
 
     item_listeners() {
+        this.element.find('a').off("click");
         this.element.find('a').click({func: this.show_item_info, object: this}, this.dispatch);
     }
 
@@ -553,43 +696,6 @@ class LearningList extends JqueryElement {
 }
 
 
-
-
-
-
-
-function get_site_select_data() {
-    var site_select_data = [];
-    for (let i=0; i<learning_data.length; i++) {
-        var chapter = learning_data[i];
-        var temp_chapter = [chapter.chapter[0], chapter.chapter[1], []];
-        for (let j=0; j<chapter.sites.length; j++) {
-            var site = chapter.sites[j];
-            temp_chapter[2].push([site.site[0], site.site[1]]);
-        }
-        site_select_data.push(temp_chapter);
-    }
-    return site_select_data
-}
-
-//function resize_info_slides() {
-//    var height = $('#content').height();
-//    if ($(window).width() > 770) {
-//        var width = $('#content').width()/2 + 5;
-//    } else {
-//        var width = $('#content').width() + 25;
-//    }
-//    $('.item-info').width(width);
-//    $('.item-info').height(height);
-//}
-
 $(document).ready(function() {
     new LearningList('items');
-//    listeners();
-//    resize_info_slides();
 });
-
-
-function listeners() {
-    $(window).resize(resize_info_slides);
-}

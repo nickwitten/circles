@@ -75,8 +75,9 @@
                     {% endif %}
                     <tr>
                         <td class="label"><p>Title:</p></td>
+                        {{ form.title.as_hidden }}
                         <td class="field">
-                            {{ form.title }}
+                            <div id="{{type}}_title_input" class="autocomplete-input"></div>
                         </td>
                     </tr>
                     {% if type == 'module' or type == 'theme' %}

@@ -46,13 +46,14 @@ class JqueryElement {
 }
 
 class Dropdown extends JqueryElement {
-    constructor(id, data, type, placeholder) {
+    constructor(id, data, {type='checkbox', placeholder='', default_value=[]} = {}) {
         super(id);
         this.data = data;
         this.type = type;
         this.placeholder = placeholder;
+        this.default_value = default_value;
+        this.value = default_value;
         this.text = '';
-        this.value = [];
         this.build();
         this.styles();
         this.update_value();
@@ -193,6 +194,10 @@ class Dropdown extends JqueryElement {
 
 
 class JsonDropdown extends Dropdown {
+    constructor(id, data, {type='checkbox', placeholder='', default_value='[]'} = {}) {
+        super(id, data, {type: type, placeholder: placeholder, default_value: default_value});
+    }
+
     set_value(value) {
         value = JSON.parse(value);
         super.set_value(value);
@@ -207,8 +212,8 @@ class JsonDropdown extends Dropdown {
 
 
 class MultiLevelDropdown extends Dropdown {
-    constructor(id, data, type, placeholder) {
-        super(id, data, type, placeholder);
+    constructor(id, data, {type='checkbox', placeholder='', default_value=[]} = {}) {
+        super(id, data, {type: type, placeholder: placeholder, default_value});
     }
 
     select(option, e) {
@@ -370,11 +375,14 @@ class MultiLevelDropdown extends Dropdown {
 
 
 class Modal extends JqueryElement {
-    constructor(id, action_func, action_data, build_func=null) {
+    constructor(id, {action_func=null, cancel_func=null, action_data=null, cancel_data=null, escapable=true, build_func=null} = {}) {
         super(id);
         this.modal_element = this.element.find('.modal');
+        this.escapable = escapable;
         this.action_func = action_func;
         this.action_data = action_data;
+        this.cancel_func = cancel_func;
+        this.cancel_data = cancel_data;
         this.offset_height = 30;
         if (build_func) {
             build_func.call(this);
@@ -395,28 +403,41 @@ class Modal extends JqueryElement {
         this.element.off("keypress");
         this.element.find('.cancel.btn').click({object: this, func: this.hide}, this.dispatch);
         this.element.find('.action.btn').click({object: this, func: this.hide}, this.dispatch);
-        this.element.find('.action.btn').click(this.action_data ,this.action_func);
+        if (this.action_func) {
+            this.element.find('.action.btn').click(this.action_data ,this.action_func);
+        }
+        if (this.cancel_func) {
+            this.element.find('.cancel.btn').click(this.cancel_data ,this.cancel_func);
+        }
         this.element.keypress({object: this, func: this.check_submit}, this.dispatch);
     }
 
     show() {
         this.element.addClass('visible');
         this.modal_element.addClass('show');
-        closeFunctions['.modal'] = this;
+        if (this.escapable) {
+            closeFunctions['.modal'] = this;
+        }
     }
 
     hide() {
         this.modal_element.removeClass('show');
         this.element.removeClass('visible');
-        delete closeFunctions['.modal'];
+        if (this.escapable) {
+            delete closeFunctions['.modal'];
+        }
     }
 }
 
 
 class CustomForm extends JqueryElement {
-    constructor(id, custom_fields, field_prefix) {
+    constructor(id, custom_fields, form_fields, field_prefix) {
+        // custom_fields hash to custom field manager object
+        // form_fields hash to field input type
+        // field prefix for element lookup
         super(id);
         this.custom_fields = custom_fields;
+        this.form_fields = form_fields;
         this.field_prefix = field_prefix;
         this.listeners();
     }
@@ -439,6 +460,21 @@ class CustomForm extends JqueryElement {
         form_field.val(extra_data['custom_object'].value);
     }
 
+    erase_data() {
+        var reset_data = {}
+        for (const field in this.form_fields) {
+            if (this.custom_fields.hasOwnProperty(field)) {
+                reset_data[field] = this.custom_fields[field].default_value;
+            } else if (this.form_fields[field] == 'text') {
+                reset_data[field] = '';
+            } else {
+                reset_data[field] = [];
+            }
+        }
+        this.set_data(reset_data);
+    }
+
+
     listeners() {
         // custom fields on ":change" update form
         for (const field in this.custom_fields) {
@@ -456,7 +492,8 @@ class AutocompleteInput extends JqueryElement {
         super(id);
         this.build();
         this.url = url;
-        this.value = null;
+        this.value = '';
+        this.default_value = '';
         this.query_data = null;
         this.pending_xhr = null;
         this.xhr = null;
@@ -470,9 +507,9 @@ class AutocompleteInput extends JqueryElement {
         this.update_value();
     }
 
-    update_value(value) {
+    update_value() {
         this.value = this.input.val();
-        this.trigger(":change");
+        this.element.trigger(":change");
     }
 
     get_query_data() {
@@ -519,6 +556,7 @@ class AutocompleteInput extends JqueryElement {
 
     autocomplete_select(match) {
         this.input.val($(match).attr("value"));
+        this.update_value();
         this.hide();
     }
 
@@ -601,6 +639,8 @@ class AutocompleteInput extends JqueryElement {
 class LinkInput extends JqueryElement {
     constructor(id) {
         super(id);
+        this.value = '[]';
+        this.default_value = '[]';
         this.modal_id = "link_modal";
         this.modal_element = $('#' + this.modal_id);
         this.build();
@@ -632,7 +672,7 @@ class LinkInput extends JqueryElement {
 
     modal() {
         this.modal_element.find('input').val(''); // reset values if modal has been used
-        this.modal = new Modal(this.modal_id, this.dispatch, {object: this, func: this.add_link});
+        this.modal = new Modal(this.modal_id, {action_func:this.dispatch, action_data:{object: this, func: this.add_link}});
     }
 
     add_link() {

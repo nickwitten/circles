@@ -27,48 +27,24 @@ class Learning(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        programming_form = forms.ProgrammingCreationForm(auto_id="programming_%s")
+        theme_form = forms.ThemeCreationForm(auto_id="theme_%s")
+        module_form = forms.ModuleCreationForm(auto_id="module_%s")
         context['positions'] = member_models.Role.position_choices
         context['forms'] = [
-            ('programming', forms.ProgrammingCreationForm(auto_id="programming_%s")),
-            ('theme', forms.ThemeCreationForm(auto_id="theme_%s")),
-            ('module', forms.ModuleCreationForm(auto_id="module_%s")),
+            ('programming', programming_form, programming_form.get_fields()),
+            ('theme', theme_form, theme_form.get_fields()),
+            ('module', module_form, module_form.get_fields()),
         ]
-        data = self.get_data()
-        context['data'] = data
+        data = self.request.user.userinfo.user_site_access_dict()
+        sites = []
+        for chapter in data:
+            sites.append({
+                'chapter': [str(chapter['chapter']), chapter['chapter'].pk],
+                'sites': [[str(site), site.pk] for site in chapter['sites']]
+            })
+        context['sites'] = sites
         return context
-
-    def get_data(self):
-        chapters = self.request.user.userinfo.user_site_access_dict()
-        data = []
-        for chapter in chapters:
-            temp_chapter = {
-                'chapter': (str(chapter['chapter']), chapter['chapter'].pk),
-                'sites': [],
-            }
-            sites = chapter['sites']
-            for site in sites:
-                temp_site = {
-                    'site': (str(site), site.pk),
-                    'programming': [(str(programming), programming.pk) for programming in site.programming.all()],
-                    'themes': [],
-                }
-                themes = site.themes.all()
-                for theme in themes:
-                    temp_theme = {
-                        'theme': (str(theme), theme.pk),
-                        'modules': []
-                    }
-                    for module in theme.modules.all():
-                        try:
-                            required_for = json.loads(module.required_for)
-                        except:
-                            required_for = []
-                        temp_module = (str(module), module.pk, required_for)
-                        temp_theme['modules'] += [temp_module]
-                    temp_site['themes'] += [temp_theme]
-                temp_chapter['sites'] += [temp_site]
-            data += [temp_chapter]
-        return data
 
 
 class LearningModels(LoginRequiredMixin, AjaxMixin, View):
@@ -92,7 +68,6 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         elif self.kwargs.get('autocomplete_facilitator_search'):
             self.autocomplete_facilitator()
         else:
-            print(self.kwargs.get('pk'))
             raise ValidationError('No Operation', code=500)
         return JsonResponse(self.data)
 
@@ -147,6 +122,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         mode = self._set_mode(base_info, target_title, target_themes)
         results = []
         sites = self.request.user.userinfo.user_site_access().filter(pk__in=sites)
+        base_info.pop('site', None)
         if base_info.get('theme', None):
             base_info['theme__title'] = base_info.pop('theme')
         for site in sites:
@@ -157,6 +133,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
             for target_theme in target_themes or [None]:
                 model_info = {'site': site.pk, 'title': target_title}
                 query = model_info.copy()
+                model_info['site_str'] = str(site) # For frontend overwrite warnings
                 if target_theme:
                     model_info['theme'] = target_theme
                     query['theme__title'] = target_theme
@@ -216,6 +193,8 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         results = sorted(results, key=results.count, reverse=True)
         # Get distinct while maintaining order
         results = unique_maintain_order(results)
+        # Name, value pairs for first ten results
+        results = [[result, result] for result in results[0:10]]
         self.data = {'results': results}
 
     def autocomplete_facilitator(self):
@@ -228,6 +207,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         results = results.annotate(fullname=Concat('first_name', Value(' '), 'last_name'))
         results = results.filter(fullname__icontains=search).values_list('first_name', 'last_name', 'pk')
         results = set(results)
+        results = list(results)[0:10]
         results = [[match[0] + ' ' + match[1], match[2]] for match in results]
         self.data = {'results': results}
 
@@ -266,7 +246,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         # Commit changes
         for model in models:
             model.save()
-            info = {'pk': model.pk, 'title': model.title}
+            info = {'pk': model.pk, 'title': model.title, 'site': model.site.pk}
             if hasattr(model, 'theme'):
                 info['theme'] = str(model.theme)
             self.data['infos'] += [info]
