@@ -183,6 +183,7 @@ h3 {
     visibility: visible;
 }
 .item-info .back {
+    width: fit-content;
     z-index: 0;
     left: 0;
     top: 0;

@@ -21,28 +21,23 @@ class JsonM2MFieldModelMixin:
             try:
                 field_value = json.loads(getattr(self, field[0]))
             except Exception as e:
-                field_value = None
-            if field_value:
-                pks = []
-                for item in field_value:
-                    if 'pk' in item:
-                        pks.append(item['pk'])
-                self.JsonM2MFields[i].append(pks)
-            else:
-                self.JsonM2MFields[i].append([])
-        # add objects with those pks to model
-        for field in self.JsonM2MFields:
-            attached_models = self.get_attached_models(field)
+                return model
+            pks = [item['pk'] for item in field_value if 'pk' in item]
+            attached_models = self.get_attached_models(field[1], pks)
+            for pk in pks:
+                if pk not in list(attached_models.values_list('pk', flat=True)):
+                    pk_list = list(attached_models.values_list('pk', flat=True))
+                    for j, value in enumerate(field_value):
+                        if 'pk' in value and value['pk'] == pk:
+                            field_value.pop(j)
+            setattr(self, field[0], json.dumps(field_value))
             objects_field = getattr(self, field[0] + '_objects')
             objects_field.clear()
             objects_field.add(*attached_models)
-        return model
+        return super().save()
 
-    @staticmethod
-    def get_attached_models(field):
-        attached_models = field[1].objects.filter(pk__in=field[2])
-        field.pop(2)
-        return attached_models
+    def get_attached_models(self, klass, pks):
+        return klass.objects.filter(pk__in=pks)
 
     def to_dict(self):
         model_info = model_to_dict(self)
@@ -68,15 +63,14 @@ class Programming(JsonM2MFieldModelMixin, models.Model):
     def __str__(self):
         return f'{self.title}'
 
-    def get_attached_models(self, field):
-        if field[0] == 'facilitators':
+    def get_attached_models(self, klass, pks):
+        if klass == members_models.Profile:
             # Check that profile is in same site as model when adding
-            profiles = field[1].objects.filter(pk__in=field[2])
+            profiles = klass.objects.filter(pk__in=pks)
             profiles = profiles.filter(pk__in=self.site.profiles().values_list('pk'))
-            field.pop(2)
             return profiles
         else:
-            super().get_attached_models(field)
+            super().get_attached_models(klass, pks)
 
 
 class Theme(models.Model):
@@ -117,14 +111,14 @@ class Module(JsonM2MFieldModelMixin, models.Model):
     def __str__(self):
         return f'{self.title}'
 
-    def get_attached_models(self, field):
-        if field[0] == 'facilitators':
+    def get_attached_models(self, klass, pks):
+        if klass == members_models.Profile:
             # Check that profile is in same site as model when adding
-            profiles = field[1].objects.filter(pk__in=field[2])
+            profiles = klass.objects.filter(pk__in=pks)
             profiles = profiles.filter(pk__in=self.site.profiles().values_list('pk'))
             return profiles
         else:
-            super().get_attached_models(field)
+            super().get_attached_models(klass, pks)
 
 
 class ProfileModule(models.Model):

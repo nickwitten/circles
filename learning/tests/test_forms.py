@@ -38,4 +38,4 @@ class TestForms(CreateLearningModelsMixin, TestCase):
 
     def test_form_get_fields(self):
         form = ThemeCreationForm()
-        self.assertEqual(form.get_fields(), ['title', 'required_for'])
+        self.assertEqual(form.get_fields(), {'title': 'text', 'required_for': 'text'})

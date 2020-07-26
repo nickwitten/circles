@@ -123,7 +123,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         results = []
         sites = self.request.user.userinfo.user_site_access().filter(pk__in=sites)
         base_info.pop('site', None)
-        if base_info.get('theme', None):
+        if 'theme' in base_info:
             base_info['theme__title'] = base_info.pop('theme')
         for site in sites:
             base_pk = None

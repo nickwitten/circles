@@ -108,7 +108,7 @@ class FacilitatorInput extends AutocompleteInput {
         this.list.find('.profile').each(function() {
             var item = $(this).children().first();
             var name = item.text();
-            var pk = item.attr("value");
+            var pk = parseInt(item.attr("value"));
             if (pk) {
                 value.push({'name': name, 'pk': pk});
             } else {
@@ -209,6 +209,8 @@ class ModelTitleAutocomplete extends AutocompleteInput {
 }
 
 
+
+
 class InfoSlide extends JqueryElement {
     constructor(id, type) {
         super(id)
@@ -237,13 +239,25 @@ class InfoSlide extends JqueryElement {
         this.resize();
     }
 
-    show() {
+    show_create(site, theme_options=null) {
+        this.info_update_listeners_off();
+        this.mode = 'move';
+        this.base_info = {'site': parseInt(site[0]), 'title': ''}
         this.element.addClass('show');
+        this.site_select.set_value(site);
+        if (theme_options) {
+            this.theme_select = new Dropdown(this.type + '_theme_select', theme_options);
+            this.theme_select.set_value(this.theme_select.default_value);
+            this.base_info['theme'] = '';
+        }
+        this.element.find('.title-text').first().text('Create New ' + this.type[0].toUpperCase() + this.type.slice(1));
+        this.item_listeners();
     }
 
     show_model(pk, title, site, theme_options=null, theme=null) {
         this.info_update_listeners_off();
-        this.base_info = {'site': site, 'title': title, "pk": pk};
+        this.base_info = {'site': parseInt(site[0]), 'title': title, "pk": pk};
+        this.model_infos = [this.base_info];
         this.loader_element.show();
         this.site_select.set_value(site);
         if (theme) {
@@ -292,6 +306,7 @@ class InfoSlide extends JqueryElement {
     }
 
     hide(delay) {
+        this.info_update_listeners_off();
         this.element.removeClass('show');
         this.delayed_erase_data(this, "timeup");
     }
@@ -305,11 +320,32 @@ class InfoSlide extends JqueryElement {
     }
 
     update_model_infos() {
+        this.info_update_listeners_off();
+        if (this.mode == 'move' && this.theme_select) {
+            if (this.theme_select.value.length > 1) {
+                this.theme_select.set_value(this.base_info['theme']);
+                addAlertHTML('Please Save Before Copying to Other Themes', 'primary');
+                this.item_listeners();
+                return
+            }
+        } else if (this.mode == 'copy' && (this.title_input.value != this.base_info['title'])) {
+            this.title_input.set_value(this.base_info['title']);
+            addAlertHTML('Please Save Before Copying to Other Themes', 'primary');
+            this.item_listeners();
+            return
+        }
+        this.item_listeners();
         var themes = null;
         if (this.theme_select) {
             var themes = this.theme_select.value;
+            if (!themes.length) {
+                return
+            }
         }
-        var title = this.title_input.input.val();
+        var title = this.title_input.value;
+        if (!title) {
+            return
+        }
         var data = {
             'build_infos': true,
             'model_type': this.type,
@@ -408,6 +444,14 @@ class InfoSlide extends JqueryElement {
     }
 
     submit_form() {
+        if (!(this.title_input.value)) {
+            addAlertHTML('Title Required', 'danger');
+            return
+        }
+        if (this.type=='theme' && !this.theme_select.length) {
+            addAlertHTML('Theme Required', 'danger');
+            return
+        }
         var data = {
             'form': this.update_form.element.serialize(),
             'model_type': this.type,
@@ -441,6 +485,12 @@ class InfoSlide extends JqueryElement {
         // Update base info
         for (let i=0; i<data['infos'].length; i++) {
             var model_info = data['infos'][i];
+            if (!this.base_info['pk']) {
+                // Model was just created
+                if (this.base_info['site'] == model_info['site']) {
+                    this.base_info = model_info;
+                }
+            }
             if (model_info['pk'] == this.base_info['pk']) {
                 this.base_info = model_info;
             }
@@ -449,6 +499,7 @@ class InfoSlide extends JqueryElement {
         if (this.base_info.hasOwnProperty('theme')) {
             title = this.base_info.theme + ' - ' + title;
         }
+        this.mode = 'update';
         this.element.find('.title-text').first().text(title);
         this.element.trigger(":submit");
     }
@@ -485,10 +536,10 @@ class InfoSlide extends JqueryElement {
 
     info_update_listeners_off() {
         if (this.theme_select) {
-            this.theme_select.element.off(":change");
+            this.theme_select.element.off(":change.update");
         }
-        this.site_select.element.off(":change");
-        this.title_input.input.off("change");
+        this.site_select.element.off(":change.update");
+        this.title_input.element.off(":change.update");
     }
 
     listeners() {
@@ -501,14 +552,14 @@ class InfoSlide extends JqueryElement {
     item_listeners() {
         this.info_update_listeners_off(); // reset
         if (this.theme_select) {
-            this.theme_select.element.on(":change", {func: this.update_model_infos, object: this}, this.dispatch);
+            this.theme_select.element.on(":change.update", {func: this.update_model_infos, object: this}, this.dispatch);
         }
-        this.site_select.element.on(":change", {func: this.update_model_infos, object: this}, this.dispatch);
-        // :change is already used by custom form for title input
-        this.title_input.input.change({func: this.update_model_infos, object: this}, this.dispatch);
-        this.title_input.input.change({func: this.title_input.update_value, object: this.title_input}, this.dispatch);
+        this.site_select.element.on(":change.update", {func: this.update_model_infos, object: this}, this.dispatch);
+        this.title_input.element.on(":change.update", {func: this.update_model_infos, object: this}, this.dispatch);
     }
 }
+
+
 
 
 class LearningList extends JqueryElement {
@@ -541,10 +592,7 @@ class LearningList extends JqueryElement {
             this.programming_slide.show_model(pk, title, this.site_select.value);
             this.active_slide = this.programming_slide;
         } else if ($(item).hasClass('sub-item')) {
-            var theme_options = [];
-            this.element.find('.item').each(function() {
-                theme_options.push([$(this).text(), $(this).text()])
-            });
+            var theme_options = this.get_theme_select_data();
             var theme = $(item).siblings('.item')
             var theme_value = [theme.text(), theme.attr("value")];
             this.module_slide.show_model(pk, title, this.site_select.value, theme_options, theme_value);
@@ -556,12 +604,13 @@ class LearningList extends JqueryElement {
     }
 
     create_model(button) {
+        var site = this.site_select.value
         if (button.id == 'create_programming') {
-            this.programming_slide.show();
+            this.programming_slide.show_create(site);
         } else if (button.id == 'create_theme') {
-            this.theme_slide.show();
+            this.theme_slide.show_create(site);
         } else if (button.id == 'create_module') {
-            this.module_slide.show();
+            this.module_slide.show_create(site, this.get_theme_select_data());
         }
     }
 
@@ -640,6 +689,14 @@ class LearningList extends JqueryElement {
         training_options = training_options.slice(0, -1); // Remove Other option
         var data = [['Programming', 'Programming', []], ['Training', 'Training', training_options]];
         return data
+    }
+
+    get_theme_select_data() {
+        var theme_options = [];
+        this.element.find('.item').each(function() {
+            theme_options.push([$(this).text(), $(this).text()])
+        });
+        return theme_options;
     }
 
     hide_resize_slides() {

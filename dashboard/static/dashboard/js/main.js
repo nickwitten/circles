@@ -94,6 +94,7 @@ class Dropdown extends JqueryElement {
     set_value(values) {
         // Uncheck all
         this.element.find('input').prop("checked", false);
+        this.element.find('.value').first().text(this.placeholder);
         // Check if matches a value
         for (let i=0; i<values.length; i++) {
             var value = values[i];
