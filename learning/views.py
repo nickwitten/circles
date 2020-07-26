@@ -122,18 +122,18 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         mode = self._set_mode(base_info, target_title, target_themes)
         results = []
         sites = self.request.user.userinfo.user_site_access().filter(pk__in=sites)
-        base_info.pop('site', None)
+        base_attrs = {'title': base_info.get('title', None), }
         if 'theme' in base_info:
-            base_info['theme__title'] = base_info.pop('theme')
+            base_attrs['theme__title'] = base_info.get('theme', None)
         for site in sites:
             base_pk = None
             if mode == 'move':
-                base_model = model_type[0].objects.filter(site=site, **base_info).first()
+                base_model = model_type[0].objects.filter(site=site, **base_attrs).first()
                 base_pk = base_model.pk if base_model else None
             for target_theme in target_themes or [None]:
                 model_info = {'site': site.pk, 'title': target_title}
                 query = model_info.copy()
-                model_info['site_str'] = str(site) # For frontend overwrite warnings
+                model_info['site_str'] = str(site)  # For frontend overwrite warnings
                 if target_theme:
                     model_info['theme'] = target_theme
                     query['theme__title'] = target_theme
@@ -173,7 +173,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         mode = 'update'
         if base_info['title'] != target_title:
             mode = 'move'
-        if base_info.get('theme', None) and base_info['theme'] not in target_themes:
+        if 'theme' in base_info and base_info['theme'] not in target_themes:
             mode = 'move'
         if target_themes and len(target_themes) > 1:
             if mode == 'move':
@@ -215,6 +215,8 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         """ Takes {site, (theme), pk} objects and deletes """
         model_type = self.models.get(self.kwargs.get('model_type'))
         models = self.kwargs.get('models')
+        print(models)
+        print(model_type)
         if not (models and model_type):
             raise ValidationError('Insufficient Data')
         models = json.loads(models)
@@ -246,7 +248,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         # Commit changes
         for model in models:
             model.save()
-            info = {'pk': model.pk, 'title': model.title, 'site': model.site.pk}
+            info = {'pk': model.pk, 'title': model.title, 'site': model.site.pk, 'site_str': str(model.site)}
             if hasattr(model, 'theme'):
                 info['theme'] = str(model.theme)
             self.data['infos'] += [info]

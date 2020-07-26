@@ -256,10 +256,12 @@ class InfoSlide extends JqueryElement {
 
     show_model(pk, title, site, theme_options=null, theme=null) {
         this.info_update_listeners_off();
-        this.base_info = {'site': parseInt(site[0]), 'title': title, "pk": pk};
+        console.log(site);
+        this.base_info = {'site': parseInt(site[1]), 'site_str': site[0], 'title': title, "pk": pk};
         this.model_infos = [this.base_info];
+        this.mode = 'update';
         this.loader_element.show();
-        this.site_select.set_value(site);
+        this.site_select.set_value([site[1]]);
         if (theme) {
             this.base_info['theme'] = theme[0];
             title = theme[0] + ' - ' + title;
@@ -305,7 +307,7 @@ class InfoSlide extends JqueryElement {
         this.delayed_loader_hide();
     }
 
-    hide(delay) {
+    hide() {
         this.info_update_listeners_off();
         this.element.removeClass('show');
         this.delayed_erase_data(this, "timeup");
@@ -323,7 +325,7 @@ class InfoSlide extends JqueryElement {
         this.info_update_listeners_off();
         if (this.mode == 'move' && this.theme_select) {
             if (this.theme_select.value.length > 1) {
-                this.theme_select.set_value(this.base_info['theme']);
+                this.theme_select.set_value([this.base_info['theme']]);
                 addAlertHTML('Please Save Before Copying to Other Themes', 'primary');
                 this.item_listeners();
                 return
@@ -373,23 +375,29 @@ class InfoSlide extends JqueryElement {
     build_model_infos_success(data) {
         this.model_infos = data['results'];
         this.mode = data['mode'];
-        this.alert_overwrite();
+        var warning_infos = []
+        for (let i=0; i<this.model_infos.length; i++) {
+            // Pass notifying about base model and created models
+            var info = this.model_infos[i];
+            if (!((info.pk == parseInt(this.base_info.pk) && !info.hasOwnProperty('replace_pk'))
+                || (!info.hasOwnProperty('pk')))) {
+                warning_infos.push(info);
+            }
+        }
+        console.log(warning_infos);
+        this.alert_overwrite('update', warning_infos);
     }
 
-    alert_overwrite() {
+    alert_overwrite(action, model_infos) {
         var overwrite_warnings = [];
-        for (let i=0; i<this.model_infos.length; i++) {
-            var info = this.model_infos[i];
-            // Pass notifying about base model and created models
-            if ((info.pk == parseInt(this.base_info.pk) && !info.hasOwnProperty('replace_pk'))
-                || (!info.hasOwnProperty('pk'))) {
-                continue
-            }
+        for (let i=0; i<model_infos.length; i++) {
+            var info = model_infos[i];
             var title = info['title'];
             var site = info['site_str'];
-            delete info['site_str'];
             if (info.hasOwnProperty('theme')) {
                 title = info['theme'] + ' - ' + title;
+            } else if (action == 'delete' && this.type == 'theme') {
+                title = title + ' - and containing modules';
             }
             var added = false;
             for (let j=0; j<overwrite_warnings.length; j++) {
@@ -403,7 +411,9 @@ class InfoSlide extends JqueryElement {
             }
         }
         var modal_build_func = function() {
-            this.element.find('.header').children().first().text('Would You Like to Overwrite the Following?');
+            var header = (action == 'delete') ? 'Would You Like to Delete the Following' :
+            'Would You Like to Overwrite the Following?';
+            this.element.find('.header').children().first().text(header);
             this.modal_element.find('.content-container').empty();
             for (let i=0; i<overwrite_warnings.length; i++) {
                 var container = $('<div/>').addClass('m-2');
@@ -419,12 +429,20 @@ class InfoSlide extends JqueryElement {
             }
         }
         if (overwrite_warnings.length) {
-            new Modal('modal', {
-                build_func: modal_build_func,
-                cancel_func:this.dispatch,
-                cancel_data:{object: this, func: this.reset_model_info},
-                escapable:false
-            });
+            if (action == 'update') {
+                new Modal('modal', {
+                    build_func: modal_build_func,
+                    cancel_func:this.dispatch,
+                    cancel_data:{object: this, func: this.reset_model_info},
+                    escapable:false
+                });
+            } else if (action == 'delete') {
+                new Modal('modal', {
+                    build_func: modal_build_func,
+                    action_func:this.dispatch,
+                    action_data:{object: this, func: this.delete_submit, extra_data: model_infos},
+                });
+            }
         }
     }
 
@@ -448,7 +466,7 @@ class InfoSlide extends JqueryElement {
             addAlertHTML('Title Required', 'danger');
             return
         }
-        if (this.type=='theme' && !this.theme_select.length) {
+        if (this.type=='module' && !this.theme_select.value.length) {
             addAlertHTML('Theme Required', 'danger');
             return
         }
@@ -504,6 +522,54 @@ class InfoSlide extends JqueryElement {
         this.element.trigger(":submit");
     }
 
+    delete_models() {
+        if (this.mode == 'move') {
+            addAlertHTML('Please Save Before Deleting', 'secondary');
+            return
+        }
+        var delete_infos = []
+        for (let i=0; i<this.model_infos.length; i++) {
+            if (this.model_infos[i].hasOwnProperty('pk')) {
+                delete_infos.push(this.model_infos[i]);
+            }
+        }
+        this.alert_overwrite('delete', delete_infos);
+    }
+
+    delete_submit(button, e, model_infos) {
+        var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
+        $.ajax({
+            url: url_learning_models,
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+            },
+            data: {
+                'delete': true,
+                'model_type': this.type,
+                'models': JSON.stringify(model_infos),
+            },
+            context: this,
+            beforeSend: function() {
+                this.loader_element.show();
+            },
+            success: this.delete_success,
+            error: this.delete_error,
+            complete: function() {
+                this.loader_element.hide();
+            },
+        });
+    }
+
+    delete_success() {
+        this.hide();
+        this.element.trigger(':submit');
+    }
+
+    delete_error() {
+        addAlertHTML('Something Went Wrong', 'danger');
+    }
+
     show_update_info() {
         $(this).closest('item-info').find('update').show();
         $(this).hide();
@@ -545,6 +611,7 @@ class InfoSlide extends JqueryElement {
     listeners() {
         this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
         this.element.find('.edit-btn').click({func: this.show_update_info, object: this}, this.dispatch);
+        this.element.find('.delete-btn').click({func: this.delete_models, object: this}, this.dispatch);
         this.element.find('.save-btn').click({func: this.submit_form, object: this}, this.dispatch);
         $(window).resize({func: this.resize, object: this}, this.dispatch);
     }
@@ -585,20 +652,27 @@ class LearningList extends JqueryElement {
         var type = this.type_select.value[0];
         var title = $(item).text();
         var pk = $(item).attr('value');
+        var site_val = this.site_select.value;
+        var site = null
+        this.site_select.element.find('input').each(function () {
+            if ($(this).val() == site_val[0]) {
+                site = [$(this).siblings('.site-name').text(), $(this).val()]
+            }
+        });
         this.programming_slide.hide();
         this.theme_slide.hide();
         this.module_slide.hide();
         if (type == 'Programming') {
-            this.programming_slide.show_model(pk, title, this.site_select.value);
+            this.programming_slide.show_model(pk, title, site);
             this.active_slide = this.programming_slide;
         } else if ($(item).hasClass('sub-item')) {
             var theme_options = this.get_theme_select_data();
             var theme = $(item).siblings('.item')
             var theme_value = [theme.text(), theme.attr("value")];
-            this.module_slide.show_model(pk, title, this.site_select.value, theme_options, theme_value);
+            this.module_slide.show_model(pk, title, site, theme_options, theme_value);
             this.active_slide = this.module_slide
         } else {
-            this.theme_slide.show_model(pk, title, this.site_select.value);
+            this.theme_slide.show_model(pk, title, site);
             this.active_slide = this.theme_slide;
         }
     }

@@ -194,7 +194,8 @@ h3 {
     padding-bottom: 0.5rem;
     margin-right: 2rem;
 }
-.item-info .title .fa-edit {
+.item-info .title .edit-btn,
+.item-info .title .delete-btn {
     position: absolute;
     right: -1.5rem;
     bottom: calc(0.65rem + 0.15vw);
