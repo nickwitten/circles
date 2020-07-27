@@ -50,6 +50,7 @@ h3 {
     overflow-y: hidden;
 }
 #content .left {
+    position: relative;
     display: flex;
     justify-content: center;
     width: 50%;
@@ -83,7 +84,7 @@ h3 {
 #menu {
     position: absolute;
     top: 0;
-    z-index: 1;
+    z-index: 150;
     left: -700px;
     height: 100%;
     width: 35%;

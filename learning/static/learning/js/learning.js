@@ -272,7 +272,7 @@ class UpdateForm extends CustomForm {
     get_fields_modal() {
         var visible = []
         this.modal.element.find('input').each(function() {
-            if ($(this).prop('checked')) {
+            if ($(this).prop('checked') && $(this).val() != 'all') {
                 visible.push($(this).val());
             }
         });
@@ -281,6 +281,7 @@ class UpdateForm extends CustomForm {
 
     show_fields_modal() {
         var hidden_fields = this.hidden_fields;
+        hidden_fields = ['all'].concat(hidden_fields);
         var build_modal = function() {
             this.element.find('.header-text').text('Edit Fields');
             this.element.find('.action.btn').attr('class', 'btn action');
@@ -305,6 +306,12 @@ class UpdateForm extends CustomForm {
             this.element.find('.option-container').click(function() {
                 var input = $(this).find('input');
                 input.prop("checked", !input.prop("checked"));
+                // check all if all input picked
+                if (input.val() == 'all') {
+                    $(this).closest('.content-container').find('input').each(function() {
+                        $(this).prop("checked", input.prop('checked'));
+                    });
+                }
             });
         }
         this.modal = new Modal('modal', {
@@ -357,6 +364,7 @@ class InfoSlide extends JqueryElement {
         this.mode = 'move';
         this.base_info = {'site': parseInt(site[0]), 'title': ''}
         this.element.addClass('show');
+        this.update_form.show_fields('all');
         this.site_select.set_value(site);
         if (theme_options) {
             this.theme_select = new Dropdown(this.type + '_theme_select', theme_options);
@@ -772,6 +780,7 @@ class LearningList extends JqueryElement {
         this.create_programming = $('#create_programming');
         this.create_theme = $('#create_theme');
         this.create_module = $('#create_module');
+        this.loader_element = this.element.siblings('.loading');
         this.get_items();
         this.listeners();
     }
@@ -825,9 +834,19 @@ class LearningList extends JqueryElement {
                 'site': this.site_select.value[0],
             },
             context: this,
+            beforeSend: function() {
+                this.loader_element.show();
+                console.log(this.loader_element);
+            },
             success: function(data) {
                 this.site_data = data['site_data'];
                 this.update_items();
+            },
+            error: function() {
+                addAlertHTML("Something Went Wrong", 'danger');
+            },
+            complete: function() {
+                this.loader_element.hide();
             },
         });
     }
@@ -902,6 +921,7 @@ class LearningList extends JqueryElement {
     }
 
     hide_resize_slides() {
+        this.site_select.hide();
         for (let i=0; i<this.slides.length; i++) {
             this.slides[i].hide();
             this.slides[i].resize();
