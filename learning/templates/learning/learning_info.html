@@ -14,39 +14,39 @@
         <div id="{{ type }}_detail" class="detail fields-container">
             <table class="fields-table">
                 <!-- JS --->
-                <tr>
+                <tr class="field-row">
                     <td class="label">Site:</td>
                     <td class="field">Winter Garden</td>
                 </tr>
-                <tr>
+                <tr class="field-row">
                     <td class="label">Theme:</td>
                     <td class="field">Bridges Out of Poverty</td>
                 </tr>
-                <tr>
+                <tr class="field-row">
                     <td class="label">Title:</td>
                     <td class="field">Hidden Rules</td>
                 </tr>
-                <tr>
+                <tr class="field-row">
                     <td class="label">Length:</td>
                     <td class="field">1 Hour</td>
                 </tr>
-                <tr>
+                <tr class="field-row">
                     <td class="label">Required For:</td>
                     <td class="field">Circle Leaders</td>
                 </tr>
-                <tr>
+                <tr class="field-row">
                     <td class="label">Description:</td>
                     <td class="field">Training for circles leaders with extremely important long very long information it'll be a fun time this is long.</td>
                 </tr>
-                <tr>
+                <tr class="field-row">
                     <td class="label">Facilitators:</td>
                     <td class="field">John Doe, Nick Witten</td>
                 </tr>
-                <tr>
+                <tr class="field-row">
                     <td class="label">Links:</td>
                     <td class="field"></td>
                 </tr>
-                <tr>
+                <tr class="field-row">
                     <td class="label">Files:</td>
                     <td class="field"></td>
                 </tr>
@@ -57,7 +57,7 @@
             <form id="{{ type }}_form">
                 {% csrf_token %}
                 <table class="fields-table">
-                    <tr>
+                    <tr class="field-row">
                         {{ form.site.as_hidden }}
                         <td class="label"><p>Site:</p></td>
                         <td class="field site-select">
@@ -65,7 +65,7 @@
                         </td>
                     </tr>
                     {% if type == 'module' %}
-                    <tr>
+                    <tr class="field-row">
                         {{ form.theme.as_hidden }}
                         <td class="label"><p>Theme:</p></td>
                         <td class="field">
@@ -74,7 +74,7 @@
                         </td>
                     </tr>
                     {% endif %}
-                    <tr>
+                    <tr class="field-row">
                         <td class="label"><p>Title:</p></td>
                         {{ form.title.as_hidden }}
                         <td class="field">
@@ -82,7 +82,7 @@
                         </td>
                     </tr>
                     {% if type == 'module' or type == 'theme' %}
-                    <tr>
+                    <tr class="field-row">
                         {{ form.required_for.as_hidden }}
                         <td class="label"><p>Required for:</p></td>
                         <td class="field">
@@ -91,13 +91,13 @@
                     </tr>
                     {% endif %}
                     {% if type == 'module' or type == 'programming' %}
-                    <tr>
+                    <tr class="field-row">
                         <td class="label"><p>Length:</p></td>
                         <td class="field">
                             {{ form.length }}
                         </td>
                     </tr>
-                    <tr>
+                    <tr class="field-row">
                         {{ form.facilitators.as_hidden }}
                         <td class="label top"><p class="pt-1">Facilitators:</p></td>
                         <td id="{{ type }}_facilitator_input" class="field facilitators">
@@ -107,7 +107,7 @@
                             </div>
                         </td>
                     </tr>
-                    <tr>
+                    <tr class="field-row">
                         <td class="label top"><p class="pt-1">Description:</p></td>
                         <td class="field">
                             {{ form.description }}
@@ -116,7 +116,7 @@
                     {% endif %}
                 </table>
                 {% if type == 'module' or type == 'programming' %}
-                <div class="load-container">
+                <div class="load-container field-row">
                     <div class="file-input">
                         <input multiple id="{{type}}_file_upload" type="file">
                         <label for="{{type}}_file_upload" class="fas fa-file-upload blacklink"></label>
@@ -134,9 +134,12 @@
                     </div>
                 </div>
                 {{ form.links.as_hidden }}
-                <div id="{{ type }}_link_input" class="link-input">
+                <div id="{{ type }}_link_input" class="link-input field-row">
                 </div>
                 {% endif %}
+                <div class="flex j-center">
+                    <a href="#" class="edit-more-btn text-small btn btn-outline-secondary" style="display: None;">Edit More Fields</a>
+                </div>
             </form>
             <div class="btn-container">
                 <a href="#" class="save-btn btn btn-outline-secondary mb-1">Save</a>

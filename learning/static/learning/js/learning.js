@@ -15,6 +15,8 @@ class LearningTypeDropdown extends MultiLevelDropdown {
 }
 
 
+
+
 class MenuSiteSelect extends JqueryElement {
     constructor(id) {
         super(id);
@@ -64,6 +66,8 @@ class MenuSiteSelect extends JqueryElement {
         delete closeFunctions['#' + this.id];
     }
 }
+
+
 
 
 class FacilitatorInput extends AutocompleteInput {
@@ -193,6 +197,9 @@ class FacilitatorInput extends AutocompleteInput {
     }
 }
 
+
+
+
 class ModelTitleAutocomplete extends AutocompleteInput {
     constructor(id, type) {
         super(id, url_learning_models);
@@ -205,6 +212,112 @@ class ModelTitleAutocomplete extends AutocompleteInput {
             'model_type': this.type,
             'autocomplete_search': this.input.val(),
         }
+    }
+}
+
+
+
+class UpdateForm extends CustomForm {
+    constructor(id, custom_fields, form_fields, field_prefix) {
+        super(id, custom_fields, form_fields, field_prefix);
+        this.edit_fields = 'all';
+        this.hidden_fields = [];
+    }
+
+    hide_all_fields(visible) {
+        this.hidden_fields = [];
+        this.edit_fields = visible;
+        for (const field in this.form_fields) {
+            if (!visible.includes(field)) {
+                this.hidden_fields.push(field);
+                if (this.custom_fields[field]) {
+                    this.custom_fields[field].element.closest('.field-row').hide();
+                } else {
+                    this.element.find('#' + this.field_prefix + field).closest('.field-row').hide();
+                }
+            }
+        }
+        this.element.find('.edit-more-btn').show();
+    }
+
+    show_fields(visible) {
+        if (visible == 'all') {
+            visible = Object.keys(this.form_fields);
+        }
+        for (let i=0; i<visible.length; i++) {
+            var field = visible[i];
+            // Add to edit fields
+            if (typeof(this.edit_fields) == 'object' && !this.edit_fields.includes(field)) {
+                this.edit_fields.push(field);
+            }
+            // Remove from hidden fields
+            var hidden_index = this.hidden_fields.indexOf(field)
+            if (hidden_index != 1) {
+                this.hidden_fields.splice(hidden_index, 1);
+            }
+            // Show element
+            if (this.custom_fields[field]) {
+                this.custom_fields[field].element.closest('.field-row').show();
+            } else {
+                this.element.find('#' + this.field_prefix + field).closest('.field-row').show();
+            }
+        }
+        // Check if all are added
+        if (Object.keys(this.form_fields).length == this.edit_fields.length) {
+            this.element.find('.edit-more-btn').hide();
+            this.edit_fields = 'all';
+        }
+    }
+
+    get_fields_modal() {
+        var visible = []
+        this.modal.element.find('input').each(function() {
+            if ($(this).prop('checked')) {
+                visible.push($(this).val());
+            }
+        });
+        this.show_fields(visible);
+    }
+
+    show_fields_modal() {
+        var hidden_fields = this.hidden_fields;
+        var build_modal = function() {
+            this.element.find('.header-text').text('Edit Fields');
+            this.element.find('.action.btn').attr('class', 'btn action');
+            this.element.find('.action.btn').addClass('btn action btn-primary');
+            this.element.find('.content-container').empty();
+            for (let i=0; i<hidden_fields.length; i++) {
+                var option_container = $('<div/>')
+                    .addClass('option-container');
+                var option_input = $('<input/>')
+                    .attr('type', 'checkbox')
+                    .val(hidden_fields[i]);
+                var option_text = $('<p/>')
+                    .text(hidden_fields[i][0].toUpperCase() + hidden_fields[i].slice(1));
+                var click_wrapper = $('<a/>')
+                    .attr("href", "#")
+                    .addClass("click-wrapper");
+                option_container.append(option_input);
+                option_container.append(option_text);
+                option_container.append(click_wrapper);
+                this.element.find('.content-container').append(option_container);
+            }
+            this.element.find('.option-container').click(function() {
+                var input = $(this).find('input');
+                input.prop("checked", !input.prop("checked"));
+            });
+        }
+        this.modal = new Modal('modal', {
+            'action_func': this.dispatch,
+            'action_data': {object: this, func: this.get_fields_modal},
+            'build_func': build_modal,
+        });
+    }
+
+    listeners() {
+        super.listeners();
+        this.element.find('.edit-more-btn').click({func: this.show_fields_modal, object: this}, this.dispatch)
+
     }
 }
 
@@ -233,7 +346,7 @@ class InfoSlide extends JqueryElement {
             this.link_input = new LinkInput(type + '_link_input');
             custom_fields['links'] = this.link_input;
         }
-        this.update_form = new CustomForm(type + '_form', custom_fields, form_fields[type], type + '_');
+        this.update_form = new UpdateForm(type + '_form', custom_fields, form_fields[type], type + '_');
         this.loader_element = this.element.find('.loading');
         this.listeners();
         this.resize();
@@ -256,10 +369,10 @@ class InfoSlide extends JqueryElement {
 
     show_model(pk, title, site, theme_options=null, theme=null) {
         this.info_update_listeners_off();
-        console.log(site);
         this.base_info = {'site': parseInt(site[1]), 'site_str': site[0], 'title': title, "pk": pk};
         this.model_infos = [this.base_info];
         this.mode = 'update';
+        this.update_form.show_fields('all');
         this.loader_element.show();
         this.site_select.set_value([site[1]]);
         if (theme) {
@@ -326,13 +439,13 @@ class InfoSlide extends JqueryElement {
         if (this.mode == 'move' && this.theme_select) {
             if (this.theme_select.value.length > 1) {
                 this.theme_select.set_value([this.base_info['theme']]);
-                addAlertHTML('Please Save Before Copying to Other Themes', 'primary');
+                addAlertHTML('Please Save Before Copying to Other Themes', 'secondary');
                 this.item_listeners();
                 return
             }
         } else if (this.mode == 'copy' && (this.title_input.value != this.base_info['title'])) {
             this.title_input.set_value(this.base_info['title']);
-            addAlertHTML('Please Save Before Copying to Other Themes', 'primary');
+            addAlertHTML('Please Save Before Copying to Other Themes', 'secondary');
             this.item_listeners();
             return
         }
@@ -377,8 +490,12 @@ class InfoSlide extends JqueryElement {
         this.mode = data['mode'];
         var warning_infos = []
         for (let i=0; i<this.model_infos.length; i++) {
-            // Pass notifying about base model and created models
             var info = this.model_infos[i];
+            // If moving notify about base and replace
+            if (this.mode == 'move' && info.hasOwnProperty('pk')) {
+                // Do something
+            }
+            // Pass notifying about base model and created models
             if (!((info.pk == parseInt(this.base_info.pk) && !info.hasOwnProperty('replace_pk'))
                 || (!info.hasOwnProperty('pk')))) {
                 warning_infos.push(info);
@@ -386,6 +503,10 @@ class InfoSlide extends JqueryElement {
         }
         console.log(warning_infos);
         this.alert_overwrite('update', warning_infos);
+        if (this.model_infos.length > 1) {
+            // collapse form and only edit title
+            this.update_form.hide_all_fields(['title']);
+        }
     }
 
     alert_overwrite(action, model_infos) {
@@ -413,7 +534,9 @@ class InfoSlide extends JqueryElement {
         var modal_build_func = function() {
             var header = (action == 'delete') ? 'Would You Like to Delete the Following' :
             'Would You Like to Overwrite the Following?';
-            this.element.find('.header').children().first().text(header);
+            this.element.find('.action.btn').attr('class', 'btn action');
+            this.element.find('.action.btn').addClass('btn action btn-danger');
+            this.element.find('.header-text').text(header);
             this.modal_element.find('.content-container').empty();
             for (let i=0; i<overwrite_warnings.length; i++) {
                 var container = $('<div/>').addClass('m-2');
@@ -470,12 +593,17 @@ class InfoSlide extends JqueryElement {
             addAlertHTML('Theme Required', 'danger');
             return
         }
+        var fields = this.update_form.edit_fields;
+        if (typeof(fields) != 'string') {
+            fields = JSON.stringify(fields);
+        }
         var data = {
             'form': this.update_form.element.serialize(),
             'model_type': this.type,
-            'fields': 'all',
+            'fields': fields,
             'models': JSON.stringify(this.model_infos),
         }
+        console.log(data['fields']);
         var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
         $.ajax({
             url: url_learning_models,
@@ -825,6 +953,8 @@ class LearningList extends JqueryElement {
         }
     }
 }
+
+
 
 
 $(document).ready(function() {

@@ -383,6 +383,9 @@ header a{
 .j-between {
     justify-content: space-between;
 }
+.j-center {
+    justify-content: center;
+}
 .flex-center {
     margin: auto;
 }

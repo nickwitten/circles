@@ -215,8 +215,6 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         """ Takes {site, (theme), pk} objects and deletes """
         model_type = self.models.get(self.kwargs.get('model_type'))
         models = self.kwargs.get('models')
-        print(models)
-        print(model_type)
         if not (models and model_type):
             raise ValidationError('Insufficient Data')
         models = json.loads(models)

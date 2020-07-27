@@ -16,6 +16,7 @@ document.addEventListener("click", function(e) {
 
 
 function addAlertHTML(message, type) {
+    $('.alert').remove();
     alert = $('<div/>')
         .addClass('alert alert-' + type)
         .text(message);
