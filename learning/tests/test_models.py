@@ -1,3 +1,4 @@
+import json
 import os
 from audioop import reverse
 from django.test import TestCase
@@ -112,6 +113,23 @@ class TestModels(CreateLearningModelsMixin, TestCase):
         programming.facilitators = '[{"pk":3, "name": "profile 1"}]'
         programming.save()
         self.assertEqual(programming.facilitators_objects.count(), 1)
+
+    def test_theme_required_for_save(self):
+        theme = self.theme1_1
+        module = self.module1_1_1
+        module.required_for = '["Circle Leader"]'
+        module.save()
+        theme.required_for = '["Ally"]'
+        theme.save()
+        module.refresh_from_db()
+        self.assertCountEqual(json.loads(module.required_for), json.loads('["Circle Leader", "Ally"]'))
+
+    def test_module_required_for_save(self):
+        self.test_theme_required_for_save()
+        self.module1_1_1.required_for = '[]'
+        self.module1_1_1.save()
+        self.theme1_1.refresh_from_db()
+        self.assertEqual(self.theme1_1.required_for, '[]')
 
     def test_programming_file_delete(self):
         with open(settings.MEDIA_ROOT + "/learning_files/test12345.txt", "w+") as f:

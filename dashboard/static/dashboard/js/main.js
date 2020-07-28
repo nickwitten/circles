@@ -159,7 +159,6 @@ class Dropdown extends JqueryElement {
     }
 
     build() {
-        var element = this.element;
         var value = $('<p/>')
             .addClass('value')
         var pointer = $('<i/>')
@@ -186,10 +185,11 @@ class Dropdown extends JqueryElement {
             options_wrapper.append(option)
         }
         options.append(options_wrapper);
-        element.append(value);
-        element.append(pointer);
-        element.append(show_wrapper);
-        element.append(options);
+        this.element.empty();
+        this.element.append(value);
+        this.element.append(pointer);
+        this.element.append(show_wrapper);
+        this.element.append(options);
         return [value, pointer, show_wrapper, options]
     }
 }

@@ -361,17 +361,18 @@ class InfoSlide extends JqueryElement {
 
     show_create(site, theme_options=null) {
         this.info_update_listeners_off();
-        this.mode = 'move';
+        this.mode = 'create';
         this.base_info = {'site': parseInt(site[0]), 'title': ''}
-        this.element.addClass('show');
         this.update_form.show_fields('all');
         this.site_select.set_value(site);
         if (theme_options) {
+            delete this.theme_select;
             this.theme_select = new Dropdown(this.type + '_theme_select', theme_options);
             this.theme_select.set_value(this.theme_select.default_value);
             this.base_info['theme'] = '';
         }
         this.element.find('.title-text').first().text('Create New ' + this.type[0].toUpperCase() + this.type.slice(1));
+        this.element.addClass('show');
         this.item_listeners();
     }
 
@@ -442,9 +443,22 @@ class InfoSlide extends JqueryElement {
         }
     }
 
+    update_required_for({required_for=null} = {}) {
+        if (required_for) {
+            // Set module requirements to theme requirements
+            if (required_for.length) {
+                this.required_select.set_value(JSON.stringify(required_for));
+                this.required_select.show();
+            }
+            this.theme_select.hide();
+        } else if (this.mode == 'create') {
+            this.element.trigger(':required_for');
+        }
+    }
+
     update_model_infos() {
         this.info_update_listeners_off();
-        if (this.mode == 'move' && this.theme_select) {
+        if ((this.mode == 'move' || this.mode == 'create') && this.theme_select) {
             if (this.theme_select.value.length > 1) {
                 this.theme_select.set_value([this.base_info['theme']]);
                 addAlertHTML('Please Save Before Copying to Other Themes', 'secondary');
@@ -495,7 +509,13 @@ class InfoSlide extends JqueryElement {
 
     build_model_infos_success(data) {
         this.model_infos = data['results'];
-        this.mode = data['mode'];
+        // Update mode
+        if (this.mode == 'create' && data['mode'] == 'move') {
+            // Keep in create mode
+            this.mode = 'create';
+        } else {
+            this.mode = data['mode'];
+        }
         var warning_infos = []
         for (let i=0; i<this.model_infos.length; i++) {
             var info = this.model_infos[i];
@@ -509,7 +529,6 @@ class InfoSlide extends JqueryElement {
                 warning_infos.push(info);
             }
         }
-        console.log(warning_infos);
         this.alert_overwrite('update', warning_infos);
         if (this.model_infos.length > 1) {
             // collapse form and only edit title
@@ -611,7 +630,6 @@ class InfoSlide extends JqueryElement {
             'fields': fields,
             'models': JSON.stringify(this.model_infos),
         }
-        console.log(data['fields']);
         var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
         $.ajax({
             url: url_learning_models,
@@ -659,7 +677,7 @@ class InfoSlide extends JqueryElement {
     }
 
     delete_models() {
-        if (this.mode == 'move') {
+        if (this.mode == 'move' || this.mode == 'create') {
             addAlertHTML('Please Save Before Deleting', 'secondary');
             return
         }
@@ -756,6 +774,8 @@ class InfoSlide extends JqueryElement {
         this.info_update_listeners_off(); // reset
         if (this.theme_select) {
             this.theme_select.element.on(":change.update", {func: this.update_model_infos, object: this}, this.dispatch);
+            this.theme_select.element.off(":change.required");
+            this.theme_select.element.on(":change.required", {func: this.update_required_for, object: this}, this.dispatch);
         }
         this.site_select.element.on(":change.update", {func: this.update_model_infos, object: this}, this.dispatch);
         this.title_input.element.on(":change.update", {func: this.update_model_infos, object: this}, this.dispatch);
@@ -825,6 +845,24 @@ class LearningList extends JqueryElement {
         }
     }
 
+    update_required_for() {
+    // If user is creating module, call with required_for data from chosen theme
+        if (this.module_slide.mode == 'create') {
+            var theme = [];
+            if (this.module_slide.theme_select) {
+                theme = this.module_slide.theme_select.value
+            }
+            var theme = (theme.length) ? theme[0] : null;
+            for (let i=0; i<this.site_data.themes.length; i++) {
+                var theme_info = this.site_data.themes[i].theme;
+                if (theme_info[0] == theme) {
+                    this.module_slide.update_required_for({required_for: theme_info[2]});
+                    return
+                }
+            }
+        }
+    }
+
     get_items() {
         $.ajax({
             url: url_learning_models,
@@ -836,7 +874,6 @@ class LearningList extends JqueryElement {
             context: this,
             beforeSend: function() {
                 this.loader_element.show();
-                console.log(this.loader_element);
             },
             success: function(data) {
                 this.site_data = data['site_data'];
@@ -936,6 +973,7 @@ class LearningList extends JqueryElement {
         for (let i=0; i<this.slides.length; i++) {
             this.slides[i].element.on(":submit", {func: this.get_items, object: this}, this.dispatch);
         }
+        this.module_slide.element.on(":required_for", {func: this.update_required_for, object: this}, this.dispatch);
         this.create_programming.click({func: this.create_model, object: this}, this.dispatch);
         this.create_theme.click({func: this.create_model, object: this}, this.dispatch);
         this.create_module.click({func: this.create_model, object: this}, this.dispatch);

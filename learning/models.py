@@ -46,7 +46,17 @@ class JsonM2MFieldModelMixin:
         return model_info
 
 
-class Programming(JsonM2MFieldModelMixin, models.Model):
+class FileFieldMixin:
+    FileFields = []
+
+    def save(self, *args, **kwargs):
+        files = kwargs.pop('files', None)
+        super().save(*args, **kwargs)
+        if files:
+            print(files)
+
+
+class Programming(FileFieldMixin, JsonM2MFieldModelMixin, models.Model):
     site = models.ForeignKey(members_models.Site, on_delete=models.CASCADE, related_name='programming')
     title = models.CharField(max_length=128)
     length = models.CharField(max_length=32, blank=True)
@@ -59,6 +69,7 @@ class Programming(JsonM2MFieldModelMixin, models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.JsonM2MFields = [['facilitators', members_models.Profile]]
+        self.FileFields = [ModuleFile]
 
     def __str__(self):
         return f'{self.title}'
@@ -73,16 +84,28 @@ class Programming(JsonM2MFieldModelMixin, models.Model):
             super().get_attached_models(klass, pks)
 
 
-class Theme(models.Model):
+class Theme(FileFieldMixin, models.Model):
     site = models.ForeignKey(members_models.Site, on_delete=models.CASCADE, related_name='themes')
     title = models.CharField(max_length=128)
     required_for = models.TextField(default='[]', blank=True)
 
-    def to_dict(self):
-        return model_to_dict(self)
-
     def __str__(self):
         return f'{self.title}'
+
+    def save(self, *args, **kwargs):
+        required_checked = kwargs.pop('required_checked', None)
+        super().save(*args, **kwargs)
+        if not required_checked:
+            # Apply required for to all containing modules
+            required_for = json.loads(self.required_for)
+            for module in self.modules.all():
+                module_required_for = json.loads(module.required_for)
+                module_required_for = list(set(module_required_for + required_for))
+                module.required_for = json.dumps(module_required_for)
+                module.save(required_checked=True)
+
+    def to_dict(self):
+        return model_to_dict(self)
 
 
 class ProfileTheme(models.Model):
@@ -91,7 +114,7 @@ class ProfileTheme(models.Model):
     date_completed = models.DateField(blank=True, null=True)
 
 
-class Module(JsonM2MFieldModelMixin, models.Model):
+class Module(FileFieldMixin, JsonM2MFieldModelMixin, models.Model):
     JsonM2MFields = ['facilitators']
     site = models.ForeignKey(members_models.Site, on_delete=models.CASCADE, related_name='modules')
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, related_name='modules')
@@ -107,9 +130,22 @@ class Module(JsonM2MFieldModelMixin, models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.JsonM2MFields = [['facilitators', members_models.Profile]]
+        self.FileFields = [ModuleFile]
 
     def __str__(self):
         return f'{self.title}'
+
+    def save(self, *args, **kwargs):
+        required_checked = kwargs.pop('required_checked', None)
+        super().save(*args, **kwargs)
+        if not required_checked:
+            # Overwrite themes required_for if this doesn't include it
+            module_required_for = json.loads(self.required_for)
+            theme_required_for = json.loads(self.theme.required_for)
+            theme_required_for = [position for position in theme_required_for
+                                  if position in module_required_for]
+            self.theme.required_for = json.dumps(theme_required_for)
+            self.theme.save(required_checked=True)
 
     def get_attached_models(self, klass, pks):
         if klass == members_models.Profile:

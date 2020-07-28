@@ -101,8 +101,12 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         }
         themes = site.themes.all()
         for theme in themes:
+            try:
+                required_for = json.loads(theme.required_for)
+            except:
+                required_for = []
             temp_theme = {
-                'theme': (str(theme), theme.pk),
+                'theme': (str(theme), theme.pk, required_for),
                 'modules': []
             }
             for module in theme.modules.all():
@@ -245,7 +249,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
                 models += [self._create_model(model_type, attrs, form_data)]
         # Commit changes
         for model in models:
-            model.save()
+            model.save(files=self.request.FILES)
             info = {'pk': model.pk, 'title': model.title, 'site': model.site.pk, 'site_str': str(model.site)}
             if hasattr(model, 'theme'):
                 info['theme'] = str(model.theme)
