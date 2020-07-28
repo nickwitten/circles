@@ -293,8 +293,11 @@ class UpdateForm extends CustomForm {
                 var option_input = $('<input/>')
                     .attr('type', 'checkbox')
                     .val(hidden_fields[i]);
+                console.log(hidden_fields[i]);
+                var text = hidden_fields[i].split("_").join(" ");
+                console.log(text);
                 var option_text = $('<p/>')
-                    .text(hidden_fields[i][0].toUpperCase() + hidden_fields[i].slice(1));
+                    .text(text[0].toUpperCase() + text.slice(1));
                 var click_wrapper = $('<a/>')
                     .attr("href", "#")
                     .addClass("click-wrapper");
@@ -359,7 +362,7 @@ class InfoSlide extends JqueryElement {
         this.resize();
     }
 
-    show_create(site, theme_options=null) {
+    show_create(site, {theme_options=null, required_for=null} = {}) {
         this.info_update_listeners_off();
         this.mode = 'create';
         this.base_info = {'site': parseInt(site[0]), 'title': ''}
@@ -370,6 +373,9 @@ class InfoSlide extends JqueryElement {
             this.theme_select = new Dropdown(this.type + '_theme_select', theme_options);
             this.theme_select.set_value(this.theme_select.default_value);
             this.base_info['theme'] = '';
+        }
+        if (required_for) {
+            this.required_select.set_value(JSON.stringify(required_for));
         }
         this.element.find('.title-text').first().text('Create New ' + this.type[0].toUpperCase() + this.type.slice(1));
         this.element.addClass('show');
@@ -839,9 +845,9 @@ class LearningList extends JqueryElement {
         if (button.id == 'create_programming') {
             this.programming_slide.show_create(site);
         } else if (button.id == 'create_theme') {
-            this.theme_slide.show_create(site);
+            this.theme_slide.show_create(site, {required_for: this.type_select.value});
         } else if (button.id == 'create_module') {
-            this.module_slide.show_create(site, this.get_theme_select_data());
+            this.module_slide.show_create(site, {theme_options: this.get_theme_select_data()});
         }
     }
 
@@ -922,7 +928,7 @@ class LearningList extends JqueryElement {
                         theme_data[2].push([module[0], module[1], 'inactive'])
                     }
                 }
-                if (contains_required_module) {
+                if (contains_required_module || theme.theme[2].includes(type)) {
                     items.push(theme_data);
                 }
             }
