@@ -638,6 +638,95 @@ class AutocompleteInput extends JqueryElement {
     }
 }
 
+class FileInput extends JqueryElement {
+
+    constructor(id) {
+        super(id);
+        this.input_id = id.replace('input', 'upload')
+        this.value = [];
+        this.default_value = [];
+        this.delete_files = [];
+        this.build();
+        this.list_element = this.element.find('.files');
+        this.input_element = this.element.find('input');
+        this.update_value();
+        this.listeners();
+    }
+
+    set_value(value) {
+        this.delete_files = [];
+        console.log(value);
+        this.list_element.empty();
+        for (let i=0; i<value.length; i++) {
+            this.build_item(value[i]);
+        }
+        this.form_data = new FormData()
+    }
+
+    update_value() {
+        this.list_element.find('a').each(function() {
+            if ($(this).attr("value") == 0) {
+                $(this).closest('.file').remove();
+            }
+        });
+        var files = this.input_element[0].files;
+        console.log("new form");
+        this.form_data = new FormData()
+        for (let i=0; i<files.length; i++) {
+            this.build_item([files[i].name, 0, '#']);
+            this.form_data.append(files[i].name, files[i]);
+        }
+    }
+
+    delete_file(delete_btn) {
+        this.delete_files.push($(delete_btn).attr("value"));
+        $(delete_btn).closest('.file').remove();
+    }
+
+    item_listeners() {
+        this.element.find('.delete').off("click");
+        this.element.find('.delete').click({object: this, func: this.delete_file}, this.dispatch);
+    }
+
+    build_item(item) {
+        var container = $('<div/>')
+            .addClass('file')
+        var link = $('<a/>')
+            .addClass("blacklink")
+            .attr("href", item[2])
+            .attr("target", "_blank")
+            .text(item[0]);
+        var delete_btn = $('<a/>')
+            .attr("href", "#")
+            .addClass('delete fas fa-times blacklink')
+            .attr("value", item[1]);
+        container.append(link);
+        container.append(delete_btn);
+        this.list_element.append(container);
+        this.item_listeners();
+    }
+
+
+    build() {
+        var input = $('<input/>')
+            .attr("id", this.input_id)
+            .prop("multiple", true)
+            .attr("type", "file");
+        var btn = $('<label/>')
+            .attr("for", this.input_id)
+            .addClass("file-upload fas fa-file-upload blacklink");
+        var links_container = $('<div/>')
+            .addClass("files");
+        this.element.append(input);
+        this.element.append(btn);
+        this.element.append(links_container);
+    }
+
+    listeners() {
+        this.input_element.change({object: this, func: this.update_value}, this.dispatch);
+    }
+}
+
 class LinkInput extends JqueryElement {
     constructor(id) {
         super(id);

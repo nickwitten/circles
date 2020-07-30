@@ -31,10 +31,14 @@ class Learning(TemplateView):
         theme_form = forms.ThemeCreationForm(auto_id="theme_%s")
         module_form = forms.ModuleCreationForm(auto_id="module_%s")
         context['positions'] = member_models.Role.position_choices
+        programming_form_fields = programming_form.get_fields()
+        programming_form_fields['files'] = 'list'
+        module_form_fields = module_form.get_fields()
+        module_form_fields['files'] = 'list'
         context['forms'] = [
-            ('programming', programming_form, programming_form.get_fields()),
+            ('programming', programming_form, programming_form_fields),
             ('theme', theme_form, theme_form.get_fields()),
-            ('module', module_form, module_form.get_fields()),
+            ('module', module_form, module_form_fields),
         ]
         data = self.request.user.userinfo.user_site_access_dict()
         sites = []
@@ -51,9 +55,9 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
     data = {}
     # Hash to (class, related_name, form_class)
     models = {
-        'programming': (models.Programming, 'programming', forms.ProgrammingCreationForm),
+        'programming': (models.Programming, 'programming', forms.ProgrammingCreationForm, models.ProgrammingFile),
         'theme': (models.Theme, 'themes', forms.ThemeCreationForm),
-        'module': (models.Module, 'modules', forms.ModuleCreationForm),
+        'module': (models.Module, 'modules', forms.ModuleCreationForm, models.ModuleFile),
     }
 
     def get(self, request, *args, **kwargs):
@@ -192,7 +196,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         if not (search and model_type):
             raise ValidationError('Insufficient Data', code=500)
         results = list(model_type[0].objects.filter(title__icontains=search).values_list(
-                        'title', flat=True))
+            'title', flat=True))
         # Sort by frequency
         results = sorted(results, key=results.count, reverse=True)
         # Get distinct while maintaining order
@@ -237,22 +241,32 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
             model that needs to be updated or created.  Theme
             required if model is module.  Pk required if model
             already exists.                                     """
-        model_type, form_data, model_infos = self._get_args()
+        model_type, form_data, model_infos, files = self._get_args()
         models = []
         self.data['infos'] = []
         for info in model_infos:
             attrs, pk, replace_pk = self._get_model_info(model_type, info)
             if pk:
                 models += [self._update_model(model_type, attrs, pk,
-                                   replace_pk, form_data)]
+                                              replace_pk, form_data)]
             else:
                 models += [self._create_model(model_type, attrs, form_data)]
+        # If setting to other model's files, make sure target model is saved first
+        if 'set_files' in files:
+            for model in models:
+                model.save(files=files)
+            temp_files = {'set_files': files.pop('set_files', None), 'delete_files': files.pop('delete_files', None)}
+            files = temp_files # Take out files
         # Commit changes
         for model in models:
-            model.save(files=self.request.FILES)
+            model.save(files=files)
+            # Gather Info to Send Back
             info = {'pk': model.pk, 'title': model.title, 'site': model.site.pk, 'site_str': str(model.site)}
             if hasattr(model, 'theme'):
                 info['theme'] = str(model.theme)
+            if hasattr(model, 'files'):
+                info['files'] = json.dumps([(file.title, file.pk, settings.MEDIA_URL + file.file.name)
+                                            for file in model.files.all()])
             self.data['infos'] += [info]
 
     def _get_args(self):
@@ -261,6 +275,9 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         form_data = self.kwargs.get('form')
         form_fields = self.kwargs.get('fields')
         model_infos = self.kwargs.get('models')
+        delete_files = self.kwargs.get('delete_files', None)
+        set_files = self.kwargs.get('set_files', None)
+        files = self.request.FILES
         if not (model_type and form_data and form_fields and model_infos):
             raise ValidationError('Insufficient Data', code=500)
         form_data = QueryDict(form_data).copy()
@@ -275,7 +292,11 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
             for field in ignore_fields:
                 form_data.pop(field)
         model_infos = json.loads(model_infos)
-        return model_type, form_data, model_infos
+        if delete_files:
+            files['delete_files'] = json.loads(delete_files)
+        if set_files:
+            files['set_files'] = set_files if set_files != 'null' else None
+        return model_type, form_data, model_infos, files
 
     def _get_model_info(self, model_type, info):
         """ Unpack and validate model info. Target
@@ -316,7 +337,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         form = model_type[2](form_data, instance=model)
         if form.is_valid():
             model = self._check_and_replace(model_type, form,
-                                               attrs, pk, replace_pk)
+                                            attrs, pk, replace_pk)
             # If replaced model save was handled
             if not model:
                 model = form.save(commit=False, **attrs)

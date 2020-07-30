@@ -217,6 +217,7 @@ class ModelTitleAutocomplete extends AutocompleteInput {
 
 
 
+
 class UpdateForm extends CustomForm {
     constructor(id, custom_fields, form_fields, field_prefix) {
         super(id, custom_fields, form_fields, field_prefix);
@@ -293,9 +294,7 @@ class UpdateForm extends CustomForm {
                 var option_input = $('<input/>')
                     .attr('type', 'checkbox')
                     .val(hidden_fields[i]);
-                console.log(hidden_fields[i]);
                 var text = hidden_fields[i].split("_").join(" ");
-                console.log(text);
                 var option_text = $('<p/>')
                     .text(text[0].toUpperCase() + text.slice(1));
                 var click_wrapper = $('<a/>')
@@ -344,17 +343,21 @@ class InfoSlide extends JqueryElement {
         this.theme_select = null; // Will be created on module show
         this.required_select = null;
         var custom_fields = {'title': this.title_input};
-        if (this.element.find('#' + type + '_required_select')) {
+        if (this.element.find('#' + type + '_required_select').length) {
             this.required_select = new JsonDropdown(type + '_required_select', role_positions.slice(0,-1));
             custom_fields['required_for'] = this.required_select;
         }
-        if (this.element.find('#' + type + '_facilitator_input')) {
+        if (this.element.find('#' + type + '_facilitator_input').length) {
             this.facilitator_input = new FacilitatorInput(type + '_facilitator_input', this.site_select);
             custom_fields['facilitators'] = this.facilitator_input;
         }
-        if (this.element.find('#' + type + '_link_input')) {
+        if (this.element.find('#' + type + '_link_input').length) {
             this.link_input = new LinkInput(type + '_link_input');
             custom_fields['links'] = this.link_input;
+        }
+        if (this.element.find('#' + type + '_file_input').length) {
+            this.file_input = new FileInput(type + '_file_input');
+            custom_fields['files'] = this.file_input;
         }
         this.update_form = new UpdateForm(type + '_form', custom_fields, form_fields[type], type + '_');
         this.loader_element = this.element.find('.loading');
@@ -630,12 +633,21 @@ class InfoSlide extends JqueryElement {
         if (typeof(fields) != 'string') {
             fields = JSON.stringify(fields);
         }
-        var data = {
-            'form': this.update_form.element.serialize(),
-            'model_type': this.type,
-            'fields': fields,
-            'models': JSON.stringify(this.model_infos),
+        var set_files = (this.base_info.hasOwnProperty("pk")) ? this.base_info["pk"] : null;
+        if (this.file_input) {
+            var data = this.file_input.form_data;
+            var delete_files = JSON.stringify(this.file_input.delete_files);
+            var set_files = (this.base_info.hasOwnProperty("pk")) ? this.base_info["pk"] : null;
+            data.append('delete_files', delete_files);
+            data.append('set_files', set_files)
+        } else {
+            var data = new FormData()
         }
+        data.append('form', this.update_form.element.serialize());
+        data.append('model_type', this.type);
+        data.append('fields', fields);
+        data.append('models', JSON.stringify(this.model_infos));
+        console.log(data);
         var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
         $.ajax({
             url: url_learning_models,
@@ -644,6 +656,8 @@ class InfoSlide extends JqueryElement {
                 'X-CSRFToken': csrftoken,
             },
             data: data,
+            processData: false,
+            contentType: false,
             context: this,
             beforeSend: function() {
                 this.loader_element.show();
@@ -663,14 +677,21 @@ class InfoSlide extends JqueryElement {
         // Update base info
         for (let i=0; i<data['infos'].length; i++) {
             var model_info = data['infos'][i];
+            var match = false;
             if (!this.base_info['pk']) {
                 // Model was just created
                 if (this.base_info['site'] == model_info['site']) {
-                    this.base_info = model_info;
+                    match = true;
                 }
+            } else if (model_info['pk'] == this.base_info['pk']) {
+                match = true;
             }
-            if (model_info['pk'] == this.base_info['pk']) {
+            if (match) {
                 this.base_info = model_info;
+                console.log(model_info);
+                if (this.hasOwnProperty('file_input')) {
+                    this.file_input.set_value(JSON.parse(model_info['files']));
+                }
             }
         }
         var title = this.base_info.title;
@@ -680,6 +701,7 @@ class InfoSlide extends JqueryElement {
         this.mode = 'update';
         this.element.find('.title-text').first().text(title);
         this.element.trigger(":submit");
+        console.log(this.model_infos)
     }
 
     delete_models() {

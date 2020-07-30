@@ -117,20 +117,7 @@
                 </table>
                 {% if type == 'module' or type == 'programming' %}
                 <div class="load-container field-row">
-                    <div class="file-input">
-                        <input multiple id="{{type}}_file_upload" type="file">
-                        <label for="{{type}}_file_upload" class="fas fa-file-upload blacklink"></label>
-                        <div class="files">
-                            <div class="file">
-                                <a href="#" class="blacklink">fake_file.doc</a>
-                                <a href="#" class="delete fas fa-times blacklink"></a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="loading" style="display: none;">
-                        <div class="center">
-                            <div class="spinner"></div>
-                        </div>
+                    <div id="{{ type }}_file_input" class="file-input">
                     </div>
                 </div>
                 {{ form.links.as_hidden }}

@@ -1,6 +1,7 @@
 import json
 import os
 
+from django.core.files.base import ContentFile
 from django.db import models
 from django.forms import model_to_dict
 
@@ -47,13 +48,60 @@ class JsonM2MFieldModelMixin:
 
 
 class FileFieldMixin:
-    FileFields = []
+    FileModelClass = None
+
+    def to_dict(self, *args, **kwargs):
+        model_info = super().to_dict(*args, **kwargs)
+        files_info = [(file.title, file.pk, settings.MEDIA_URL + file.file.name)
+                      for file in self.files.all()]
+        model_info['files'] = files_info
+        return model_info
 
     def save(self, *args, **kwargs):
         files = kwargs.pop('files', None)
         super().save(*args, **kwargs)
         if files:
-            print(files)
+            delete_files = files.pop('delete_files', None)
+            if delete_files:
+                delete_files = delete_files[0]
+            set_files = files.pop('set_files', None)
+            if set_files:
+                set_files = set_files[0]
+            if set_files:
+                if self.pk == int(set_files or 0):
+                    self._create_delete_files(files, delete_files)
+                else:
+                    self._set_files(set_files)
+            else:
+                self._create_delete_files(files, delete_files)
+            files['delete_files'] = delete_files
+            files['set_files'] = set_files
+
+    def _create_delete_files(self, files, delete_files):
+        for title, file in files.items():
+            file_info = {'title': title, 'file': file, 'model': self}
+            file_model = self.FileModelClass(**file_info)
+            file_model.save()
+        for pk in delete_files or []:
+            file = self.FileModelClass.objects.filter(pk=pk).first()
+            if file:
+                file.delete_file()
+                file.delete()
+
+    def _set_files(self, set_files):
+        target_model = self.__class__.objects.filter(pk=int(set_files or 0)).first()
+        if target_model:
+            for file in self.files.all():
+                file.delete_file()
+                file.delete()
+            for target_file in target_model.files.all():
+                title = target_file.title
+                nf_model = self.FileModelClass(model=self, title=title)
+                target_file.file.seek(0)
+                nf = ContentFile(target_file.file.read())
+                nf.name = target_file.file.name.split('/')[-1]
+                nf_model.file = nf
+                nf_model.save()
 
 
 class Programming(FileFieldMixin, JsonM2MFieldModelMixin, models.Model):
@@ -69,7 +117,7 @@ class Programming(FileFieldMixin, JsonM2MFieldModelMixin, models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.JsonM2MFields = [['facilitators', members_models.Profile]]
-        self.FileFields = [ModuleFile]
+        self.FileModelClass = ProgrammingFile
 
     def __str__(self):
         return f'{self.title}'
@@ -93,6 +141,7 @@ class Theme(FileFieldMixin, models.Model):
         return f'{self.title}'
 
     def save(self, *args, **kwargs):
+        kwargs.pop('files', None)
         required_checked = kwargs.pop('required_checked', None)
         super().save(*args, **kwargs)
         if not required_checked:
@@ -130,7 +179,7 @@ class Module(FileFieldMixin, JsonM2MFieldModelMixin, models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.JsonM2MFields = [['facilitators', members_models.Profile]]
-        self.FileFields = [ModuleFile]
+        self.FileModelClass = ModuleFile
 
     def __str__(self):
         return f'{self.title}'
