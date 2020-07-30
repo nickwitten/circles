@@ -4,7 +4,7 @@
             <div class="spinner"></div>
         </div>
     </div>
-    <a href="#" class="back fas fa-times"></a>
+    <a href="#" class="info back fas fa-times"></a>
     <div class="title border-bottom">
         <h6 class="title-text"></h6>
         <a href="#" class="edit-btn far fa-edit blacklink" style="display: none;"></a>
@@ -129,7 +129,89 @@
                 </div>
             </form>
             <div class="btn-container">
-                <a href="#" class="save-btn btn btn-outline-secondary mb-1">Save</a>
+                <div class="">
+                    <a href="#" class="more-info btn text-small btn-outline-secondary mb-1">More Info</a>
+                </div>
+                <a href="#" class="save-btn btn btn-outline-secondary mb-1 text-small">Save</a>
+            </div>
+        </div>
+    </div>
+    <div id="{{ type }}_info_popup" class="info-popup">
+        <div class="loading" style="display: none;">
+            <div class="center">
+                <div class="spinner"></div>
+            </div>
+        </div>
+        <a href="#" class="more-info back fas fa-times"></a>
+        <div class="header border-bottom">
+            {% if type == 'module' or type == 'theme' %}
+            <a href="#" class="members-completed-btn header-btn active blacklink">Members Completed</a>
+            {% endif %}
+            {% if type == 'module' or type == 'programming' %}
+            <a href="#" class="schedule-btn header-btn blacklink">Schedule</a>
+            {% endif %}
+        </div>
+        <div class="content">
+            <div class="members-completed">
+                <div class="profiles">
+                    <table>
+                        <tr>
+                            <th class="name label"><p class="label">Name</p></th>
+                            <th class="date label"><p class="label">Date Completed</p></th>
+                        </tr>
+                        <tr>
+                            <td class="name"><p>Nicholas Witten</p></td>
+                            <td class="date"><p>07/30/2020</p></td>
+                        </tr>
+                        <tr>
+                            <td class="name"><p>Nicholas Witten</p></td>
+                            <td class="date"><p>07/30/2020</p></td>
+                        </tr>
+                        <tr>
+                            <td class="name"><p>Nicholas Witten</p></td>
+                            <td class="date"><p>07/30/2020</p></td>
+                        </tr>
+                        <tr>
+                            <td class="name"><p>Nicholas Witten</p></td>
+                            <td class="date"><p>07/30/2020</p></td>
+                        </tr>
+                        <tr>
+                            <td class="name"><p>Nicholas Witten</p></td>
+                            <td class="date"><p>07/30/2020</p></td>
+                        </tr>
+                        <tr>
+                            <td class="name"><p>Nicholas Witten</p></td>
+                            <td class="date"><p>07/30/2020</p></td>
+                        </tr>
+                        <tr>
+                            <td class="name"><p>Loooooooooooong Naaaaaaaaaame</p></td>
+                            <td class="date"><p>07/30/2020</p></td>
+                        </tr>
+                        <tr>
+                            <td class="name"><p>Loooooooooooongeeeeeeeeeeeeeeeeeeeeeer Naaaaaaaaaame</p></td>
+                            <td class="date"><p>07/30/2020</p></td>
+                        </tr>
+                        <tr>
+                            <td class="name"><p>Nicholas Witten</p></td>
+                            <td class="date"><p>07/30/2020</p></td>
+                        </tr>
+                        <tr>
+                            <td class="name"><p>Nicholas Witten</p></td>
+                            <td class="date"><p>07/30/2020</p></td>
+                        </tr>
+                        <tr>
+                            <td class="name"><p>Nicholas Witten</p></td>
+                            <td class="date"><p>07/30/2020</p></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="buttons">
+                    <a href="#" class="add-profile-btn btn btn-outline-secondary text-small">Add Member</a>
+                    <a href="#" class="remove-profile-btn btn btn-outline-secondary text-small">Remove Member</a>
+                </div>
+            </div>
+            <div class="schedule">
+
             </div>
         </div>
     </div>

@@ -655,7 +655,6 @@ class FileInput extends JqueryElement {
 
     set_value(value) {
         this.delete_files = [];
-        console.log(value);
         this.list_element.empty();
         for (let i=0; i<value.length; i++) {
             this.build_item(value[i]);
@@ -670,7 +669,6 @@ class FileInput extends JqueryElement {
             }
         });
         var files = this.input_element[0].files;
-        console.log("new form");
         this.form_data = new FormData()
         for (let i=0; i<files.length; i++) {
             this.build_item([files[i].name, 0, '#']);

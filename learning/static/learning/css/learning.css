@@ -191,7 +191,7 @@ h3 {
 }
 .item-info .title {
     position: relative;
-    margin: 1rem 0;
+    margin: 1rem;
     padding-bottom: 0.5rem;
     margin-right: 2rem;
 }
@@ -231,7 +231,7 @@ h3 {
 .item-info .btn-container {
     display: flex;
     flex-grow: 1;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: flex-end;
 }
 
@@ -312,6 +312,100 @@ h3 {
     padding: 0.25rem;
 }
 
+
+
+.info-popup {
+    z-index: 1;
+    position: absolute;
+    display: flex;
+    flex-flow: column;
+    width: 100%;
+    height: 90%;
+    bottom: -100%;
+    border: 1px solid #dee2e6;
+    border-bottom: none;
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+    background-color: white;
+    overflow: hidden;
+    transition: all 0.2s ease-in-out;
+}
+.info-popup.show {
+    bottom: 0;
+}
+.info-popup a.back{
+    right: 10px;
+    top: 5px;
+    left: inherit;
+}
+.info-popup .header {
+    margin: 1rem;
+    margin-top: 2rem;
+    padding: 0.5rem;
+}
+.info-popup .header .blacklink {
+    font-size: calc(12px + 0.3vw);
+    margin: 1rem;
+}
+.info-popup .header .blacklink.active {
+    font-size: calc(14px + 0.3vw);
+    color: black;
+}
+.info-popup .content {
+    flex-grow: 1;
+    width: 100%;
+    overflow: hidden;
+}
+
+
+.members-completed {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+.members-completed p {
+    font-size: calc(10px + 0.3vw);
+}
+.members-completed .profiles {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    flex-grow: 1;
+    overflow: auto;
+    margin: 1rem;
+    margin-bottom: 0.5rem;
+    width: -webkit-fill-available;
+}
+.members-completed .buttons {
+    border-top: 1px solid #dee2e6;
+    padding: 0.5rem;
+}
+.members-completed .buttons a {
+    margin: 0 0.5rem;
+}
+.members-completed .name {
+    white-space: nowrap;
+    max-width: calc(6rem + 17vw);
+    overflow: auto;
+    padding: 0.5rem 2rem 0.5rem 0;
+}
+.members-completed .date {
+    width: 100%;
+    text-align: center;
+}
+
+
+.schedule {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
 
 #modal .option-container {
     position: relative;

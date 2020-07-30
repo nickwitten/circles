@@ -333,11 +333,131 @@ class UpdateForm extends CustomForm {
 
 
 
+class InfoPopup extends JqueryElement{
+
+    constructor(id) {
+        super(id);
+        this.members_completed_element = this.element.find('.members-completed');
+        this.members_completed_table = this.element.find('.profiles table');
+        this.members_completed_btn = this.element.find('.members-completed-btn');
+        this.schedule_element = this.element.find('.schedule');
+        this.schedule_btn = this.element.find('.schedule-btn');
+        this.loader_element = this.element.find('.loading');
+        this.listeners();
+    }
+
+    show() {
+        this.element.find('.header').find('.header-btn').first().trigger("click");
+        this.element.addClass('show');
+        closeFunctions['.info-popup'] = this;
+    }
+
+    show_members_completed() {
+        this.hide_sub_info();
+        this.members_completed_btn.addClass('active');
+        this.element.trigger(":memberscompleted");
+        this.members_completed_element.show();
+    }
+
+    show_schedule() {
+        this.hide_sub_info();
+        this.schedule_btn.addClass('active');
+        this.schedule_element.show();
+    }
+
+    hide() {
+        this.element.removeClass('show');
+        delete closeFunctions['.info-popup'];
+    }
+
+    hide_sub_info() {
+        this.element.find('.header').children().each(function() {
+            $(this).removeClass('active');
+        });
+        this.element.find('.content').children().each(function() {
+            $(this).hide();
+        });
+    }
+
+    get_members_completed(data) {
+        $.ajax({
+            url: url_members_completed,
+            type: 'GET',
+            data: data,
+            context: this,
+            beforeSend: function() {
+                this.loader_element.show()
+            },
+            success: this.members_completed_success,
+            error: function() {
+                addAlertHTML("Something Went Wrong", 'danger');
+            },
+            complete: function() {
+                this.loader_element.hide()
+            },
+        });
+    }
+
+    members_completed_success(data) {
+        var members = JSON.parse(data['profiles']);
+        console.log(members);
+        this.build_members(members);
+    }
+
+    build_members(members) {
+        this.members_completed_table.empty()
+        var labels = $('<tr/>')
+        var label_container = $('<th/>');
+        var label = $('<p/>').text('Name');
+        label_container.append(label);
+        labels.append(label_container);
+        label_container = $('<th/>').addClass('t-center');
+        label = $('<p/>').text("Date Completed");
+        label_container.append(label);
+        labels.append(label_container);
+        this.members_completed_table.append(labels);
+        for (let i=0; i<members.length; i++) {
+            var row = $('<tr/>');
+            var name_container = $('<td/>').addClass('name');
+            var date_container = $('<td/>').addClass('date');
+            var name = $('<a/>').text(members[i]['name'])
+                .attr('href', url_profile_detail.slice(0,-2) + members[i]['pk'])
+                .attr('target', '_blank')
+                .addClass('blacklink');
+            var date = $('<p/>').text(members[i]['date_completed']);
+            name_container.append(name);
+            date_container.append(date);
+            row.append(name_container);
+            row.append(date_container);
+            this.members_completed_table.append(row);
+        }
+        if (members.length == 0) {
+            this.members_completed_table.empty()
+            var message = $('<p/>').text('No Information Available');
+            this.members_completed_table.append(message);
+        }
+    }
+
+    listeners() {
+        this.element.find('.more-info.back').click({func: this.hide, object: this}, this.dispatch);
+        if (this.members_completed_btn.length) {
+            this.members_completed_btn.click({object: this, func: this.show_members_completed}, this.dispatch);
+        }
+        if (this.schedule_element.length) {
+            this.schedule_btn.click({object: this, func: this.show_schedule}, this.dispatch);
+        }
+    }
+}
+
+
+
+
 class InfoSlide extends JqueryElement {
     constructor(id, type) {
         super(id)
         this.type = type;
         this.model_infos = [];
+        this.info_popup = new InfoPopup(type + '_info_popup');
         this.site_select = new MultiLevelDropdown(type + '_site_select', this.get_site_select_data());
         this.title_input = new ModelTitleAutocomplete(type + '_title_input', type);
         this.theme_select = null; // Will be created on module show
@@ -647,7 +767,6 @@ class InfoSlide extends JqueryElement {
         data.append('model_type', this.type);
         data.append('fields', fields);
         data.append('models', JSON.stringify(this.model_infos));
-        console.log(data);
         var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
         $.ajax({
             url: url_learning_models,
@@ -688,7 +807,6 @@ class InfoSlide extends JqueryElement {
             }
             if (match) {
                 this.base_info = model_info;
-                console.log(model_info);
                 if (this.hasOwnProperty('file_input')) {
                     this.file_input.set_value(JSON.parse(model_info['files']));
                 }
@@ -701,7 +819,6 @@ class InfoSlide extends JqueryElement {
         this.mode = 'update';
         this.element.find('.title-text').first().text(title);
         this.element.trigger(":submit");
-        console.log(this.model_infos)
     }
 
     delete_models() {
@@ -757,6 +874,14 @@ class InfoSlide extends JqueryElement {
         $(this).hide();
     }
 
+    show_more_info() {
+        this.info_popup.show();
+    }
+
+    get_members_completed() {
+        this.info_popup.get_members_completed({'model_type': this.type, 'pk': this.base_info['pk']});
+    }
+
     resize() {
         var height = $('#content').height();
         if ($(window).width() > 770) {
@@ -791,10 +916,12 @@ class InfoSlide extends JqueryElement {
     }
 
     listeners() {
-        this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
+        this.element.find('.info.back').click({func: this.hide, object: this}, this.dispatch);
         this.element.find('.edit-btn').click({func: this.show_update_info, object: this}, this.dispatch);
         this.element.find('.delete-btn').click({func: this.delete_models, object: this}, this.dispatch);
         this.element.find('.save-btn').click({func: this.submit_form, object: this}, this.dispatch);
+        this.element.find('.more-info.btn').click({func: this.show_more_info, object: this}, this.dispatch);
+        this.info_popup.element.on(":memberscompleted", {func: this.get_members_completed, object: this}, this.dispatch);
         $(window).resize({func: this.resize, object: this}, this.dispatch);
     }
 

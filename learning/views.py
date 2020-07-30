@@ -256,7 +256,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
             for model in models:
                 model.save(files=files)
             temp_files = {'set_files': files.pop('set_files', None), 'delete_files': files.pop('delete_files', None)}
-            files = temp_files # Take out files
+            files = temp_files  # Take out files or else they'll be saved twice
         # Commit changes
         for model in models:
             model.save(files=files)
