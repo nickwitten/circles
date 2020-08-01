@@ -61,6 +61,7 @@
 </div>
 {% include 'dashboard/modal.html' with id='modal' %}
 {% include 'dashboard/attach_link_modal.html' %}
+{% include 'learning/add_member_modal.html' %}
 
 {% endblock %}
 
@@ -78,11 +79,12 @@
         'programming': JSON.parse($('#programming_fields').text()),
         'theme': JSON.parse($('#theme_fields').text()),
         'module': JSON.parse($('#module_fields').text()),
-    }
-    var url_learning_models = "{% url 'learning-models' %}"
-    var url_learning_files = "{% url 'learning-files' %}"
-    var url_members_completed = "{% url 'members-completed' %}"
-    var url_profile_detail = "{% url 'profile-detail' pk=0 %}"
+    };
+    var url_learning_models = "{% url 'learning-models' %}";
+    var url_learning_files = "{% url 'learning-files' %}";
+    var url_members_completed = "{% url 'members-completed' %}";
+    var url_profile_detail = "{% url 'profile-detail' pk=0 %}";
+    var url_get_profiles = "{% url 'get-profiles' %}";
 </script>
 <script src="{% static 'learning/js/learning.js' %}"></script>
 {% endblock %}

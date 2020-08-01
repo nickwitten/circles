@@ -139,7 +139,7 @@ class FacilitatorInput extends AutocompleteInput {
     get_query_data() {
         var data = {
             "site_pk": this.site_select.value[0],
-            "autocomplete_facilitator_search": this.input.val(),
+            "autocomplete_member_search": this.input.val(),
         };
         this.query_data = data;
     }
@@ -332,14 +332,40 @@ class UpdateForm extends CustomForm {
 
 
 
+class MemberAutocomplete extends AutocompleteInput {
+
+    constructor(id, site_select) {
+        super(id, url_learning_models);
+        this.site_select = site_select;
+    }
+
+    get_query_data() {
+        this.query_data = {
+            'site_pk': this.site_select.value[0],
+            'autocomplete_member_search': this.input.val(),
+        }
+    }
+
+    autocomplete_select(match) {
+        this.input.val($(match).text());
+        this.input.attr('data-pk', $(match).attr('value'));
+        this.update_value();
+        this.hide();
+    }
+}
+
+
+
 
 class InfoPopup extends JqueryElement{
 
-    constructor(id) {
+    constructor(id, site_select) {
         super(id);
+        this.site_select = site_select;
         this.members_completed_element = this.element.find('.members-completed');
         this.members_completed_table = this.element.find('.profiles table');
         this.members_completed_btn = this.element.find('.members-completed-btn');
+        this.add_member_btn = this.element.find('.add-member-btn');;
         this.schedule_element = this.element.find('.schedule');
         this.schedule_btn = this.element.find('.schedule-btn');
         this.loader_element = this.element.find('.loading');
@@ -349,7 +375,7 @@ class InfoPopup extends JqueryElement{
     show() {
         this.element.find('.header').find('.header-btn').first().trigger("click");
         this.element.addClass('show');
-        closeFunctions['.info-popup'] = this;
+        closeFunctions['.info-popup, .modal-container'] = this;
     }
 
     show_members_completed() {
@@ -367,7 +393,7 @@ class InfoPopup extends JqueryElement{
 
     hide() {
         this.element.removeClass('show');
-        delete closeFunctions['.info-popup'];
+        delete closeFunctions['.info-popup, .modal-container'];
     }
 
     hide_sub_info() {
@@ -402,6 +428,23 @@ class InfoPopup extends JqueryElement{
         var members = JSON.parse(data['profiles']);
         console.log(members);
         this.build_members(members);
+    }
+
+    add_member_modal() {
+        var site_select = this.site_select;
+        var build_func = function() {
+            this.profile_input = new MemberAutocomplete('add_member_input', site_select);
+            this.date_input = new DatePicker('date_completed_input');
+        }
+        this.modal = new Modal('member_modal', {
+            action_func: this.dispatch,
+            action_data: {func: this.add_member, object: this},
+            build_func: build_func,
+        });
+    }
+
+    add_member() {
+        console.log("ajax");
     }
 
     build_members(members) {
@@ -442,6 +485,7 @@ class InfoPopup extends JqueryElement{
         this.element.find('.more-info.back').click({func: this.hide, object: this}, this.dispatch);
         if (this.members_completed_btn.length) {
             this.members_completed_btn.click({object: this, func: this.show_members_completed}, this.dispatch);
+            this.add_member_btn.click({object: this, func: this.add_member_modal}, this.dispatch);
         }
         if (this.schedule_element.length) {
             this.schedule_btn.click({object: this, func: this.show_schedule}, this.dispatch);
@@ -457,7 +501,6 @@ class InfoSlide extends JqueryElement {
         super(id)
         this.type = type;
         this.model_infos = [];
-        this.info_popup = new InfoPopup(type + '_info_popup');
         this.site_select = new MultiLevelDropdown(type + '_site_select', this.get_site_select_data());
         this.title_input = new ModelTitleAutocomplete(type + '_title_input', type);
         this.theme_select = null; // Will be created on module show
@@ -480,6 +523,7 @@ class InfoSlide extends JqueryElement {
             custom_fields['files'] = this.file_input;
         }
         this.update_form = new UpdateForm(type + '_form', custom_fields, form_fields[type], type + '_');
+        this.info_popup = new InfoPopup(type + '_info_popup', this.site_select);
         this.loader_element = this.element.find('.loading');
         this.listeners();
         this.resize();

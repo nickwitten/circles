@@ -30,6 +30,43 @@ function addAlertHTML(message, type) {
 }
 
 
+// Returns:
+// list of month days,
+// current date in (year, month, day) or null if not in current view,
+// view moment object
+function getMonthDates(month_offset) {
+    var current_date = moment().format('YYYY-MM-DD');
+    var year = parseInt(current_date.slice(0,4));
+    var month = parseInt(current_date.slice(5,7));
+    var day = parseInt(current_date.slice(9));
+    current_date = [year, month, day];
+    var view = moment().add(month_offset, 'month');
+    var view_moment = view.clone();
+    var view_month = view.format('MMMM');
+    var view_year = view.format('YYYY');
+    var firstday_weekday = view.startOf('month').format('d');
+    var lastday_weekday = view.endOf('month').format('d');
+    var month_length = view.daysInMonth();
+    var start_monthday = view.startOf('month').startOf('week').format('DD');
+    var days = [];
+    var i = 0;
+    for (i; i<firstday_weekday; i++) {
+        days.push(start_monthday++);
+    }
+    i = 0;
+    for (i; i<month_length; i++) {
+        days.push(i+1);
+    }
+    i = lastday_weekday;
+    var j = 1;
+    for (i; i < 6; i++) {
+        days.push(j++);
+    }
+    return [days, current_date, view_moment];
+}
+
+
+
 class JqueryElement {
     constructor(id) {
         this.id = id
@@ -607,6 +644,7 @@ class AutocompleteInput extends JqueryElement {
     }
 
     build() {
+        this.element.empty();
         var input = $('<input/>')
             .attr("type", "text");
         var loading = $('<div/>')
@@ -820,5 +858,160 @@ class LinkInput extends JqueryElement {
             .addClass("links");
         this.element.append(btn);
         this.element.append(links_container);
+    }
+}
+
+
+
+class DatePicker extends JqueryElement{
+
+    constructor(id) {
+        super(id);
+        this.month_offset = 0;
+        this.content = this.element.find('.dates-container');
+        this.value = '';
+        this.listeners();
+        this.hide();  // add listener to show
+    }
+
+    show() {
+        this.show_month();
+        this.element.find('.select-container').addClass('visible');
+        this.element.find('.date-select').addClass('show');
+        this.element.find('.date-select-btn').off("click");
+        closeFunctions['.date-select'] = this;
+    }
+
+    hide() {
+        this.element.find('.select-container').removeClass('visible');
+        this.element.find('.date-select').removeClass('show');
+        this.listeners();
+        delete closeFunctions['.date-select'];
+    }
+
+    show_month() {
+        this.content.empty();
+        var dates = getMonthDates(this.month_offset);
+        var month_v = dates[2].format('MMMM');
+        var month = dates[2].format('MM');
+        var year = dates[2].format('YYYY');
+        dates = dates[0];
+        this.element.find('.month').text(month_v);
+        this.element.find('.month').attr('data-number', month);
+        this.element.find('.year').text(year);
+        this.element.find('.value').text()
+        for (var i=0; i<(dates.length/7); i++) {
+            // check if the date has been selected
+            var selected = []
+            var inactive = []
+            for (var j=0; j<7; j++) {
+                var month_str = month;
+                var day = dates[i*7+j].toString();
+                day = (day.length == 1) ? '0'+day : day;
+                if (i==0 && parseInt(day) > 7) {
+                    month_str = (parseInt(month)-1).toString();
+                    inactive.push(j);
+                } else if (i==(dates.length/7-1) && parseInt(day) < 7) {
+                    month_str = (parseInt(month)+1).toString();
+                    inactive.push(j);
+                }
+                var date = month_str + '/' + day + '/' + year;
+                if (this.value.includes(date)) {
+                    selected.push(j)
+                };
+            }
+            this.build_week(dates.slice(i*7,i*7+7), selected, inactive);
+        }
+        this.item_listeners();
+    }
+
+    select_date_multiple(day_element) {
+        var day = $(day_element).children().text()
+        day = (day.length < 2) ? '0'+day : day; // zero pad
+        var month = this.element.find('.month').attr('data-number');
+        var year = this.element.find('.year').text();
+        var date = [month, day, year].join('/');
+
+        if ($(day_element).hasClass('selected')) {
+            $(day_element).removeClass('selected');
+            this.value.splice(this.value.indexOf(date), 1);
+        } else  {
+            this.value.push(date);
+        }
+        this.show_month();
+        // Update date displayed
+        if (this.value.length > 1) {
+            this.element.find('.value').text('multiple');
+        } else if (this.value.length == 1) {
+            day = this.element.find('.selected').children().text();
+            day = (day.length < 2) ? '0'+day : day;
+            this.element.find('.value').text([month, day, year].join('/'));
+        }
+    }
+
+    select_date(day_element) {
+        var day = $(day_element).children().text()
+        day = (day.length < 2) ? '0'+day : day; // zero pad
+        var month = this.element.find('.month').attr('data-number');
+        var year = this.element.find('.year').text();
+        var date = [month, day, year].join('/');
+
+        if (!$(day_element).hasClass('selected')) {
+            this.value = date;
+        }
+        this.show_month();
+        // Update date displayed
+        day = this.element.find('.selected').children().text();
+        day = (day.length < 2) ? '0'+day : day;
+        this.element.find('.value').text([month, day, year].join('/'));
+    }
+
+    next_month() {
+        this.month_offset++;
+        this.show_month();
+    }
+
+    previous_month() {
+        this.month_offset--;
+        this.show_month();
+    }
+
+    build_week(days, selected, inactive) {
+        var container = $('<div/>').addClass('container');
+        var week = $('<ul/>')
+            .addClass('calendar-week');
+        for (var i=0; i<days.length; i++) {
+            /////// Day Box HTML /////////
+            var day = $('<li/>')
+            if (inactive.includes(i)) {
+                var classlist = 'calendar-day inactive';
+            } else {
+                var classlist = 'calendar-day';
+            }
+            if (selected.includes(i)) {
+                classlist += ' selected';
+            }
+            day = day.addClass(classlist);
+            ///// Month Number HTML //////
+            var day_monthnum = $('<p/>')
+                .text(days[i])
+                .addClass('monthnum');
+            day.append(day_monthnum);
+            week.append(day);
+        }
+        container.append(week);
+        this.content.append(container);
+    }
+
+    item_listeners() {
+        this.element.find('.calendar-day').off("click");
+        this.element.find('.calendar-day').click({func: this.select_date, object: this}, this.dispatch);
+        this.element.find('.calendar-day.inactive').off("click");
+    }
+
+    listeners() {
+        this.element.find('.date-select-btn').click({func: this.show, object: this}, this.dispatch);
+        this.element.find('.next').click({func: this.next_month, object: this}, this.dispatch);
+        this.element.find('.previous').click({func: this.previous_month, object: this}, this.dispatch);
     }
 }

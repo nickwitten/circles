@@ -1,0 +1,33 @@
+<div id="member_modal" class="modal-container">
+    <div class="modal">
+        <div class="wrapper">
+            <div class="header">
+                <h6 class="ml-auto mr-auto">Add Member</h6>
+            </div>
+            <div class="content-container">
+                <table>
+                    <tr>
+                        <td>
+                            <p class="label">Name:</p>
+                        </td>
+                        <td>
+                            <div id="add_member_input" class="autocomplete-input"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="label">Date Completed:</p>
+                        </td>
+                        <td>
+                            {% include 'dashboard/date_picker.html' with id='date_completed_input' %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="buttons">
+                <a href="#" class="btn cancel btn-outline-secondary">Cancel</a>
+                <a href="#" class="btn action btn-secondary">Add</a>
+            </div>
+        </div>
+    </div>
+</div>

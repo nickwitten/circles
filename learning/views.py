@@ -69,8 +69,8 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
             self.build_infos()
         elif self.kwargs.get('autocomplete_search'):
             self.autocomplete()
-        elif self.kwargs.get('autocomplete_facilitator_search'):
-            self.autocomplete_facilitator()
+        elif self.kwargs.get('autocomplete_member_search'):
+            self.autocomplete_member()
         else:
             raise ValidationError('No Operation', code=500)
         return JsonResponse(self.data)
@@ -205,9 +205,9 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         results = [[result, result] for result in results[0:10]]
         self.data = {'results': results}
 
-    def autocomplete_facilitator(self):
+    def autocomplete_member(self):
         """ Gets profiles from current site that autocomplete search """
-        search = self.kwargs['autocomplete_facilitator_search']
+        search = self.kwargs['autocomplete_member_search']
         site = get_object_or_404(member_models.Site, pk=self.kwargs.get('site_pk'))
         if site not in self.request.user.userinfo.user_site_access():
             raise PermissionDenied()

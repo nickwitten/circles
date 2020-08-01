@@ -425,3 +425,20 @@ h3 {
     bottom: 0;
     margin: 2px;
 }
+
+
+
+
+#member_modal input {
+    border: none;
+    outline: none;
+    border-bottom: 1px solid #dee2e6;
+    width: 100%;
+}
+#member_modal .date-picker {
+    width: 100%;
+}
+#member_modal .label {
+    white-space: nowrap;
+    padding-right: 1rem;
+}
