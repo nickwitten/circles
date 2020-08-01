@@ -874,11 +874,25 @@ class DatePicker extends JqueryElement{
         this.hide();  // add listener to show
     }
 
+    set_value(val) {
+        this.value = val;
+        this.update_value();
+    }
+
+    update_value() {
+        var year = this.value.slice(0,4);
+        var month = this.value.slice(5,7);
+        var day = this.value.slice(8);
+        this.element.find('.value').text([month, day, year].join('/'));
+        this.element.trigger(":change");
+    }
+
     show() {
         this.show_month();
         this.element.find('.select-container').addClass('visible');
         this.element.find('.date-select').addClass('show');
         this.element.find('.date-select-btn').off("click");
+        this.element.find('.show-wrapper').hide();
         closeFunctions['.date-select'] = this;
     }
 
@@ -886,6 +900,7 @@ class DatePicker extends JqueryElement{
         this.element.find('.select-container').removeClass('visible');
         this.element.find('.date-select').removeClass('show');
         this.listeners();
+        this.element.find('.show-wrapper').show();
         delete closeFunctions['.date-select'];
     }
 
@@ -925,45 +940,43 @@ class DatePicker extends JqueryElement{
         this.item_listeners();
     }
 
-    select_date_multiple(day_element) {
-        var day = $(day_element).children().text()
-        day = (day.length < 2) ? '0'+day : day; // zero pad
-        var month = this.element.find('.month').attr('data-number');
-        var year = this.element.find('.year').text();
-        var date = [month, day, year].join('/');
-
-        if ($(day_element).hasClass('selected')) {
-            $(day_element).removeClass('selected');
-            this.value.splice(this.value.indexOf(date), 1);
-        } else  {
-            this.value.push(date);
-        }
-        this.show_month();
-        // Update date displayed
-        if (this.value.length > 1) {
-            this.element.find('.value').text('multiple');
-        } else if (this.value.length == 1) {
-            day = this.element.find('.selected').children().text();
-            day = (day.length < 2) ? '0'+day : day;
-            this.element.find('.value').text([month, day, year].join('/'));
-        }
-    }
+//    select_date_multiple(day_element) {
+//        var day = $(day_element).children().text()
+//        day = (day.length < 2) ? '0'+day : day; // zero pad
+//        var month = this.element.find('.month').attr('data-number');
+//        var year = this.element.find('.year').text();
+//        var date = [month, day, year].join('/');
+//
+//        if ($(day_element).hasClass('selected')) {
+//            $(day_element).removeClass('selected');
+//            this.value.splice(this.value.indexOf(date), 1);
+//        } else  {
+//            this.value.push(date);
+//        }
+//        this.show_month();
+//        // Update date displayed
+//        if (this.value.length > 1) {
+//            this.element.find('.value').text('multiple');
+//        } else if (this.value.length == 1) {
+//            day = this.element.find('.selected').children().text();
+//            day = (day.length < 2) ? '0'+day : day;
+//            this.element.find('.value').text([month, day, year].join('/'));
+//        }
+//        this.update_value();
+//    }
 
     select_date(day_element) {
         var day = $(day_element).children().text()
         day = (day.length < 2) ? '0'+day : day; // zero pad
         var month = this.element.find('.month').attr('data-number');
         var year = this.element.find('.year').text();
-        var date = [month, day, year].join('/');
+        var date = [year, month, day].join('-');
 
         if (!$(day_element).hasClass('selected')) {
             this.value = date;
         }
         this.show_month();
-        // Update date displayed
-        day = this.element.find('.selected').children().text();
-        day = (day.length < 2) ? '0'+day : day;
-        this.element.find('.value').text([month, day, year].join('/'));
+        this.update_value();
     }
 
     next_month() {
@@ -1010,7 +1023,7 @@ class DatePicker extends JqueryElement{
     }
 
     listeners() {
-        this.element.find('.date-select-btn').click({func: this.show, object: this}, this.dispatch);
+        this.element.find('.show-wrapper').click({func: this.show, object: this}, this.dispatch);
         this.element.find('.next').click({func: this.next_month, object: this}, this.dispatch);
         this.element.find('.previous').click({func: this.previous_month, object: this}, this.dispatch);
     }

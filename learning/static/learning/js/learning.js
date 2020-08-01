@@ -369,13 +369,14 @@ class InfoPopup extends JqueryElement{
         this.schedule_element = this.element.find('.schedule');
         this.schedule_btn = this.element.find('.schedule-btn');
         this.loader_element = this.element.find('.loading');
+        this.close_selectors = '.info-popup, .modal-container, .alert'
         this.listeners();
     }
 
     show() {
         this.element.find('.header').find('.header-btn').first().trigger("click");
         this.element.addClass('show');
-        closeFunctions['.info-popup, .modal-container'] = this;
+        closeFunctions[this.close_selectors] = this;
     }
 
     show_members_completed() {
@@ -393,7 +394,7 @@ class InfoPopup extends JqueryElement{
 
     hide() {
         this.element.removeClass('show');
-        delete closeFunctions['.info-popup, .modal-container'];
+        delete closeFunctions[this.close_selectors];
     }
 
     hide_sub_info() {
@@ -426,7 +427,6 @@ class InfoPopup extends JqueryElement{
 
     members_completed_success(data) {
         var members = JSON.parse(data['profiles']);
-        console.log(members);
         this.build_members(members);
     }
 
@@ -435,6 +435,7 @@ class InfoPopup extends JqueryElement{
         var build_func = function() {
             this.profile_input = new MemberAutocomplete('add_member_input', site_select);
             this.date_input = new DatePicker('date_completed_input');
+            this.date_input.set_value(moment().format('YYYY-MM-DD'));
         }
         this.modal = new Modal('member_modal', {
             action_func: this.dispatch,
@@ -443,8 +444,38 @@ class InfoPopup extends JqueryElement{
         });
     }
 
-    add_member() {
-        console.log("ajax");
+    add_member({data=null} = {}) {
+        if (!data) {
+            this.element.trigger(':addmemberscompleted');
+            return
+        }
+        var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
+        data['profile_pk'] = this.modal.profile_input.input.attr('data-pk');
+        data['date_completed'] = this.modal.date_input.value;
+        $.ajax({
+            url: url_members_completed,
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+            },
+            data: data,
+            context: this,
+            beforeSend: function() {
+                this.loader_element.show();
+            },
+            success: this.add_member_success,
+            complete: function() {
+                this.loader_element.hide();
+            },
+        });
+    }
+
+    add_member_success(data) {
+        if (data.hasOwnProperty('message')) {
+            addAlertHTML(data.message, 'primary');
+        } else {
+            this.show_members_completed();
+        }
     }
 
     build_members(members) {
@@ -926,6 +957,10 @@ class InfoSlide extends JqueryElement {
         this.info_popup.get_members_completed({'model_type': this.type, 'pk': this.base_info['pk']});
     }
 
+    add_members_completed() {
+        this.info_popup.add_member({data: {'model_type': this.type, 'pk': this.base_info['pk']}});
+    }
+
     resize() {
         var height = $('#content').height();
         if ($(window).width() > 770) {
@@ -966,6 +1001,7 @@ class InfoSlide extends JqueryElement {
         this.element.find('.save-btn').click({func: this.submit_form, object: this}, this.dispatch);
         this.element.find('.more-info.btn').click({func: this.show_more_info, object: this}, this.dispatch);
         this.info_popup.element.on(":memberscompleted", {func: this.get_members_completed, object: this}, this.dispatch);
+        this.info_popup.element.on(":addmemberscompleted", {func: this.add_members_completed, object: this}, this.dispatch);
         $(window).resize({func: this.resize, object: this}, this.dispatch);
     }
 

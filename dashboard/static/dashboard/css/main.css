@@ -252,6 +252,17 @@ header a{
 .required {
     color: red;
 }
+
+.show-wrapper {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+
+
 /* */
 .profile-title{
   z-index: 2;
@@ -465,14 +476,6 @@ header a{
 .multi-level-dropdown .pointer.rotate,
 .dropdown .pointer.rotate {
     transform: rotate(-90deg);
-}
-.multi-level-dropdown .show-wrapper,
-.dropdown .show-wrapper {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
 }
 .multi-level-dropdown .options,
 .dropdown .options {
@@ -729,7 +732,7 @@ header a{
     margin: 0.25em;
 }
 .date-picker .value {
-    font-size: calc(9px + 0.7vw);
+    font-size: calc(10px + 0.3vw);
 }
 .date-picker .select-container {
     visibility: hidden;

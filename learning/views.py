@@ -479,17 +479,24 @@ class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
 
     def post(self, request, *args, **kwargs):
         """ Delete or add member to theme or modules members completed """
+        model, profile = self._get_args()
         if self.kwargs.get('delete'):
             # delete members training
-            model, profile = self._get_args()
             profile_model = get_object_or_404(model.profiles, profile=profile)
             profile_model.delete()
         else:
             # add training to member
-            model, profile = self._get_args()
-            attrs = {self.kwargs.get('model_type'): model, 'profile': profile}
-            profile_model = self.model_type[1](**attrs)
-            profile_model.save()
+            profile_model = model.profiles.filter(profile=profile).first()
+            if profile_model and profile_model.date_completed:
+                self.data['message'] = 'Member has already completed this.'
+                print("exists")
+                print(profile_model.date_completed)
+            else:
+                print("create new")
+                date_completed = self.kwargs.get('date_completed')
+                attrs = {self.kwargs.get('model_type'): model, 'profile': profile, 'date_completed': date_completed}
+                profile_model = self.model_type[1](**attrs)
+                profile_model.save()
         return JsonResponse(self.data)
 
     def _get_args(self):
