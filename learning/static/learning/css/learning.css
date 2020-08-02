@@ -386,11 +386,19 @@ h3 {
 .members-completed .buttons a {
     margin: 0 0.5rem;
 }
+.members-completed th {
+    padding-bottom: 1rem;
+}
+.members-completed .name,
+.members-completed .date,
+.members-completed .remove-member {
+    padding: 0.5rem 0;
+}
 .members-completed .name {
     white-space: nowrap;
-    max-width: calc(6rem + 17vw);
+    max-width: calc(5rem + 17vw);
     overflow: auto;
-    padding: 0.5rem 2rem 0.5rem 0;
+    padding-right: 2rem;
 }
 .members-completed .date {
     width: 100%;
@@ -435,6 +443,10 @@ h3 {
     border-bottom: 1px solid #dee2e6;
     width: 100%;
     font-size: calc(10px + 0.3vw);
+}
+#member_modal table {
+    border-collapse: separate;
+    border-spacing: 0 1rem;
 }
 #member_modal .date-picker {
     width: 100%;

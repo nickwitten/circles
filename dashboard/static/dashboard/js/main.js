@@ -930,8 +930,8 @@ class DatePicker extends JqueryElement{
                     month_str = (parseInt(month)+1).toString();
                     inactive.push(j);
                 }
-                var date = month_str + '/' + day + '/' + year;
-                if (this.value.includes(date)) {
+                var date = [year, month, day].join('-');
+                if (this.value.includes(date) && !inactive.includes(j)) {
                     selected.push(j)
                 };
             }

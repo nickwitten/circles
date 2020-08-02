@@ -489,10 +489,8 @@ class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
             profile_model = model.profiles.filter(profile=profile).first()
             if profile_model and profile_model.date_completed:
                 self.data['message'] = 'Member has already completed this.'
-                print("exists")
-                print(profile_model.date_completed)
             else:
-                print("create new")
+                self.data.pop('message', None)  
                 date_completed = self.kwargs.get('date_completed')
                 attrs = {self.kwargs.get('model_type'): model, 'profile': profile, 'date_completed': date_completed}
                 profile_model = self.model_type[1](**attrs)
