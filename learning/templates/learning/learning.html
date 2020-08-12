@@ -42,21 +42,7 @@
     <div id="menu">
         <a href="#" class="fas fa-times back blacklink"></a>
         <h3>Sites</h3>
-        <div class="site-select">
-            {% for chapter in sites %}
-            <div class="chapter">
-                <a href="#" class="chapter-text blacklink">{{ chapter.chapter.0 }}</a>
-                <div class="sites" style="display: None;">
-                    {% for site in chapter.sites %}
-                    <div class="site">
-                        <input type="radio" value="{{ site.1 }}">
-                        <a href="#" class="blacklink site-name">{{ site.0 }}</a>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
+        {% include 'dashboard/site_select.html' with id='menu_site_select' type='radio' chapters=sites %}
     </div>
 </div>
 {% include 'dashboard/modal.html' with id='modal' %}

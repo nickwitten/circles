@@ -207,6 +207,7 @@ function addMeetingSiteOptionHTML(site, site_pk) {
 var meetings;
 var monthOffset = 0;
 var datePickerSelectedDates = [];
+var meetings_site_select = null;
 var closeFunctions = {
     '#id_type': function() {
         $('#type_select').removeClass('visible');
@@ -239,6 +240,7 @@ $(document).ready(function(){
     showSites($('#calendar_menu .site_select').children().eq(1));
     $('#id_type').attr('readonly', 'readonly');
     $('#id_links').val('[]');
+    meeting_site_select = new Dropdown('meeting_site_select', []);
 });
 
 // parameters:
@@ -692,7 +694,7 @@ function initializeForm(meeting, update_only_people_select) {
         setColorSelect(meeting.color);
         $('#start_time').val(meeting.start_time.slice(0,2));
         $('#end_time').val(meeting.end_time.slice(0,2));
-        $('#id_site').val(meeting.site);
+        meeting_site_select.set_value(meeting.site.toString());
         $('#id_location').val(meeting.location);
         $('#id_notes').val(meeting.notes);
         $('#id_links').val(meeting.links);
@@ -708,13 +710,15 @@ function showMeetingInfo() {
     $('#attendance_container').css('box-shadow', '0 0 0 999em rgba(0, 0, 0, 0.41)');
     getUserFilterSets();
     // update meeting form's site select
-    $('#id_site').html(null);
+    var sites = [];
     $('#calendar_menu .site_select').find('.site').each(function() {
         if ($(this).find('input').is(':checked')) {
             site = $(this).find('.site-name');
-            addMeetingSiteOptionHTML(site.text(), site.attr('data-pk'));
+            sites.push([site.text(), site.attr('data-pk')]);
         }
     });
+    meeting_site_select.data = sites;
+    meeting_site_select.initialize();
 }
 
 function hideMeetingInfo() {

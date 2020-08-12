@@ -14,8 +14,9 @@ def meetings(request):
     if not request.user.is_authenticated:
         raise Http404()
     site_access = request.user.userinfo.user_site_access_dict()
+    form = forms.MeetingCreationForm(user=request.user)
     context = {
-        'form': forms.MeetingCreationForm(user=request.user),
+        'form': (form, form.get_fields()),
         'site_access': site_access,
     }
     return render(request, 'meetings/meetings.html', context)
@@ -98,6 +99,7 @@ def post_meeting_info(request, pk):
         raise Http404()
     if request.method == 'POST':
         form_dict = QueryDict(request.POST.get('form'))
+        print(form_dict)
         dates = json.loads(request.POST.get('dates'))
         pks = []
         # Create on multiple dates
@@ -148,6 +150,8 @@ def post_meeting_info(request, pk):
             else:
                 form = forms.MeetingCreationForm(form_dict, user=request.user)
             meeting = form.save() if form.is_valid() else None
+            print(form.errors)
+            print(form.cleaned_data)
             pks = [meeting.pk] if meeting else [0]
         data = {'pks':pks}
         return JsonResponse(data)

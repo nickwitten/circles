@@ -1,13 +1,15 @@
 from django import forms
+
+from dashboard.forms import CustomFormMixin
 from . import models
 
 
-class MeetingCreationForm(forms.ModelForm):
+class MeetingCreationForm(CustomFormMixin, forms.ModelForm):
     type_choices = ['Big View', 'Test', 'Custom Type']
 
     class Meta:
         model = models.Meeting
-        fields = '__all__'
+        exclude = ('programming_objects', 'module_objects')
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user')
@@ -18,6 +20,3 @@ class MeetingCreationForm(forms.ModelForm):
         self.fields['type'].widget.attrs['placeholder'] = 'Type'
         self.fields['start_time'].widget.attrs['class'] = 'start_time'
         self.fields['end_time'].widget.attrs['class'] = 'end_time'
-        self.fields['site'].widget.attrs['class'] = 'form-control'
-        self.fields['location'].widget.attrs['class'] = 'form-control'
-        self.fields['notes'].widget.attrs['class'] = 'form-control'

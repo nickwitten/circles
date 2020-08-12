@@ -1,3 +1,13 @@
+class LearningMenu extends Menu {
+    constructor(id, menu_btn_id) {
+        super(id, menu_btn_id);
+        this.site_select = new MenuSiteSelect('menu_site_select', 'radio');
+    }
+}
+
+
+
+
 class LearningTypeDropdown extends MultiLevelDropdown {
     build() {
         var elements = super.build();
@@ -11,59 +21,6 @@ class LearningTypeDropdown extends MultiLevelDropdown {
         this.element.append(elements[1]);
         this.element.append(elements[2]);
         this.element.append(elements[3]);
-    }
-}
-
-
-
-
-class MenuSiteSelect extends JqueryElement {
-    constructor(id) {
-        super(id);
-        this.value = [];
-        this.listeners();
-        this.show_sites(this.element.find('.chapter')[0]);
-        this.select(this.element.find('.site')[0]);
-    }
-
-    listeners() {
-        $('#menu_btn').click({func: this.show, object: this}, this.dispatch);
-        this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
-        this.element.find('.chapter').click({func: this.show_sites, object: this}, this.dispatch);
-        this.element.find('.site').click({func: this.change, object: this}, this.dispatch);
-    }
-
-    show_sites(chapter) {
-        this.element.find('.site-select').children().each(function() {
-            $(this).find('.sites').hide();
-            $(this).removeClass('shadow')
-        })
-        $(chapter).addClass('shadow');
-        $(chapter).find('.sites').show();
-    }
-
-    change(site) {
-        this.select(site);
-        this.element.trigger(':change');
-    }
-
-    select(site) {
-        this.element.find('.site input').each(function() {
-            $(this).prop("checked", false);
-        });
-        var site_input = $(site).find('input');
-        site_input.prop("checked", true);
-        this.value = [site_input.val()];
-    }
-
-    show() {
-        this.element.addClass('show');
-        closeFunctions['#' + this.id] = this;
-    }
-
-    hide() {
-        this.element.removeClass('show');
-        delete closeFunctions['#' + this.id];
     }
 }
 
@@ -455,9 +412,13 @@ class InfoPopup extends JqueryElement{
             this.element.trigger(':addmemberscompleted');
             return
         }
-        var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
         data['profile_pk'] = this.modal.profile_input.input.attr('data-pk');
+        if (!data.profile_pk) {
+            addAlertHTML('Profile selection required.', 'danger');
+            return
+        }
         data['date_completed'] = this.modal.date_input.value;
+        var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
         $.ajax({
             url: url_members_completed,
             type: 'POST',
@@ -1050,10 +1011,10 @@ class InfoSlide extends JqueryElement {
         var site_select_data = [];
         for (let i=0; i<user_sites.length; i++) {
             var chapter = user_sites[i];
-            var temp_chapter = [chapter.chapter[0], chapter.chapter[1], []];
+            var temp_chapter = [chapter.str, chapter.pk, []];
             for (let j=0; j<chapter.sites.length; j++) {
                 var site = chapter.sites[j];
-                temp_chapter[2].push([site[0], site[1]]);
+                temp_chapter[2].push([site.str, site.pk]);
             }
             site_select_data.push(temp_chapter);
         }
@@ -1099,7 +1060,8 @@ class LearningList extends JqueryElement {
     constructor(id) {
         super(id);
         this.site_data = null;
-        this.site_select = new MenuSiteSelect('menu');
+        this.menu = new LearningMenu('menu', 'menu_btn');
+        this.site_select = this.menu.site_select;
         var type_data = this.get_type_select_data();
         this.type_select = new LearningTypeDropdown('learning_type_select', type_data, {type: 'radio'});
         this.programming_slide = new InfoSlide('programming_info', 'programming');

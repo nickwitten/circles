@@ -21,13 +21,14 @@ class UserInfo(models.Model):
         sites = self.site_access.all()
         for site in sites:
             sites_chapter = site.chapter
+            site_dict = {'pk': site.pk, 'str': str(site)}
             added = False
             for chapter in site_access:
-                if chapter['chapter'] == sites_chapter:
-                    chapter['sites'] += [site]
+                if chapter['pk'] == sites_chapter.pk:
+                    chapter['sites'] += [site_dict]
                     added = True
             if not added:
-                site_access += [{'chapter': sites_chapter, 'sites': [site]}]
+                site_access += [{'pk':sites_chapter.pk, 'str': str(sites_chapter), 'sites': [site_dict]}]
         return site_access
 
     def user_meeting_access(self):

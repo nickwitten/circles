@@ -40,14 +40,7 @@ class Learning(TemplateView):
             ('theme', theme_form, theme_form.get_fields()),
             ('module', module_form, module_form_fields),
         ]
-        data = self.request.user.userinfo.user_site_access_dict()
-        sites = []
-        for chapter in data:
-            sites.append({
-                'chapter': [str(chapter['chapter']), chapter['chapter'].pk],
-                'sites': [[str(site), site.pk] for site in chapter['sites']]
-            })
-        context['sites'] = sites
+        context['sites'] = self.request.user.userinfo.user_site_access_dict()
         return context
 
 
@@ -481,9 +474,10 @@ class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
         """ Delete or add member to theme or modules members completed """
         model, profile = self._get_args()
         if self.kwargs.get('delete'):
-            # delete members training
             profile_model = get_object_or_404(model.profiles, profile=profile)
-            profile_model.delete()
+            # Don't delete just remove date completed
+            profile_model.date_completed = None
+            profile_model.save()
         else:
             # add training to member
             profile_model = model.profiles.filter(profile=profile).first()

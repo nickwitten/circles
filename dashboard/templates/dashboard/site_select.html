@@ -1,0 +1,24 @@
+<div id="{{ id }}" class="menu-site-select">
+    {% if type == 'checkbox' %}
+    <div class="all">
+        <input type="checkbox" checked>
+        <p>All</p>
+    </div>
+    {% endif %}
+    {% for chapter in chapters %}
+    <div class="chapter">
+        {% if type == 'checkbox' %}
+        <input value="{{ chapter.pk }}" type="{{ type }}">
+        {% endif %}
+        <a href="#" class="chapter-text blacklink">{{ chapter.str }}</a>
+        <div class="sites" style="display: None;">
+            {% for site in chapter.sites %}
+            <div class="site">
+                <input type="{{ type }}" value="{{ site.pk }}">
+                <a href="#" class="blacklink site-text">{{ site.str }}</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>

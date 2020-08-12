@@ -1,11 +1,22 @@
+from itertools import chain
+
 from django.db import models
 from members.models import Profile, FilterSet, Site
 import os
 from circles import settings
+from dashboard.models import FileFieldMixin, JsonM2MFieldModelMixin
+import learning.models as learning_models
 
-class Meeting(models.Model):
+class Meeting(JsonM2MFieldModelMixin, models.Model):
     type = models.CharField(max_length=64)
-    site = models.ForeignKey(Site, on_delete=models.CASCADE, related_name='meetings', null=True)
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, related_name='meetings',
+                             null=True)
+    programming = models.TextField(default='[]', blank=True)
+    programming_objects = models.ManyToManyField(learning_models.Programming,
+                                                 blank=True, related_name='programming')
+    module = models.TextField(default='[]', blank=True)
+    module_objects = models.ManyToManyField(learning_models.Module,
+                                            blank=True, related_name='modules')
     location = models.CharField(max_length=128, blank=True)
     start_time = models.DateTimeField(verbose_name="Start Time", )
     end_time = models.DateTimeField(verbose_name="End Time")
@@ -14,6 +25,11 @@ class Meeting(models.Model):
     color = models.CharField(max_length=32)
     notes = models.TextField(blank=True)
     links = models.TextField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.JsonM2MFields = [['programming', learning_models.Programming],
+                              ['module', learning_models.Module]]
 
     def __str__(self):
         return f'{self.site} - {self.type}'

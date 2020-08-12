@@ -92,6 +92,10 @@ class Dropdown extends JqueryElement {
         this.default_value = default_value;
         this.value = default_value;
         this.text = '';
+        this.initialize();
+    }
+
+    initialize() {
         this.build();
         this.styles();
         this.update_value();
@@ -196,6 +200,7 @@ class Dropdown extends JqueryElement {
     }
 
     build() {
+        this.element.empty();
         var value = $('<p/>')
             .addClass('value')
         var pointer = $('<i/>')
@@ -222,7 +227,6 @@ class Dropdown extends JqueryElement {
             options_wrapper.append(option)
         }
         options.append(options_wrapper);
-        this.element.empty();
         this.element.append(value);
         this.element.append(pointer);
         this.element.append(show_wrapper);
@@ -248,6 +252,17 @@ class JsonDropdown extends Dropdown {
         this.element.trigger(":change");
     }
 }
+
+
+
+
+class ObjectSelect extends JsonDropdown {
+    constructor(id, data, {type='checkbox', placeholder='', default_value='[]'} = {}) {
+        super(id, data, {type='checkbox', placeholder='', default_value='[]'} = {});
+    }
+}
+
+
 
 
 class MultiLevelDropdown extends Dropdown {
@@ -413,6 +428,8 @@ class MultiLevelDropdown extends Dropdown {
 }
 
 
+
+
 class Modal extends JqueryElement {
     constructor(id, {action_func=null, cancel_func=null, action_data=null, cancel_data=null, escapable=true, build_func=null} = {}) {
         super(id);
@@ -436,7 +453,6 @@ class Modal extends JqueryElement {
         }
     }
 
-
     listeners() {
         this.element.find('.btn').off("click");
         this.element.off("keypress");
@@ -452,6 +468,8 @@ class Modal extends JqueryElement {
     }
 
     show() {
+        console.log("show");
+        console.log(this.element);
         this.element.addClass('visible');
         this.modal_element.addClass('show');
         if (this.escapable) {
@@ -495,8 +513,12 @@ class CustomForm extends JqueryElement {
     }
 
     update_form(element, e, extra_data) {
+        console.log(element);
         var form_field = this.element.find('#' + this.field_prefix + extra_data['field_name']);
         form_field.val(extra_data['custom_object'].value);
+        console.log(extra_data['field_name']);
+        console.log(form_field);
+        console.log(form_field.val());
     }
 
     erase_data() {
@@ -798,6 +820,7 @@ class LinkInput extends JqueryElement {
     }
 
     modal() {
+        console.log("modal");
         this.modal_element.find('input').val(''); // reset values if modal has been used
         this.modal = new Modal(this.modal_id, {action_func:this.dispatch, action_data:{object: this, func: this.add_link}});
     }
@@ -889,6 +912,7 @@ class DatePicker extends JqueryElement{
 
     show() {
         this.show_month();
+        this.element.addClass('shadow');
         this.element.find('.select-container').addClass('visible');
         this.element.find('.date-select').addClass('show');
         this.element.find('.date-select-btn').off("click");
@@ -897,6 +921,7 @@ class DatePicker extends JqueryElement{
     }
 
     hide() {
+        this.element.removeClass('shadow');
         this.element.find('.select-container').removeClass('visible');
         this.element.find('.date-select').removeClass('show');
         this.listeners();
@@ -939,31 +964,6 @@ class DatePicker extends JqueryElement{
         }
         this.item_listeners();
     }
-
-//    select_date_multiple(day_element) {
-//        var day = $(day_element).children().text()
-//        day = (day.length < 2) ? '0'+day : day; // zero pad
-//        var month = this.element.find('.month').attr('data-number');
-//        var year = this.element.find('.year').text();
-//        var date = [month, day, year].join('/');
-//
-//        if ($(day_element).hasClass('selected')) {
-//            $(day_element).removeClass('selected');
-//            this.value.splice(this.value.indexOf(date), 1);
-//        } else  {
-//            this.value.push(date);
-//        }
-//        this.show_month();
-//        // Update date displayed
-//        if (this.value.length > 1) {
-//            this.element.find('.value').text('multiple');
-//        } else if (this.value.length == 1) {
-//            day = this.element.find('.selected').children().text();
-//            day = (day.length < 2) ? '0'+day : day;
-//            this.element.find('.value').text([month, day, year].join('/'));
-//        }
-//        this.update_value();
-//    }
 
     select_date(day_element) {
         var day = $(day_element).children().text()
@@ -1026,5 +1026,216 @@ class DatePicker extends JqueryElement{
         this.element.find('.show-wrapper').click({func: this.show, object: this}, this.dispatch);
         this.element.find('.next').click({func: this.next_month, object: this}, this.dispatch);
         this.element.find('.previous').click({func: this.previous_month, object: this}, this.dispatch);
+    }
+}
+
+
+
+
+class MultiDatePicker extends DatePicker {
+    constructor(id) {
+        super(id);
+        this.value = [];
+    }
+
+    select_date(day_element) {
+        var day = $(day_element).children().text()
+        day = (day.length < 2) ? '0'+day : day; // zero pad
+        var month = this.element.find('.month').attr('data-number');
+        var year = this.element.find('.year').text();
+        var date = [year, month, day].join('-');
+
+        if ($(day_element).hasClass('selected')) {
+            $(day_element).removeClass('selected');
+            this.value.splice(this.value.indexOf(date), 1);
+        } else  {
+            this.value.push(date);
+        }
+        this.show_month();
+        // Update date displayed
+        if (this.value.length > 1) {
+            this.element.find('.value').text('Multiple');
+            this.element.trigger(":change"); // change not handled by update_value
+        } else if (this.value.length == 1) {
+            day = this.element.find('.selected').children().text();
+            day = (day.length < 2) ? '0'+day : day;
+            this.element.find('.value').text([month, day, year].join('/'));
+            this.update_value();
+        }
+    }
+
+    update_value() {
+        var date = this.value[0];
+        var year = date.slice(0,4);
+        var month = date.slice(5,7);
+        var day = date.slice(8);
+        this.element.find('.value').text([month, day, year].join('/'));
+        this.element.trigger(":change");
+    }
+}
+
+
+
+
+class TimePicker extends JqueryElement {
+    constructor(id) {
+        super(id);
+        this.value = ["12:30:00", "14:00:00"];
+        this.listeners();
+    }
+
+    update_value() {
+//        var hour = (start_period == 'p.m.') ? parseInt(hour) + 12 : hour;
+        this.element.trigger(":change");
+    }
+
+    listeners() {
+        this.element.find('.fas.fa-angle-up').click({func: this.update_value, object: this}, this.dispatch);
+        this.element.find('.fas.fa-angle-down').click({func: this.update_value, object: this}, this.dispatch);
+    }
+}
+
+
+
+class Menu extends JqueryElement {
+
+    constructor(id, menu_btn_id) {
+        super(id);
+        this.menu_btn = $('#' + menu_btn_id);
+        this.listeners();
+    }
+
+    show() {
+        this.element.addClass('show');
+        closeFunctions['#' + this.id] = this;
+    }
+
+    hide() {
+        this.element.removeClass('show');
+        delete closeFunctions['#' + this.id];
+    }
+
+    listeners() {
+        this.menu_btn.click({func: this.show, object: this}, this.dispatch);
+        this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
+    }
+}
+
+
+
+class MenuSiteSelect extends JqueryElement {
+    constructor(id, type) {
+        super(id);
+        this.value = [];
+        this.type = type;
+        this.listeners();
+        this.show_sites(this.element.find('.chapter')[0]);
+        this.select(this.element.find('.site')[0]);
+    }
+
+    show_sites(chapter) {
+        this.element.find('.chapter').each(function() {
+            $(this).find('.sites').hide();
+            $(this).removeClass('shadow')
+        })
+        $(chapter).addClass('shadow');
+        $(chapter).find('.sites').show();
+    }
+
+    update_value() {
+        this.value = [];
+        var site_select = this;
+        this.element.find('.site input').each(function() {
+            if ($(this).is(':checked')) {
+                site_select.value.push($(this).val());
+            }
+        });
+    }
+
+    change(selected, e) {
+        this.select(selected, e);
+        this.element.trigger(':change');
+    }
+
+    select(selected, e) {
+        var option = $(selected).closest('div');
+        var option_input = option.find('input');
+
+        if (this.type == 'radio') {
+            this.element.find('input').each(function() {
+                $(this).prop("checked", false);
+            });
+            option_input.prop("checked", true);
+            this.update_value();
+            return
+        }
+
+        if (!e || !$(e.target).is('input')) {
+            option_input.prop('checked', !(option_input.prop("checked")));
+        }
+
+        // ALL was selected
+        if (option.hasClass('all')) {
+            this.element.find('input').each(function() {
+                $(this).prop('checked', option_input.prop("checked"));
+            });
+        }
+
+        // Full chapter was selected
+        if (option.hasClass('chapter')) {
+            option.find('.sites').find('input').each(function() {
+                $(this).prop('checked', option_input.prop("checked"));
+            });
+        }
+
+        // Site was selected
+        if (option.hasClass('site')) {
+            var allChecked = true;
+            option.closest('.sites').children().each(function() {
+                if (!($(this).find('input').is(':checked'))) {
+                    allChecked = false;
+                }
+            });
+            option.closest('.chapter').children('input').prop('checked', allChecked);
+        }
+
+        // Check to see if all chapters are selected
+        allChecked = true
+        this.element.find('.chapter').each(function() {
+            if (!($(this).children('input').is(':checked'))) {
+                allChecked = false;
+            }
+        });
+        this.element.find('.all input').prop('checked', allChecked);
+        this.update_value();
+    }
+
+    show() {
+        this.element.addClass('show');
+        closeFunctions['#' + this.id] = this;
+    }
+
+    hide() {
+        this.element.removeClass('show');
+        delete closeFunctions['#' + this.id];
+    }
+
+    listeners() {
+        $('#menu_btn').click({func: this.show, object: this}, this.dispatch);
+        this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
+        this.element.find('.chapter').click({func: this.show_sites, object: this}, this.dispatch);
+        this.element.find('.chapter input').click({func: this.change, object: this}, this.dispatch);
+        this.element.find('.all').click({func: this.change, object: this}, this.dispatch);
+        this.element.find('.site').click({func: this.change, object: this}, this.dispatch);
+    }
+}
+
+
+
+
+class ColorPicker extends JqueryElement {
+    constructor(id) {
+        super(id);
+        this.value = 'hsla(277, 93%, 64%, 0.3)';
     }
 }

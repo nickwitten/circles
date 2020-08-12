@@ -10,105 +10,6 @@
     overflow: hidden;
 }
 
-#calendar_menu_btn {
-    position: absolute;
-    top: 6px;
-    left: 10px;
-}
-#calendar_menu {
-    position: absolute;
-    z-index: 1;
-    left: -700px;
-    height: 100%;
-    width: 35%;
-    min-width: 358px;
-    background-color: white;
-    -webkit-box-shadow: 3px 3px 3px 3px #cccccc96;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
-    -moz-box-shadow:   3px 3px 3px 3px #cccccc96;  /* Firefox 3.5 - 3.6 */
-    box-shadow:        3px 3px 3px 3px #cccccc96;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
-    transition: all 0.3s ease-in-out;
-}
-#calendar_menu.show {
-    left: 0;
-}
-#calendar_menu h3 {
-    margin: 0.25rem 0.5rem;
-}
-#calendar_menu .site_select {
-    position: relative;
-}
-#calendar_menu .site_select .chapter,
-#calendar_menu .site_select .all {
-    width: 50%;
-    outline: 1px solid #dee2e6;
-    font-size: calc(12px, 0.5vw);
-}
-#calendar_menu .site_select .all p {
-    display: inline;
-    font-size: calc(12px, 0.5vw);
-}
-#calendar_menu .site_select .chapter input,
-#calendar_menu .site_select .all input{
-    margin: 10px;
-}
-#calendar_menu .site_select .sites {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 50%;
-}
-#calendar_menu .site_select .sites .site {
-    width: 100%;
-    outline: 1px solid #dee2e6;
-}
-#calendar_menu .site_select .sites input {
-    margin: 5px;
-}
-
-#calendar_header {
-    height: 15%;
-}
-#month_container {
-    width: 20vw;
-    min-width: 130px;
-}
-#month_selector_container {
-    display: flex;
-}
-#month_selector {
-    margin: auto auto 0 auto;
-}
-#month_container h3 {
-    font-size: calc(20px + 1vw);
-}
-#year_container {
-    position: relative;
-}
-#year_container p {
-    position: relative;
-    margin: 0;
-    font-size: 16px;
-    top: 30%;
-}
-#day_labels li {
-    color: #979797;
-    margin: auto;
-    line-height: 230%;
-}
-#day_labels {
-    text-align: center;
-    padding: 0;
-    margin: 0;
-    height: 5%;
-}
-.calendar-day,
-#day_labels li {
-    display: inline-block;
-    width: 14.28%;
-}
-#day_labels li {
-    font-size: 12px;
-}
 #calendar_content .load-container {
     position: relative;
     height: 80%;
@@ -116,43 +17,16 @@
 #calendar_content .loading {
     z-index: 1;
 }
-#days_container {
-    height: 100%;
-}
-.calendar-week {
-    height: 16.666%;
-    padding: 0;
-    margin: 0;
-    line-height: 1.0;
-}
-
-.calendar-day {
-    position: relative;
-    padding: 0;
-    height: 100%;
-    outline: 1px solid #dee2e6;
-}
-#days_container .inactive {
-    background-color: #0000001a;
-}
-.add-meeting-btn {
+#calendar_content .add-meeting-btn {
     font-size: calc(50% + 0.3vw);
     padding: calc(0.25vh + 0.25vw);
     float: left;
     visibility: hidden;
 }
-.calendar-day:hover .add-meeting-btn {
+#calendar_content .calendar-day:hover .add-meeting-btn {
     visibility: visible;
 }
-.monthnum {
-    margin: 0;
-    padding: calc(0.25vh + 0.25vw);
-    float: right;
-    margin: 0;
-    font-size: calc(50% + 0.3vw);
-}
-
-.meetings-container {
+#calendar_content .meetings-container {
     position: absolute;
     padding-bottom: 0.5vh;
     bottom: 0;
@@ -160,29 +34,28 @@
     max-height: 100%;
     overflow: auto;
 }
-.calendar-meeting {
+#calendar_content .calendar-meeting {
     width: calc(30% + 7.5vw);
     padding: 0.3vh;
     margin: 0.2vh 0.2vw;
     border-radius: 2px;
 }
-
-.meeting-description {
-    margin: 0;
-    font-size: calc(50% + 0.3vw);
-}
-
-.calendar-meeting:hover {
+#calendar_content .calendar-meeting:hover {
   -webkit-box-shadow: 3px 3px 3px 3px #ccc;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
   -moz-box-shadow:   3px 3px 3px 3px #ccc;  /* Firefox 3.5 - 3.6 */
   box-shadow:        3px 3px 3px 3px #ccc;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
-
 }
-
-
-.spacer {
+#calendar_content .spacer {
     visibility: hidden;
 }
+#menu_btn {
+    position: absolute;
+    top: 6px;
+    left: 10px;
+}
+
+
+
 
 #meeting_info_container {
     position: absolute;
@@ -204,17 +77,21 @@
 #meeting_info_container .loading {
     border-radius: 5px;
 }
-
 #meeting_form {
+    display: flex;
     align-items: center;
     flex-flow: column;
     height: 100%;
 }
-#meeting_header {
+#meeting_form #meeting_header {
     position: relative;
     padding-right: 40px;
     max-width: 100%;
 }
+
+
+
+
 #meeting_title_container {
     max-width: 100%;
     overflow-x: auto;
@@ -223,6 +100,9 @@
     position: relative;
     width: fit-content;
 }
+
+
+
 #type_select {
     position: absolute;
     visibility: hidden;
@@ -252,6 +132,8 @@
     text-align: center;
     padding: 0.5em;
 }
+
+
 
 #meeting_delete_btn {
     position: absolute;
@@ -293,6 +175,9 @@
     margin: 0.5em auto;
 }
 
+
+
+
 #color_select {
     display: inline-block;
     position: absolute;
@@ -323,175 +208,31 @@
 }
 
 
-#id_start_time, #id_end_time, #id_attendance_lists,
-#id_attendees, #id_color, #id_links {
-    display: none;
-}
+
 
 #datetime_container {
     display: flex;
     flex-flow: row wrap;
-    align-content: center;
     align-items: center;
     justify-content: center;
     margin: 0.25em 0;
     width: 100%;
 }
-#date_container {
-    position: relative;
-    left: 10%;
-    display: flex;
-    flex-flow: row wrap;
-    align-items: center;
-    padding: 0.5em 0;
-    margin: 0.5em;
-    margin-right: 10%;
-    border-radius: 5px;
+#meeting_date {
+    width: calc(85px + 10vw);
+    justify-content: center;
+    border: none;
 }
-#date_container:hover {
-    -webkit-box-shadow: 3px 3px 3px 3px #ccc;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
-    -moz-box-shadow:   3px 3px 3px 3px #ccc;  /* Firefox 3.5 - 3.6 */
-    box-shadow:        3px 3px 3px 3px #ccc;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
+#meeting_date .select-container {
+    z-index: 1;
 }
-#date_container:hover #date_select_btn,
-#date_container:hover #date_select {
-    visibility: visible;
-}
-#date_select_btn {
-    margin: auto 0.5em;
-    float: right;
-}
-#date {
-    display: inline-block;
-    vertical-align: middle;
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-}
-#date_container .date-spacer {
-    visibility: hidden;
-}
-#date_container .date-spacer p,
-#date,
-#time_select p {
-    font-size: calc(9px + 0.7vw);
+#meeting_date .value,
+#meeting_time p {
+    font-size: calc(12px + 0.3vw);
     margin: 0;
 }
-#date_container .select-container {
-    visibility: hidden;
-    position: absolute;
-    top: 100%;
-    width: 100%;
-    overflow: hidden;
-}
-#date_select {
-    position: relative;
-    text-align: center;
-    width: 100%;
-    bottom: 250px;
-    transition: all 0.2s ease-in-out;
-}
-#date_select.show {
-    bottom: 0;
-}
-#date_select .border {
-    position: relative;
-    display: flex;
-    flex-flow: row wrap;
-    background-color: white;
-    width: 100%;
-}
-#date_select_year, #date_select_month {
-    text-align: center;
-    margin: 3% auto;
-    color: #838587;
-    height: 5%;
-    width: auto
-}
-#date_select .previous {
-    position: absolute;
-    left: -5px;
-    top: 2px;
-    padding: 5%;
-    height: 15%;
-    font-size: small
-}
-#date_select .next {
-    position: absolute;
-    right: -5px;
-    top: 2px;
-    padding: 5%;
-    height: 15%;
-    font-size: small;
-}
-#date_select_month {
-    font-size: 18px;
-    height: 10%;
-}
-#date_select .container {
-    height: 20%;
-}
-#date_select .container .calendar-week {
-    display: flex;
-    height: 100%;
-}
-#date_select .container .calendar-week .calendar-day {
-    display: flex;
-    height: 30px;
-}
-#date_select .container .calendar-week .selected {
-    background-color: hsla(209, 100%, 50%, 0.3);
-}
-#date_select .container .calendar-week .calendar-day:hover {
-  -webkit-box-shadow: 3px 3px 3px 3px #ccc;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
-  -moz-box-shadow:   3px 3px 3px 3px #ccc;  /* Firefox 3.5 - 3.6 */
-  box-shadow:        3px 3px 3px 3px #ccc;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
-}
-#date_select .container .calendar-week .inactive {
-    opacity: 0.3;
-}
-#date_select .container .calendar-week .calendar-day .monthnum {
-    padding: 0;
-    margin: auto;
-}
 
 
-#time_select {
-    display: flex;
-    flex-flow: row;
-    align-items: center;
-    border-radius: 5px;
-    padding: 0 1em;
-}
-#time_select div {
-    display: flex;
-    flex-flow: column;
-    align-items: center;
-    justify-content: space-between;
-}
-#time_select .time-break {
-    display: flex;
-    flex-flow: row wrap;
-    align-items: center;
-    align-content: center;
-    height: 100%;
-    margin: 0 0.25em;
-}
-#time_select i {
-    visibility: hidden;
-    color: #a7a8ab;
-    font-size: small;
-}
-#time_select:hover {
-    -webkit-box-shadow: 3px 3px 3px 3px #ccc;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
-    -moz-box-shadow:   3px 3px 3px 3px #ccc;  /* Firefox 3.5 - 3.6 */
-    box-shadow:        3px 3px 3px 3px #ccc;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
-}
-#time_select:hover i {
-    visibility: visible;
-}
 
 #meeting_content {
     width: 90%;
@@ -499,48 +240,39 @@
     flex-flow: column;
     flex-grow:1;
 }
-#meeting_content .form-inputs {
-    display: flex;
-    justify-content: space-between;
+#meeting_content > * {
+    margin-bottom: 0.25rem;
 }
 #meeting_content p {
     font-size: calc(8px + 0.3vw);
-    line-height: 30px;
 }
-#meeting_content .labels,
-#meeting_content .fields {
-    display: block;
-    font-size: calc(8px + 0.3vw);
+#meeting_content input {
+    border: none;
+    outline: none;
+    border-bottom: 1px solid #dee2e6;
+    width: 100%;
 }
-#meeting_content .labels > div {
-    height: 35px;
-    margin: 10px 0;
-    vertical-align: center;
+#meeting_content .option input {
+    width: fit-content;
 }
-#meeting_content .labels p {
-    font-size: calc(12px + 0.3vw);
-}
-#meeting_content .fields {
-    width: 85%
+#meeting_content textarea {
+    border: 1px solid #dee2e6;
+    outline: none;
+    width: 100%;
 }
 #meeting_content .buttons {
     display: flex;
     justify-content: space-between;
     padding: 5px 0;
 }
-#id_site, #id_location {
-    display: block;
-    margin: 8px;
-    width: 100%;
-    font-size: calc(12px + 0.3vw);
-}
-
-#id_notes {
+#meeting_content #id_notes {
     flex-grow: 1;
     resize: none;
 }
-
-
+#meeting_content #file_input input {
+    position: absolute;
+    visibility: hidden;
+}
 #meeting_content .load-container {
     position: relative;
 }
@@ -548,12 +280,12 @@
     height: 10px;
     width: 10px;
 }
+
+
+
+/*
 #file_input, #link_input {
     display: flex;
-}
-#file_input input {
-    position: absolute;
-    visibility: hidden;
 }
 #file_input .fa-file-upload,
 #link_upload {
@@ -621,6 +353,10 @@
     bottom: 0.5em;
     left: 3em;
 }
+*/
+
+
+
 
 #attendance_container {
     position: absolute;
@@ -635,6 +371,11 @@
 }
 #attendance_container.show {
     left: 50%;
+}
+#attendance_container.modal-shadow {
+    -webkit-box-shadow: 0 0 0 999em rgba(0, 0, 0, 0.4);  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+    -moz-box-shadow:   0 0 0 999em rgba(0, 0, 0, 0.4);  /* Firefox 3.5 - 3.6 */
+    box-shadow:        0 0 0 999em rgba(0, 0, 0, 0.4);  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
 }
 #attendance_container .loading {
     border-radius: 5px;

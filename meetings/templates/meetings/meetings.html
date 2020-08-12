@@ -9,151 +9,7 @@
 
 {% block content %}
 <div id="content_container">
-  <div id="meeting_info_container">
-    <form id="meeting_form" class="flex" action="post">
-      {% csrf_token %}
-      {{ form.start_time }}
-      {{ form.end_time }}
-      {{ form.attendance_lists }}
-      {{ form.attendees }}
-      {{ form.color }}
-      {{ form.links }}
-      <a id="meeting_back_btn" class="fas fa-times back blacklink" href="#"></a>
-      <div id="meeting_header">
-        <div class="relative">
-          <div id="meeting_title_container">
-            <div class="container">
-              <span class="expanding_size">Title</span>
-              {{ form.type }}
-            </div>
-          </div>
-          <div id="type_select">
-            <div class="container">
-              {% for type in form.type_choices %}
-              <div class="type">
-                <a href="#" class="blacklink">{{ type }}</a>
-              </div>
-              {% endfor %}
-            </div>
-          </div>
-        </div>
-        <i id="meeting_delete_btn" class="far fa-trash-alt text-small d-inline-block"></i>
-        <div id="color_select">
-          <div id="colors" style="display:none">
-            <div class="color" data-color="hsla(0.0, 93%, 64%, 0.3)"></div>
-            <div class="color" data-color="hsla(033, 93%, 64%, 0.3)"></div>
-            <div class="color" data-color="hsla(102, 93%, 64%, 0.3)"></div>
-            <div class="color" data-color="hsla(211, 60%, 58%, 0.4)"></div>
-            <div class="color" data-color="hsla(277, 93%, 64%, 0.3)"></div>
-            <div class="color" data-color="hsla(318, 93%, 64%, 0.3)"></div>
-          </div>
-        </div>
-      </div>
-      <div id="datetime_container">
-        <div id="date_container" class="">
-          <div style="position:relative; height:fit-content">
-            <div class="date-spacer">
-              <p>00/00/0000</p>
-            </div>
-            <p id="date"></p>
-          </div>
-          <i id="date_select_btn" class="far fa-calendar-alt hidden" data-month_offset="0"></i>
-          <div class="break"></div>
-          <div class="select-container">
-            <div id="date_select">
-              <i class="previous">x</i>
-              <i class="next">x</i>
-            </div>
-          </div>
-        </div>
-        <div id="time_select">
-          <div>
-            <i class="start-hour fas fa-angle-up"></i>
-            <p id="start_hour">00</p>
-            <i class="start-hour fas fa-angle-down"></i>
-          </div>
-          <p class="time-break">:</p>
-          <div>
-            <i class="start-minute fas fa-angle-up"></i>
-            <p id="start_minute">00</p>
-            <i class="start-minute fas fa-angle-down"></i>
-          </div>
-          <span class="time-break"></span>
-          <div>
-            <i class="start-period fas fa-angle-up"></i>
-            <p id="start_period">p.m.</p>
-            <i class="start-period fas fa-angle-down"></i>
-          </div>
-
-          <span class="time-break"></span>
-          <p class="time-break">-</p>
-          <span class="time-break"></span>
-
-          <div>
-            <i class="end-hour fas fa-angle-up"></i>
-            <p id="end_hour">00</p>
-            <i class="end-hour fas fa-angle-down"></i>
-          </div>
-          <p class="time-break">:</p>
-          <div>
-            <i class="end-minute fas fa-angle-up"></i>
-            <p id="end_minute">00</p>
-            <i class="end-minute fas fa-angle-down"></i>
-          </div>
-          <span class="time-break"></span>
-          <div>
-            <i class="end-period fas fa-angle-up"></i>
-            <p id="end_period">p.m.</p>
-            <i class="end-period fas fa-angle-down"></i>
-          </div>
-        </div>
-      </div>
-      <div id="meeting_content">
-        <div class="m-2 form-inputs">
-          <div class="labels">
-            <div>
-              <p>Site: </p>
-            </div>
-            <div>
-              <p>Address: </p>
-            </div>
-          </div>
-          <div class="fields">
-            {{ form.site }}
-            {{ form.location }}
-          </div>
-        </div>
-        {{ form.notes }}
-        <div class="load-container">
-          <div id="file_input">
-            <input multiple id="file_upload" type="file">
-            <label for="file_upload" class="fas fa-file-upload"></label>
-            <div id="files">
-            </div>
-          </div>
-          <div class="loading" style="display: none;">
-            <div class="center">
-              <div class="spinner"></div>
-            </div>
-          </div>
-        </div>
-        <div id="link_input">
-          <i id="link_upload" class="fas fa-link"></i>
-          <div id="links">
-          </div>
-        </div>
-        <div class="buttons">
-          <a id="meeting_submit_btn" class="btn btn-outline-secondary" data-pk="0" href="#">Save</a>
-          <a id="attendance_btn" class="btn btn-outline-secondary" href="#">Attendance</a>
-        </div>
-      </div>
-    </form>
-    <div class="loading" style="display:none;">
-      <div class="center">
-        <div class="spinner"></div>
-      </div>
-    </div>
-  </div>
+  {% include 'meetings/meeting_info.html' with form=form.0 %}
   <div id="meeting_confirm_delete" class="shadow confirm-delete" style="display:none">
     <h5>Delete Meeting</h5>
     <button class="delete-btn btn btn-danger text-small">Delete</button>
@@ -162,18 +18,6 @@
   <div id="file_confirm_delete" class="shadow confirm-delete" style="display:none">
     <h5>Delete File</h5>
     <button class="delete-btn btn btn-danger text-small" data-pk="0">Delete</button>
-    <button class="cancel-btn btn btn-secondary text-small">Cancel</button>
-  </div>
-  <div id="link_modal" class="shadow modal" style="display:none">
-    <div class="container">
-      <p>Name:</p>
-      <input id="link_name" type="text" class="form-control">
-    </div>
-    <div class="container">
-      <p>URL:</p>
-      <input id="link_url" type="text" class="form-control">
-    </div>
-    <button class="upload-btn btn btn-primary text-small">Attach</button>
     <button class="cancel-btn btn btn-secondary text-small">Cancel</button>
   </div>
   <div id="attendance_container">
@@ -196,64 +40,25 @@
   </div>
 
   <div id="calendar_content" class="content-section shadow p-0 mb-4">
-    <a id="calendar_menu_btn" class="fas fa-bars blacklink" href="#"></a>
-    <div id="calendar_menu">
+    <a id="menu_btn" class="fas fa-bars blacklink" href="#"></a>
+    <div id="menu">
       <a href="#" class="fas fa-times back blacklink"></a>
       <h3>Sites</h3>
-      <div class="site_select">
-        <div class="all">
-          <input type="checkbox" checked>
-          <p>All</p>
-        </div>
-        {% for chapter in site_access %}
-        <div class="chapter">
-          <input type="checkbox" checked>
-          <a href="#" class="blacklink">{{ chapter.chapter }}</a>
-          <div class="sites" style="display: None;">
-            {% for site in chapter.sites %}
-            <div class="site">
-              <input type="checkbox" data-pk="{{ site.pk }}" checked>
-              <a href="#" class="blacklink site-name" data-pk="{{site.pk}}">{{ site }}</a>
-            </div>
-            {% endfor %}
-          </div>
-        </div>
-        {% endfor %}
-      </div>
+      {% include 'dashboard/site_select.html' with id='menu_site_select' type='checkbox' chapters=site_access %}
     </div>
-    <div id="calendar_header" class="text-center pt-2">
-      <div id="month_selector_container" class="half">
-        <div id="month_selector">
-          <i class="fas fa-long-arrow-alt-left icon-btn d-inline-block pl-2 pr-2" onclick="buildCalendar(monthOffset--, step=-1);"></i>
-          <div id="month_container" class="d-inline-block"></div>
-          <i class="fas fa-long-arrow-alt-right icon-btn d-inline-block pl-2 pr-2" onclick="buildCalendar(monthOffset++, step=1);"></i>
-        </div>
-
-      </div>
-      <div id="year_container" class="half"></div>
-    </div>
-    <ul id="day_labels" class="border-bottom border-top">
-      <li>SUN
-      <li>MON
-      <li>TUE
-      <li>WED
-      <li>THU
-      <li>FRI
-      <li>SAT
-    </ul>
-    <div class="load-container">
-      <div id="days_container">
-      </div>
-      <div class="loading" style="display: none;">
-        <div class="center">
-          <div class="spinner"></div>
-        </div>
-      </div>
-    </div>
+    {% include 'meetings/calendar.html' with id='calendar' %}
   </div>
+  {% include 'dashboard/attach_link_modal.html' %}
 </div>
+{{ form.1|json_script:"form_fields" }}
 {% endblock content %}
 
 {% block js %}
-<script src="{% static 'meetings/js/meetings.js' %}"></script>
+
+<!--<script src="{% static 'meetings/js/meetings.js' %}"></script>-->
+<script>
+  var form_fields = JSON.parse($('#form_fields').text());
+  var url_meeting_post = '{% url 'post-meeting-info' 0 %}';
+</script>
+<script src="{% static 'meetings/js/new_meeting.js' %}"></script>
 {% endblock js %}
