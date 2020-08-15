@@ -12,7 +12,7 @@
       <div id="meeting_header">
         {% include 'meetings/meeting_type_select.html' %}
         <i id="meeting_delete_btn" class="far fa-trash-alt text-small d-inline-block"></i>
-        {% include 'meetings/color_select.html' %}
+        {% include 'dashboard/color_select.html' with id='meeting_color' %}
       </div>
       <div id="datetime_container">
         {% include 'dashboard/date_picker.html' with id='meeting_date' %}

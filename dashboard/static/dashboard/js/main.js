@@ -67,6 +67,20 @@ function getMonthDates(month_offset) {
 
 
 
+
+function expandTitle(placeholder, selector) {
+    if (!selector) {
+        selector = '';
+    }
+    $(selector + ' .expanding_size').text($(selector + ' .expanding_input').val()); // Copy text to the span element
+    if ($(selector + ' .expanding_input').val() == '') { // When expanding_input is empty
+        $(selector + ' .expanding_size').text(placeholder); // Expand to see the placeholder
+    }
+}
+
+
+
+
 class JqueryElement {
     constructor(id) {
         this.id = id
@@ -134,6 +148,9 @@ class Dropdown extends JqueryElement {
     }
 
     set_value(values) {
+        if (!Array.isArray(values )) {
+            values = [values];
+        }
         // Uncheck all
         this.element.find('input').prop("checked", false);
         this.element.find('.value').first().text(this.placeholder);
@@ -160,14 +177,16 @@ class Dropdown extends JqueryElement {
         if (this.type == 'radio') {
             this.element.find('input').prop("checked", false);
             $(option).find('input').prop("checked", true);
+            this.update_value();
+            this.hide();
         } else if (this.type == 'checkbox') {
             // Check if it's already been changed
             if (e.target.type != 'checkbox') {
                 var input = $(option).find('input');
                 input.prop("checked", !input.prop("checked"));
             }
+            this.update_value();
         }
-        this.update_value();
     }
 
     update_value() {
@@ -259,6 +278,9 @@ class JsonDropdown extends Dropdown {
 class ObjectSelect extends JsonDropdown {
     constructor(id, data, {type='checkbox', placeholder='', default_value='[]'} = {}) {
         super(id, data, {type='checkbox', placeholder='', default_value='[]'} = {});
+    }
+
+    set_value() {
     }
 }
 
@@ -468,8 +490,6 @@ class Modal extends JqueryElement {
     }
 
     show() {
-        console.log("show");
-        console.log(this.element);
         this.element.addClass('visible');
         this.modal_element.addClass('show');
         if (this.escapable) {
@@ -506,25 +526,23 @@ class CustomForm extends JqueryElement {
                 // must have set_value method
                 // must trigger ":change" event to update form
                 this.custom_fields[field].set_value(data[field]);
-            } else {
+            } else if (this.form_fields.hasOwnProperty(field)) {
                 this.element.find('#' + this.field_prefix + field).val(data[field]);
             }
         }
     }
 
     update_form(element, e, extra_data) {
-        console.log(element);
         var form_field = this.element.find('#' + this.field_prefix + extra_data['field_name']);
         form_field.val(extra_data['custom_object'].value);
-        console.log(extra_data['field_name']);
-        console.log(form_field);
-        console.log(form_field.val());
     }
 
     erase_data() {
         var reset_data = {}
         for (const field in this.form_fields) {
             if (this.custom_fields.hasOwnProperty(field)) {
+                console.log(field)
+                console.log(this.custom_fields[field].default_value);
                 reset_data[field] = this.custom_fields[field].default_value;
             } else if (this.form_fields[field] == 'text') {
                 reset_data[field] = '';
@@ -714,7 +732,9 @@ class FileInput extends JqueryElement {
     }
 
     set_value(value) {
+        console.log(value);
         this.delete_files = [];
+        this.input_element.val('');
         this.list_element.empty();
         for (let i=0; i<value.length; i++) {
             this.build_item(value[i]);
@@ -723,9 +743,9 @@ class FileInput extends JqueryElement {
     }
 
     update_value() {
-        this.list_element.find('a').each(function() {
-            if ($(this).attr("value") == 0) {
-                $(this).closest('.file').remove();
+        this.list_element.find('.file').each(function() {
+            if ($(this).find('.delete').length == 0) {
+                $(this).remove();
             }
         });
         var files = this.input_element[0].files;
@@ -759,7 +779,9 @@ class FileInput extends JqueryElement {
             .addClass('delete fas fa-times blacklink')
             .attr("value", item[1]);
         container.append(link);
-        container.append(delete_btn);
+        if (item[1]) {
+            container.append(delete_btn);
+        }
         this.list_element.append(container);
         this.item_listeners();
     }
@@ -820,7 +842,6 @@ class LinkInput extends JqueryElement {
     }
 
     modal() {
-        console.log("modal");
         this.modal_element.find('input').val(''); // reset values if modal has been used
         this.modal = new Modal(this.modal_id, {action_func:this.dispatch, action_data:{object: this, func: this.add_link}});
     }
@@ -1035,7 +1056,8 @@ class DatePicker extends JqueryElement{
 class MultiDatePicker extends DatePicker {
     constructor(id) {
         super(id);
-        this.value = [];
+        this.default_value = [];
+        this.value = this.default_value;
     }
 
     select_date(day_element) {
@@ -1080,18 +1102,79 @@ class MultiDatePicker extends DatePicker {
 class TimePicker extends JqueryElement {
     constructor(id) {
         super(id);
-        this.value = ["12:30:00", "14:00:00"];
+        this.default_value = ["12:00:00", "12:00:00"];
+        this.value = this.default_value;
+        this.update_value();
         this.listeners();
     }
 
     update_value() {
-//        var hour = (start_period == 'p.m.') ? parseInt(hour) + 12 : hour;
+        for (let i=0; i<this.value.length; i++) {
+            var time_str = this.value[i];
+            var time_array = time_str.split(':');
+            var hour = parseInt(time_array[0]);
+            var minute = parseInt(time_array[1]);
+            var period = (hour >= 12 ) ? 'p.m.' : 'a.m.';
+            hour = (hour > 12) ? hour - 12 : hour;
+            hour = (hour == 0) ? 12 : hour;
+            minute = (minute == 0) ? '00' : minute;
+            var id = (i==0) ? 'p.start' : 'p.end';
+            this.element.find(id + '-hour').text(hour.toString());
+            this.element.find(id + '-minute').text(minute.toString());
+            this.element.find(id + '-period').text(period);
+        }
+        this.element.trigger(":change");
+    }
+
+    change_time(btn) {
+        var classList = btn.classList;
+        var id = classList[0];
+        if (id.includes('hour')) {
+            var time_ind = 0;
+            var time_difference = 1;
+            var time_step = 1;
+            var time_limits = [0, 23];
+        } else if (id.includes('minute')) {
+            var time_ind = 1;
+            var time_difference = 10;
+            var time_step = 10;
+            var time_limits = [0, 50];
+        } else if (id.includes('period')) {
+            var time_ind = 0;
+            var time_difference = 12;
+            var time_step = 1;
+            var time_limits = [0, 23];
+        }
+        var value_ind = (id.includes('start')) ? 0 : 1;
+        var time_array = this.value[value_ind].split(':');
+        var current_time = parseInt(time_array[time_ind]);
+        current_time += (classList[2].includes('up')) ? time_difference : -time_difference;
+        if (current_time < time_limits[0]) {
+            current_time = time_limits[1] - (time_limits[0] - current_time) + time_step;
+        } else if (current_time > time_limits[1]) {
+            current_time = time_limits[0] + (current_time - time_limits[1]) - time_step;
+        }
+        current_time = (current_time == 0) ? '00' : current_time;
+        time_array[time_ind] = current_time.toString();
+        this.value[value_ind] = time_array.join(':');
+        this.update_value();
+    }
+
+    set_value(value, start=true, end=true) {
+        if (start && end) {
+            this.value = value;
+        } else if (start) {
+            this.value[0] = value;
+        } else if (end) {
+            this.value[1] = value;
+        }
+        this.update_value();
         this.element.trigger(":change");
     }
 
     listeners() {
-        this.element.find('.fas.fa-angle-up').click({func: this.update_value, object: this}, this.dispatch);
-        this.element.find('.fas.fa-angle-down').click({func: this.update_value, object: this}, this.dispatch);
+        this.element.find('.fas.fa-angle-up').click({func: this.change_time, object: this}, this.dispatch);
+        this.element.find('.fas.fa-angle-down').click({func: this.change_time, object: this}, this.dispatch);
     }
 }
 
@@ -1236,6 +1319,58 @@ class MenuSiteSelect extends JqueryElement {
 class ColorPicker extends JqueryElement {
     constructor(id) {
         super(id);
-        this.value = 'hsla(277, 93%, 64%, 0.3)';
+        this.styles();
+        this.select(this.element.find('.color').first());
+        this.close_selector = '.color-select';
+        this.listeners();
+    }
+
+    show() {
+        this.element.find('.colors').addClass("visible");
+        this.element.find('.colors-wrapper').addClass("show");
+        closeFunctions[this.close_selector] = this;
+    }
+
+    hide() {
+        this.element.find('.colors').removeClass("visible");
+        this.element.find('.colors-wrapper').removeClass("show");
+        delete closeFunctions[this.close_selector];
+    }
+
+    toggle() {
+        if (this.element.find('.colors-wrapper').hasClass('show')) {
+            this.hide();
+        } else {
+            this.show();
+        }
+    }
+
+    select(color) {
+        color = $(color).attr('data-color');
+        this.element.css('background-color', color.slice(0,20) + '0.7');
+        this.value = color;
+        this.element.trigger(":change");
+    }
+
+    styles() {
+        $('.color').each(function() {
+            var color = $(this).attr('data-color');
+            var bold_color = color.slice(0, 20) + '0.7)';
+            $(this).css('background-color', bold_color);
+        });
+    }
+
+    set_value(value) {
+        var color_picker = this;
+        $('.color').each(function() {
+            if ($(this).attr('data-color') == value) {
+                color_picker.select(this);
+            }
+        });
+    }
+
+    listeners() {
+        this.element.click({func: this.toggle, object: this}, this.dispatch);
+        this.element.find('.color').click({func: this.select, object: this}, this.dispatch);
     }
 }

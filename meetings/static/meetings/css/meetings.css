@@ -92,18 +92,18 @@
 
 
 
-#meeting_title_container {
+#type_select .input-container {
     max-width: 100%;
     overflow-x: auto;
 }
-#meeting_title_container .container {
+#type_select .input-wrapper {
     position: relative;
     width: fit-content;
 }
 
 
 
-#type_select {
+#type_select .options {
     position: absolute;
     visibility: hidden;
     z-index: 1;
@@ -116,7 +116,7 @@
     height: fit-content;
     overflow: hidden;
 }
-#type_select .container {
+#type_select .options-wrapper {
     position: relative;
     bottom: 200px;
     display: flex;
@@ -178,35 +178,10 @@
 
 
 
-#color_select {
-    display: inline-block;
+.color-select {
     position: absolute;
-    width: 15px;
-    height: 15px;
-    border-radius: 2px;
-    bottom: 10px;
     right: 20px;
 }
-#colors {
-    position: absolute;
-    z-index: 1;
-    top: 105%;
-    left: -95%;
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: space-between;
-    width: 45px;
-    height: 32px;
-    padding: 4px;
-    border: 1px solid #dee2e6;
-    border-radius: 5px;
-    background-color: white;
-}
-#colors .color {
-    width: 10px;
-    height: 10px
-}
-
 
 
 
@@ -247,6 +222,7 @@
     font-size: calc(8px + 0.3vw);
 }
 #meeting_content input {
+    font-size: calc(8px + 0.3vw);
     border: none;
     outline: none;
     border-bottom: 1px solid #dee2e6;

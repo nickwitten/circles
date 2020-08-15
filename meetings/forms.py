@@ -15,8 +15,9 @@ class MeetingCreationForm(CustomFormMixin, forms.ModelForm):
         user = kwargs.pop('user')
         super().__init__(*args, **kwargs)
         self.fields['site'] = forms.ModelChoiceField(user.userinfo.user_site_access())
-        self.fields['type'].widget.attrs['oninput'] = 'expandTitle();'
+        self.fields['type'].widget.attrs['oninput'] = 'expandTitle("Type");'
         self.fields['type'].widget.attrs['class'] = 'expanding_input'
         self.fields['type'].widget.attrs['placeholder'] = 'Type'
+        self.fields['type'].widget.attrs['readonly'] = 'readonly'
         self.fields['start_time'].widget.attrs['class'] = 'start_time'
         self.fields['end_time'].widget.attrs['class'] = 'end_time'

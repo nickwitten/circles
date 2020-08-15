@@ -33,6 +33,9 @@ class Attendance extends JqueryElement {
         }
     }
 
+    set_value() {
+    }
+
     listeners() {
         this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
     }
@@ -45,12 +48,19 @@ class StartTime extends JqueryElement {
         super(id);
         this.date_select = date_select;
         this.time_select = time_select;
+        this.default_value = "0000-00-00T12:00:00Z"
         this.listeners();
     }
 
     update_value() {
         this.value = getDatetime(this.date_select, this.time_select)[0];
         this.element.trigger(":change");
+    }
+
+    set_value(value) {
+        this.value = value
+        this.date_select.set_value([value.slice(0, 10)]);
+        this.time_select.set_value(value.slice(11, 19), true, false);
     }
 
     listeners() {
@@ -67,12 +77,19 @@ class EndTime extends JqueryElement {
         super(id);
         this.date_select = date_select
         this.time_select = time_select;
+        this.default_value = "0000-00-00T12:00:00Z"
         this.listeners();
     }
 
     update_value() {
         this.value = getDatetime(this.date_select, this.time_select)[1];
         this.element.trigger(":change");
+    }
+
+    set_value(value) {
+        this.value = value;
+        this.date_select.set_value([value.slice(0, 10)]);
+        this.time_select.set_value(value.slice(11, 19), false, true);
     }
 
     listeners() {
@@ -87,7 +104,60 @@ class EndTime extends JqueryElement {
 class TypeSelect extends JqueryElement {
     constructor(id) {
         super(id);
-        this.value = 'test';
+        this.value = '';
+        this.input = this.element.find('input');
+        this.close_selector = '#' + this.id + ' .options';
+        this.listeners();
+    }
+
+    set_value(value) {
+        this.value = value;
+        this.input.val(value);
+        expandTitle('Type');
+    }
+
+    show() {
+        this.element.find('.options').addClass('visible');
+        this.element.find('.options-wrapper').addClass('show');
+        closeFunctions[this.close_selector] = this
+    }
+
+    hide() {
+        this.element.find('.options').removeClass('visible');
+        this.element.find('.options-wrapper').removeClass('show');
+        delete closeFunctions[this.close_selector];
+    }
+
+    toggle() {
+        if (this.element.find('.options-wrapper').hasClass('show')) {
+            this.hide();
+        } else {
+            this.show();
+        }
+    }
+
+    select(type) {
+        var value = $(type).find('a').text();
+        this.value = value;
+        if (value == "Custom Type") {
+            this.input.attr('readonly', false);
+            this.input.val('');
+            this.input.focus();
+        } else {
+            this.input.val(value);
+        }
+        expandTitle('Type');
+//        this.hide();
+    }
+
+    unfocus() {
+        this.input.attr("readonly", "readonly");
+    }
+
+    listeners() {
+        this.element.click({func: this.toggle, object: this}, this.dispatch);
+        this.element.find('.type').click({func: this.select, object: this}, this.dispatch);
+        this.input.on("blur", {func: this.unfocus, object: this}, this.dispatch);
     }
 }
 
@@ -97,11 +167,11 @@ class TypeSelect extends JqueryElement {
 class MeetingInfo extends JqueryElement {
     constructor(id) {
         super(id);
-        this.pk = null;
+        this.pk = 0;
         this.site_select = new Dropdown('meeting_site_select', [], {type: 'radio'});
         this.attendance = new Attendance('attendance_container')
-        this.type_select = new TypeSelect('meeting_title_container');
-        this.color_select = new ColorPicker('color_select');
+        this.type_select = new TypeSelect('type_select');
+        this.color_select = new ColorPicker('meeting_color');
         this.date_select = new MultiDatePicker('meeting_date');
         this.time_select = new TimePicker('meeting_time');
         this.start_time = new StartTime('id_start_time', this.date_select, this.time_select);
@@ -109,6 +179,7 @@ class MeetingInfo extends JqueryElement {
         this.programming_select = new ObjectSelect('programming_select', []);
         this.training_select = new ObjectSelect('training_select', []);
         this.file_input = new FileInput('file_input');
+        form_fields['files'] = 'json'
         this.link_input = new LinkInput('link_input');
         var custom_fields = {
             'color': this.color_select,
@@ -116,8 +187,11 @@ class MeetingInfo extends JqueryElement {
             'type': this.type_select,
             'start_time': this.start_time,
             'end_time': this.end_time,
+            'programming': this.programming_select,
+            'modules': this.training_select,
             'links': this.link_input,
-         }
+            'files': this.file_input,
+        }
         this.form = new CustomForm('meeting_form', custom_fields, form_fields, 'id_')
         this.type_select.element.trigger(":change"); // Only for test. REMOVE
         this.color_select.element.trigger(":change");
@@ -126,10 +200,13 @@ class MeetingInfo extends JqueryElement {
         this.listeners();
     }
 
-    show(pk) {
+    show(pk, date) {
+        this.form.erase_data();
         if (pk) {
             this.pk = pk;
             this.get_meeting_info();
+        } else {
+            this.pk = 0;
         }
 
         // Set site select options
@@ -138,6 +215,11 @@ class MeetingInfo extends JqueryElement {
         this.site_select.initialize();
         var first_site_value = this.site_select.element.find('.option').first().find('input').val();
         this.site_select.set_value(first_site_value);
+
+        // Set date
+        if (date) {
+            this.date_select.set_value([date]);
+        }
 
         this.element.addClass('show');
         this.attendance.element.addClass('modal-shadow');
@@ -150,15 +232,30 @@ class MeetingInfo extends JqueryElement {
     }
 
     get_meeting_info() {
-
+        var data = {
+            'pk': this.pk,
+            'lists': [],
+        }
+        $.ajax({
+            url: url_get_meeting_info,
+            type: 'GET',
+            data: data,
+            context: this,
+            beforeSend: function() {
+                this.loader.show();
+            },
+            success: this.initialize_form,
+            complete: function() {
+                this.loader.hide();
+            },
+        });
     }
 
-    initialize_form() {
-
+    initialize_form(data) {
+        this.form.set_data(data.meeting_data);
     }
 
     submit_form() {
-        console.log($("#id_type").val());
 //        var set_files = (this.base_info.hasOwnProperty("pk")) ? this.base_info["pk"] : null;
         var data = this.file_input.form_data;
 //        var delete_files = JSON.stringify(this.file_input.delete_files);
@@ -167,6 +264,7 @@ class MeetingInfo extends JqueryElement {
 //        data.append('set_files', set_files)
         data.append('form', this.form.element.serialize());
         data.append('dates', JSON.stringify(this.date_select.value));
+        data.append('delete_files', JSON.stringify(this.file_input.delete_files));
         var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
         $.ajax({
             url: url_meeting_post.slice(0,-1) + this.pk,
@@ -191,8 +289,10 @@ class MeetingInfo extends JqueryElement {
     }
 
     submit_success(data) {
-        this.element.trigger(":update");
         console.log(data);
+        this.pk = data.id;
+        this.form.set_data(data);
+        this.element.trigger(":update");
     }
 
     get_user_filtersets() {
@@ -353,10 +453,16 @@ class Calendar extends JqueryElement {
 
     show_meeting(element) {
         var pk = null;
+        var date = null;
         if ($(element).hasClass('calendar-meeting')) {
             var pk = $(element).attr('data-pk');
+        } else {
+            var year = this.year.text();
+            var month = this.month.attr('data-number');
+            var day = $(element).siblings('.monthnum').text().padStart(2, '0');
+            date = [year, month, day].join('-');
         }
-        this.meeting_info.show(pk);
+        this.meeting_info.show(pk, date);
     }
 
     make_meeting_text_color(color_str) {
@@ -396,7 +502,7 @@ class Calendar extends JqueryElement {
                 var color = meeting_info['color'];
                 var text_color = this.make_meeting_text_color(color);
                 var meeting = $('<div/>')
-                    .addClass('calendar-meeting')
+                    .addClass('calendar-meeting relative')
                     .css('background-color', color)
                     .attr('data-pk', meeting_info['pk'])
                     .attr('data-sitepk', meeting_info['site']);
@@ -408,6 +514,10 @@ class Calendar extends JqueryElement {
                 } else {
                     title.text(meeting_info['type']);
                 }
+                var click_wrapper = $('<a/>')
+                    .attr('href', '#')
+                    .addClass('show-wrapper');
+                meeting.append(click_wrapper);
                 meeting.append(title)
                 meetings_container.append(meeting);
             }

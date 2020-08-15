@@ -59,6 +59,7 @@
 <script>
   var form_fields = JSON.parse($('#form_fields').text());
   var url_meeting_post = '{% url 'post-meeting-info' 0 %}';
+  var url_get_meeting_info = '{% url 'get-meeting-info' %}';
 </script>
 <script src="{% static 'meetings/js/new_meeting.js' %}"></script>
 {% endblock js %}

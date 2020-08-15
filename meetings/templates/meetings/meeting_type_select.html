@@ -1,12 +1,12 @@
-<div class="relative">
-  <div id="meeting_title_container">
-    <div class="container">
+<div id="type_select" class="relative">
+  <div class="input-container">
+    <div class="input-wrapper">
       <span class="expanding_size">Type</span>
       {{ form.type }}
     </div>
   </div>
-  <div id="type_select">
-    <div class="container">
+  <div class="options">
+    <div class="options-wrapper">
       {% for type in form.type_choices %}
       <div class="type">
         <a href="#" class="blacklink">{{ type }}</a>

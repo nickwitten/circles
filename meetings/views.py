@@ -1,5 +1,6 @@
+from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse, Http404
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 import datetime
 from . import models
 from . import forms
@@ -48,25 +49,10 @@ def get_meeting_info(request):
         raise Http404()
     pk = request.GET.get('pk')
     lists = request.GET.get('lists')
-    meetings = request.user.userinfo.user_meeting_access()
-    meeting = meetings.filter(pk=pk).first()
-    if meeting:
-        start_date = meeting.start_time.date().strftime('%m/%d/%Y')
-        start_time = meeting.start_time.time().strftime('%H:%M:%S')
-        end_time = meeting.end_time.time().strftime('%H:%M:%S')
-        saved_lists = meeting.attendance_lists.all()
-        list_pks = [list.pk for list in saved_lists]
-        attendees = [attendee.pk for attendee in meeting.attendees.all()]
-        type = meeting.type
-        color = meeting.color
-        site = meeting.site.pk
-        location = meeting.location
-        notes = meeting.notes
-        files = [(MeetingFile.title, MeetingFile.pk, settings.MEDIA_URL + MeetingFile.file.name) for MeetingFile in meeting.files.all()]
-        links = meeting.links
-    else:
-        attendees = []
-        pk = type = start_date = start_time = end_time = list_pks = color = site = location = notes = links = files = None
+    meeting = get_object_or_404(models.Meeting, pk=pk)
+    if meeting not in request.user.userinfo.user_meeting_access():
+        raise PermissionDenied('Access Denied')
+    saved_lists = meeting.attendance_lists.all()
     if not lists:
         lists = [list.filters for list in saved_lists]
     else:
@@ -77,20 +63,8 @@ def get_meeting_info(request):
         people_objs += filter_profiles(request.user.userinfo.user_profile_access(), json.loads(filterset))
     people = list(set([(str(profile), profile.pk) for profile in people_objs]))
     data = {
-        'pk': pk,
-        'type': type,
-        'start_date': start_date,
-        'start_time': start_time,
-        'end_time': end_time,
-        'attendance_lists': list_pks,
-        'attendees': attendees,
         'people': people,
-        'color': color,
-        'site': site,
-        'location': location,
-        'notes': notes,
-        'links': links,
-        'files': files,
+        'meeting_data': meeting.to_dict() if meeting else None,
     }
     return JsonResponse(data)
 
@@ -99,61 +73,37 @@ def post_meeting_info(request, pk):
         raise Http404()
     if request.method == 'POST':
         form_dict = QueryDict(request.POST.get('form'))
-        print(form_dict)
         dates = json.loads(request.POST.get('dates'))
-        pks = []
-        # Create on multiple dates
-        if len(dates) > 1:
-            old_meeting = None
-            meeting_files = []
-            if pk:
-                old_meeting = models.Meeting.objects.get(pk=pk)
-                meeting_files = old_meeting.files.all()  # Get attached files
-            for i, date in enumerate(dates):
-                form = forms.MeetingCreationForm(form_dict, user=request.user)
-                if form.is_valid():
-                    meeting = form.save(commit=False)
-                    # Change Date
-                    month = int(date[0:2])
-                    day = int(date[3:5])
-                    year = int(date[6:])
-                    start_time = meeting.start_time.replace(month=month, day=day, year=year)
-                    end_time = meeting.end_time.replace(month=month, day=day, year=year)
-                    meeting.start_time = start_time
-                    meeting.end_time = end_time
-                    meeting.save()
-                    pks += [meeting.pk]
-                    # Copy over attached files
-                    for MeetingFile in meeting_files:
-                        if i:
-                            title = MeetingFile.title
-                            new_meeting_file = models.MeetingFile(meeting=meeting, title=title)
-                            MeetingFile.file.seek(0)
-                            file = ContentFile(MeetingFile.file.read())
-                            file.name = MeetingFile.file.name.split('/')[-1]
-                            new_meeting_file.file = file
-                            new_meeting_file.save()
-                        else:
-                            MeetingFile.meeting = meeting
-                            MeetingFile.save()
-                else:
-                    pks = [0]
-                    break
-            if old_meeting:
-                old_meeting.delete()
-        else:
-            # Update single meeting
-            if pk:
-                meeting = models.Meeting.objects.get(pk=pk)
-                form = forms.MeetingCreationForm(form_dict, user=request.user, instance=meeting)
-            # Create single meeting
+        files = request.FILES
+        delete_files = request.POST.get('delete_files', None)
+        files['delete_files'] = json.loads(delete_files) if delete_files else None
+        base_meeting = None
+        if pk:
+            files['set_files'] = pk
+            meeting = models.Meeting.objects.get(pk=pk)
+            form = forms.MeetingCreationForm(form_dict, user=request.user, instance=meeting)
+            if form.is_valid():
+                base_meeting = form.save()
+                base_meeting.save(files=files)
+                dates.pop(0)
             else:
-                form = forms.MeetingCreationForm(form_dict, user=request.user)
-            meeting = form.save() if form.is_valid() else None
-            print(form.errors)
-            print(form.cleaned_data)
-            pks = [meeting.pk] if meeting else [0]
-        data = {'pks':pks}
+                return JsonResponse({})
+        created_meetings = []
+        for date in dates:
+            form = forms.MeetingCreationForm(form_dict, user=request.user)
+            if form.is_valid():
+                meeting = form.save(commit=False)
+                # Change Date
+                year = int(date[0:4])
+                month = int(date[5:7])
+                day = int(date[8:])
+                meeting.start_time = meeting.start_time.replace(month=month, day=day, year=year)
+                meeting.end_time = meeting.end_time.replace(month=month, day=day, year=year)
+                meeting.save(files=files)
+                created_meetings += [meeting]
+            else:
+                return JsonResponse({})
+        data = base_meeting.to_dict() if base_meeting else created_meetings[0].to_dict()
         return JsonResponse(data)
 
 def meeting_files(request, pk):
