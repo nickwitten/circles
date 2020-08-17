@@ -6,6 +6,7 @@ import os
 from circles import settings
 from dashboard.models import FileFieldMixin, JsonM2MFieldModelMixin
 import learning.models as learning_models
+import members.models as members_models
 
 class Meeting(FileFieldMixin ,JsonM2MFieldModelMixin, models.Model):
     type = models.CharField(max_length=64)
@@ -15,13 +16,15 @@ class Meeting(FileFieldMixin ,JsonM2MFieldModelMixin, models.Model):
     programming_objects = models.ManyToManyField(learning_models.Programming,
                                                  blank=True, related_name='programming')
     modules = models.TextField(default='[]', blank=True)
-    module_objects = models.ManyToManyField(learning_models.Module,
+    modules_objects = models.ManyToManyField(learning_models.Module,
                                             blank=True, related_name='modules')
     location = models.CharField(max_length=128, blank=True)
     start_time = models.DateTimeField(verbose_name="Start Time", )
     end_time = models.DateTimeField(verbose_name="End Time")
-    attendance_lists = models.ManyToManyField(FilterSet, blank=True)
-    attendees = models.ManyToManyField(Profile, blank=True)
+    lists = models.TextField(default='[]', blank=True)
+    lists_objects = models.ManyToManyField(FilterSet, blank=True)
+    attendees = models.TextField(default='[]', blank=True)
+    attendees_objects = models.ManyToManyField(Profile, blank=True)
     color = models.CharField(max_length=32)
     notes = models.TextField(blank=True)
     links = models.TextField()
@@ -29,7 +32,9 @@ class Meeting(FileFieldMixin ,JsonM2MFieldModelMixin, models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.JsonM2MFields = [['programming', learning_models.Programming],
-                              ['module', learning_models.Module]]
+                              ['modules', learning_models.Module],
+                              ['lists', members_models.FilterSet],
+                              ['attendees', members_models.Profile]]
         self.FileModelClass = MeetingFile
 
     def __str__(self):

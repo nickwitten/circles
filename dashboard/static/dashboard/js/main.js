@@ -530,19 +530,19 @@ class CustomForm extends JqueryElement {
                 this.element.find('#' + this.field_prefix + field).val(data[field]);
             }
         }
+        this.element.trigger(':change');
     }
 
     update_form(element, e, extra_data) {
         var form_field = this.element.find('#' + this.field_prefix + extra_data['field_name']);
         form_field.val(extra_data['custom_object'].value);
+        this.element.trigger(':change');
     }
 
     erase_data() {
         var reset_data = {}
         for (const field in this.form_fields) {
             if (this.custom_fields.hasOwnProperty(field)) {
-                console.log(field)
-                console.log(this.custom_fields[field].default_value);
                 reset_data[field] = this.custom_fields[field].default_value;
             } else if (this.form_fields[field] == 'text') {
                 reset_data[field] = '';
@@ -556,11 +556,18 @@ class CustomForm extends JqueryElement {
 
     listeners() {
         // custom fields on ":change" update form
-        for (const field in this.custom_fields) {
-            var custom_info = {'field_name': field, 'custom_object': this.custom_fields[field]};
-            this.custom_fields[field].element.on(":change", {
-                func: this.update_form, object: this, extra_data: custom_info
-            }, this.dispatch);
+        var form = this
+        for (const field in this.form_fields) {
+            if (this.custom_fields.hasOwnProperty(field)) {
+                var custom_info = {'field_name': field, 'custom_object': this.custom_fields[field]};
+                this.custom_fields[field].element.on(":change", {
+                    func: this.update_form, object: this, extra_data: custom_info
+                }, this.dispatch);
+            } else {
+                $('#' + this.field_prefix + field).change(function() {
+                    form.element.trigger(':change');
+                });
+            }
         }
     }
 }
@@ -732,7 +739,6 @@ class FileInput extends JqueryElement {
     }
 
     set_value(value) {
-        console.log(value);
         this.delete_files = [];
         this.input_element.val('');
         this.list_element.empty();
@@ -759,6 +765,7 @@ class FileInput extends JqueryElement {
     delete_file(delete_btn) {
         this.delete_files.push($(delete_btn).attr("value"));
         $(delete_btn).closest('.file').remove();
+        this.element.trigger(':change');
     }
 
     item_listeners() {
@@ -945,7 +952,6 @@ class DatePicker extends JqueryElement{
         this.element.removeClass('shadow');
         this.element.find('.select-container').removeClass('visible');
         this.element.find('.date-select').removeClass('show');
-        this.listeners();
         this.element.find('.show-wrapper').show();
         delete closeFunctions['.date-select'];
     }

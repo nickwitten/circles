@@ -1,70 +1,70 @@
-  <div id="meeting_info_container">
-    <form id="meeting_form">
-      {% csrf_token %}
-      {{ form.site.as_hidden }}
-      {{ form.start_time.as_hidden }}
-      {{ form.end_time.as_hidden }}
-      {{ form.attendance_lists.as_hidden }}
-      {{ form.attendees.as_hidden }}
-      {{ form.color.as_hidden }}
-      {{ form.links.as_hidden }}
-      <a id="meeting_back_btn" class="fas fa-times back blacklink" href="#"></a>
-      <div id="meeting_header">
-        {% include 'meetings/meeting_type_select.html' %}
-        <i id="meeting_delete_btn" class="far fa-trash-alt text-small d-inline-block"></i>
-        {% include 'dashboard/color_select.html' with id='meeting_color' %}
-      </div>
-      <div id="datetime_container">
-        {% include 'dashboard/date_picker.html' with id='meeting_date' %}
-        {% include 'dashboard/time_picker.html' with id='meeting_time' %}
-      </div>
-      <div id="meeting_content">
-        <table>
-          <tr>
-            <td>
-              <p>Site:</p>
-            </td>
-            <td>
-              <div id="meeting_site_select" class="multi-level-dropdown"></div>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <p>Address:</p>
-            </td>
-            <td>
-              {{ form.location }}
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <p>Programming:</p>
-            </td>
-            <td>
-              <div id="programming_select" class="dropdown"></div>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <p>Training:</p>
-            </td>
-            <td>
-              <div id="training_select" class="multi-level-dropdown"></div>
-            </td>
-          </tr>
-        </table>
-        {{ form.notes }}
-        <div id="file_input" class="file-input"></div>
-        <div id="link_input" class="link-input"></div>
-        <div class="buttons">
-          <a id="meeting_submit_btn" class="btn btn-outline-secondary" data-pk="0" href="#">Save</a>
-          <a id="attendance_btn" class="btn btn-outline-secondary" href="#">Attendance</a>
-        </div>
-      </div>
-    </form>
-    <div class="loading" style="display:none;">
-      <div class="center">
-        <div class="spinner"></div>
+<div id="meeting_info_container">
+  <form id="meeting_form">
+    {% csrf_token %}
+    {{ form.site.as_hidden }}
+    {{ form.start_time.as_hidden }}
+    {{ form.end_time.as_hidden }}
+    {{ form.lists.as_hidden }}
+    {{ form.attendees.as_hidden }}
+    {{ form.color.as_hidden }}
+    {{ form.links.as_hidden }}
+    <a id="meeting_back_btn" class="fas fa-times back blacklink" href="#"></a>
+    <div id="meeting_header">
+      {% include 'meetings/meeting_type_select.html' %}
+      <a href="#" id="meeting_delete_btn" class="far fa-trash-alt text-small d-inline-block blacklink"></a>
+      {% include 'dashboard/color_select.html' with id='meeting_color' %}
+    </div>
+    <div id="datetime_container">
+      {% include 'dashboard/date_picker.html' with id='meeting_date' %}
+      {% include 'dashboard/time_picker.html' with id='meeting_time' %}
+    </div>
+    <div id="meeting_content">
+      <table>
+        <tr>
+          <td>
+            <p>Site:</p>
+          </td>
+          <td>
+            <div id="meeting_site_select" class="multi-level-dropdown"></div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>Address:</p>
+          </td>
+          <td>
+            {{ form.location }}
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>Programming:</p>
+          </td>
+          <td>
+            <div id="programming_select" class="dropdown"></div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>Training:</p>
+          </td>
+          <td>
+            <div id="training_select" class="multi-level-dropdown"></div>
+          </td>
+        </tr>
+      </table>
+      {{ form.notes }}
+      <div id="file_input" class="file-input"></div>
+      <div id="link_input" class="link-input"></div>
+      <div class="buttons">
+        <a id="meeting_submit_btn" class="btn btn-outline-secondary" data-pk="0" href="#">Save</a>
+        <a id="attendance_btn" class="btn btn-outline-secondary" href="#">Attendance</a>
       </div>
     </div>
+  </form>
+  <div class="loading" style="display:none;">
+    <div class="center">
+      <div class="spinner"></div>
+    </div>
   </div>
+</div>

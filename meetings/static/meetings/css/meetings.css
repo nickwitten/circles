@@ -259,91 +259,20 @@
 
 
 
-/*
-#file_input, #link_input {
-    display: flex;
-}
-#file_input .fa-file-upload,
-#link_upload {
-    margin: 8px 0;
-}
-#file_input .fa-file-upload {
-    margin-right: 4px;
-}
-#files, #links {
-    display: flex;
-    flex-flow: row wrap;
-    max-height: 33px;
-    overflow-y: auto;
-}
-#files label {
-    margin: 0;
-}
-#files .file,
-#links .link {
-    display: flex;
-    flex-flow: row;
-    align-items: center;
-    margin: 0.2em 0.5em;
-    padding: 0.1em 0.5em;
-    border: solid 1px #dee2e6;
-    border-radius: 3px;
-}
-#files a,
-#links a {
-    font-size: 10px;
-}
-#files .delete,
-#links .delete {
-    color: #848484;
-    font-size: small;
-    margin: 5px 0px 3px 10px;
-}
-
-#link_modal {
-    align-content: flex-start;
-    height: 30%;
-}
-#link_modal .container {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-around;
-    align-items: center;
-    height: 30%;
-    margin: 2px 0;
-}
-#link_modal .container input {
-    width: 50%;
-}
-#link_modal .container p {
-    width: 25%;
-}
-#link_modal button {
-    position: absolute;
-}
-#link_modal .upload-btn {
-    bottom: 0.5em;
-    right: 3em;
-}
-#link_modal .cancel-btn {
-    bottom: 0.5em;
-    left: 3em;
-}
-*/
-
-
 
 
 #attendance_container {
     position: absolute;
+    display: flex;
+    flex-flow: column;
     background-color: white;
     height: 100%;
     width: 25%;
     min-width: 187px;
     left: -100%;
     z-index: 2;
+    padding: 2rem 1rem;
     transition: all 0.2s ease-in-out;
-    border-radius: 5px;
 }
 #attendance_container.show {
     left: 50%;
@@ -353,44 +282,13 @@
     -moz-box-shadow:   0 0 0 999em rgba(0, 0, 0, 0.4);  /* Firefox 3.5 - 3.6 */
     box-shadow:        0 0 0 999em rgba(0, 0, 0, 0.4);  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
 }
+#attendance_container,
 #attendance_container .loading {
     border-radius: 5px;
 }
-#lists_container {
-    position: relative;
-    margin: 22px auto 0 auto;
-    width: 80%;
-}
-#list_select {
-    position: relative;
-}
-#attendance_container .lists {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background-color: white;
-    border-top: 1px solid #dee2e6;
-    border-radius: 2px;
-    max-height: 400px;
-    overflow-y: auto;
-}
-#lists_container .list_container {
-    display: flex;
-    flex-flow: row nowrap;
-    border-left: 1px solid #dee2e6;
-    border-bottom: 1px solid #dee2e6;
-    border-right: 1px solid #dee2e6;
-    background-color: white;
-    align-content: center;
-    padding: 5px 0;
-}
-#attendance_container .list {
-    display: flex;
-    margin: 0;
-    color: black;
-}
+
+
+
 
 #people_select {
     display: flex;

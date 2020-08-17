@@ -90,6 +90,11 @@ class FileFieldMixin:
             files['delete_files'] = delete_files
             files['set_files'] = set_files
 
+    def delete(self, **kwargs):
+        for file in self.files.all():
+            file.delete_file()
+        super().delete(**kwargs)
+
     def _create_delete_files(self, files, delete_files):
         for title, file in files.items():
             file_info = {'title': title, 'file': file, 'model': self}

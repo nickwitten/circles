@@ -11,6 +11,7 @@ class CalendarMenu extends Menu {
 class Attendance extends JqueryElement {
     constructor(id) {
         super(id);
+        this.list_select = new Dropdown('list_select', [], {placeholder: 'Lists'});
         this.listeners();
         this.close_selector = '#' + this.id + ', #attendance_btn';
     }
@@ -142,12 +143,17 @@ class TypeSelect extends JqueryElement {
         if (value == "Custom Type") {
             this.input.attr('readonly', false);
             this.input.val('');
+            this.value = '';
             this.input.focus();
         } else {
             this.input.val(value);
         }
         expandTitle('Type');
-//        this.hide();
+    }
+
+    update_value() {
+        this.value = this.input.val();
+        this.element.trigger(':change');
     }
 
     unfocus() {
@@ -158,6 +164,7 @@ class TypeSelect extends JqueryElement {
         this.element.click({func: this.toggle, object: this}, this.dispatch);
         this.element.find('.type').click({func: this.select, object: this}, this.dispatch);
         this.input.on("blur", {func: this.unfocus, object: this}, this.dispatch);
+        this.input.change({func: this.update_value, object: this}, this.dispatch);
     }
 }
 
@@ -168,6 +175,7 @@ class MeetingInfo extends JqueryElement {
     constructor(id) {
         super(id);
         this.pk = 0;
+        this.changes_saved = true;
         this.site_select = new Dropdown('meeting_site_select', [], {type: 'radio'});
         this.attendance = new Attendance('attendance_container')
         this.type_select = new TypeSelect('type_select');
@@ -220,15 +228,39 @@ class MeetingInfo extends JqueryElement {
         if (date) {
             this.date_select.set_value([date]);
         }
+        this.element.trigger(":monthsync");
 
         this.element.addClass('show');
         this.attendance.element.addClass('modal-shadow');
         this.get_user_filtersets();
     }
 
-    hide() {
+    hide(element, e, data) {
+        var force = (data && data.hasOwnProperty('force')) ? data.force : false;
+        if (!this.changes_saved && !force) {
+            this.discard_changes_modal();
+            return
+        }
         this.element.removeClass('show');
         this.attendance.element.removeClass('modal-shadow');
+    }
+
+    discard_changes_modal() {
+        var type = this.type_select.value;
+        var site = this.site_select.element.find('input:checked').siblings('p').text();
+        var build_func = function() {
+            this.element.find('.header-text').text('Discard Changes?');
+            var text = $('<p/>').text([site, type].join(' - ')).addClass('text-medium');
+            var content = this.element.find('.content-container');
+            content.empty();
+            content.append(text);
+        }
+        var action_data = {func: this.hide, object: this, extra_data: {'force': true}};
+        new Modal('modal', {
+            build_func: build_func,
+            action_func: this.dispatch,
+            action_data: action_data,
+        });
     }
 
     get_meeting_info() {
@@ -253,15 +285,14 @@ class MeetingInfo extends JqueryElement {
 
     initialize_form(data) {
         this.form.set_data(data.meeting_data);
+        this.changes_saved = true;
     }
 
     submit_form() {
-//        var set_files = (this.base_info.hasOwnProperty("pk")) ? this.base_info["pk"] : null;
+        if (!this.form_validation()) {
+            return
+        }
         var data = this.file_input.form_data;
-//        var delete_files = JSON.stringify(this.file_input.delete_files);
-//        var set_files = (this.base_info.hasOwnProperty("pk")) ? this.base_info["pk"] : null;
-//        data.append('delete_files', delete_files);
-//        data.append('set_files', set_files)
         data.append('form', this.form.element.serialize());
         data.append('dates', JSON.stringify(this.date_select.value));
         data.append('delete_files', JSON.stringify(this.file_input.delete_files));
@@ -288,11 +319,71 @@ class MeetingInfo extends JqueryElement {
         });
     }
 
+    form_validation() {
+        if (this.date_select.value.length < 1) {
+            addAlertHTML('At least one date required.', 'danger');
+            return false
+        }
+        if (this.type_select.value.length < 1) {
+            addAlertHTML('Meeting type required.', 'danger');
+            return false
+        }
+        return true
+    }
+
     submit_success(data) {
-        console.log(data);
         this.pk = data.id;
         this.form.set_data(data);
+        this.changes_saved = true;
         this.element.trigger(":update");
+    }
+
+    delete_meeting_modal() {
+        console.log(this.changes_saved);
+        if (!this.changes_saved) {
+            addAlertHTML('Save changes before deleting.', 'secondary');
+            return
+        }
+        var type = this.type_select.value;
+        var site = this.site_select.element.find('input:checked').siblings('p').text();
+        var build_func = function() {
+            this.element.find('.header-text').text('Delete Meeting?');
+            var text = $('<p/>').text([site, type].join(' - ')).addClass('text-medium');
+            var content = this.element.find('.content-container');
+            content.empty();
+            content.append(text);
+        }
+        var action_data = {func: this.delete_meeting, object: this};
+        new Modal('modal', {
+            build_func: build_func,
+            action_func: this.dispatch,
+            action_data: action_data,
+        });
+    }
+
+    delete_meeting() {
+        var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
+        $.ajax({
+            url: url_delete_meeting.slice(0,-1) + this.pk,
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+            },
+            context: this,
+            beforeSend: function() {
+                this.loader.show();
+            },
+            success: function() {
+                this.hide();
+                this.element.trigger(':update');
+            },
+            error: function() {
+                addAlertHTML('Something went wrong.', 'danger');
+            },
+            complete: function() {
+                this.loader.hide();
+            },
+        });
     }
 
     get_user_filtersets() {
@@ -312,9 +403,12 @@ class MeetingInfo extends JqueryElement {
     }
 
     listeners() {
+        var meeting_info = this
         this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
         this.element.find('#attendance_btn').click({func: this.attendance.toggle, object: this.attendance}, this.dispatch);
         this.element.find('#meeting_submit_btn').click({func: this.submit_form, object: this}, this.dispatch);
+        this.element.find('#meeting_delete_btn').click({func: this.delete_meeting_modal, object: this}, this.dispatch);
+        this.form.element.on(':change', function() {meeting_info.changes_saved = false});
     }
 }
 
@@ -354,6 +448,14 @@ class Calendar extends JqueryElement {
         // True means meetings were queried and rest was handled by success
         if (!this.check_meetings_query(month_offset, step, current_date[0], current_date[1])) {
             this.show_weeks();
+        }
+    }
+
+    change_month(btn) {
+        if ($(btn).hasClass('next')) {
+            this.show_month(this.monthOffset++, 1)
+        } else if ($(btn).hasClass('previous')) {
+            this.show_month(this.monthOffset--, -1)
         }
     }
 
@@ -473,6 +575,10 @@ class Calendar extends JqueryElement {
         return hsla;
     }
 
+    month_sync() {
+        this.meeting_info.date_select.month_offset = this.monthOffset;
+    }
+
     build_week(days, include_site) {
         ///// Calendar Week HTML ////////
         var week = $('<ul/>')
@@ -537,8 +643,11 @@ class Calendar extends JqueryElement {
     }
 
     listeners() {
+        this.element.find('.next').click({func: this.change_month, object: this}, this.dispatch);
+        this.element.find('.previous').click({func: this.change_month, object: this}, this.dispatch);
         this.site_select.element.on(":change", {func: this.reload_month, object: this}, this.dispatch);
         this.meeting_info.element.on(":update", {func: this.reload_month, object: this}, this.dispatch);
+        this.meeting_info.element.on(":monthsync", {func: this.month_sync, object: this}, this.dispatch);
     }
 }
 

@@ -9,7 +9,7 @@ class MeetingCreationForm(CustomFormMixin, forms.ModelForm):
 
     class Meta:
         model = models.Meeting
-        exclude = ('programming_objects', 'module_objects')
+        exclude = ('programming_objects', 'modules_objects', 'attendees_objects', 'lists_objects')
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user')
