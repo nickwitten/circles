@@ -102,7 +102,7 @@ def get_profiles(tool_inputs, user):
         filters = json.loads(tool_inputs['filters'])
     except Exception as e:
         print(type(e), e)
-    profiles = user.userinfo.user_profile_access()
+    profiles = user.userinfo.user_profile_access().order_by('last_name')
     profiles = search_profiles(profiles, tool_inputs['searchinput'] or '')
     profiles = filter_profiles(profiles, filters)
     profiles = get_profile_data(profiles, data_type)
@@ -346,3 +346,11 @@ def query_related(related_models, data_type):
     elif 'excurrent' in data_type: related_models = list(related_models.exclude(end_date=None))
 
     return related_models
+
+
+def unique_maintain_order(x):
+    seen = list()
+    seen_add = seen.append
+    z = [y for y in x if not (y in seen or seen_add(y))]
+    return z
+

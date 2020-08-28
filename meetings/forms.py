@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models.query import QuerySet
 
 from dashboard.forms import CustomFormMixin
 from . import models
@@ -9,12 +10,21 @@ class MeetingCreationForm(CustomFormMixin, forms.ModelForm):
 
     class Meta:
         model = models.Meeting
-        exclude = ('programming_objects', 'modules_objects', 'attendees_objects', 'lists_objects')
+        exclude = ('programming_objects', 'modules_objects', 'attendees_objects',)
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user')
+        data = False
+        if 'data' in kwargs:
+            data = True
         super().__init__(*args, **kwargs)
-        self.fields['site'] = forms.ModelChoiceField(user.userinfo.user_site_access())
+        dynamic_model_fields = ['attendees', 'programming', 'modules']
+        if not data:
+            for field in dynamic_model_fields:
+                # Don't render all objects
+                self.fields[field].queryset = self.fields[field].queryset.model.objects.none()
+        self.fields['site'].queryset = user.userinfo.user_site_access()
+        self.fields['lists'].queryset = user.filtersets.all()
         self.fields['type'].widget.attrs['oninput'] = 'expandTitle("Type");'
         self.fields['type'].widget.attrs['class'] = 'expanding_input'
         self.fields['type'].widget.attrs['placeholder'] = 'Type'

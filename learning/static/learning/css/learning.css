@@ -91,7 +91,7 @@ h3 {
     margin: 0.5rem 0;
     padding: 0.5rem 0;
 }
-#items .item-container a {
+#items .item-container p {
     font-size: calc(15px + 0.4vw);
     margin: 0.5rem 0;
 }
@@ -279,12 +279,13 @@ h3 {
 .info-popup.show {
     bottom: 0;
 }
-.info-popup a.back{
+.info-popup i.back{
     right: 10px;
     top: 5px;
     left: inherit;
 }
 .info-popup .header {
+    display: flex;
     margin: 1rem;
     margin-top: 2rem;
     padding: 0.5rem;
@@ -329,7 +330,7 @@ h3 {
     border-top: 1px solid #dee2e6;
     padding: 0.5rem;
 }
-.members-completed .buttons a {
+.members-completed .buttons buttons {
     margin: 0 0.5rem;
 }
 .members-completed th {

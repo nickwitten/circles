@@ -12,9 +12,9 @@
   {% include 'meetings/meeting_info.html' with form=form.0 %}
   {% include 'meetings/attendance_info.html' %}
   <div id="calendar_content" class="content-section shadow p-0 mb-4">
-    <a id="menu_btn" class="fas fa-bars blacklink" href="#"></a>
+    <i id="menu_btn" class="fas fa-bars blacklink"></i>
     <div id="menu">
-      <a href="#" class="fas fa-times back blacklink"></a>
+      <i class="fas fa-times back blacklink"></i>
       <h3>Sites</h3>
       {% include 'dashboard/site_select.html' with id='menu_site_select' type='checkbox' chapters=site_access %}
     </div>
@@ -28,12 +28,16 @@
 
 {% block js %}
 
-<!--<script src="{% static 'meetings/js/meetings.js' %}"></script>-->
 <script>
   var form_fields = JSON.parse($('#form_fields').text());
+  var url_get_members = '{% url 'get-members' %}';
   var url_meeting_post = '{% url 'post-meeting-info' 0 %}';
   var url_get_meeting_info = '{% url 'get-meeting-info' %}';
   var url_delete_meeting = '{% url 'delete-meeting' 0 %}';
+  var url_profile_detail = '{% url 'profile-detail' 0 %}'
+  var url_filtersets = '{% url 'filtersets' %}';
+  var url_learning_models = '{% url 'learning-models' %}';
 </script>
+<!--<script src="{% static 'meetings/js/meetings.js' %}"></script>-->
 <script src="{% static 'meetings/js/new_meeting.js' %}"></script>
 {% endblock js %}

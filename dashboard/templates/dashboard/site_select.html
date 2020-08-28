@@ -10,12 +10,12 @@
         {% if type == 'checkbox' %}
         <input value="{{ chapter.pk }}" type="{{ type }}">
         {% endif %}
-        <a href="#" class="chapter-text blacklink">{{ chapter.str }}</a>
+        <p class="chapter-text blacklink">{{ chapter.str }}</p>
         <div class="sites" style="display: None;">
             {% for site in chapter.sites %}
             <div class="site">
                 <input type="{{ type }}" value="{{ site.pk }}">
-                <a href="#" class="blacklink site-text">{{ site.str }}</a>
+                <p class="blacklink site-text">{{ site.str }}</p>
             </div>
             {% endfor %}
         </div>

@@ -7,9 +7,9 @@ from django.forms import model_to_dict
 import members.models as members_models
 from circles import settings
 
-from dashboard.models import JsonM2MFieldModelMixin, FileFieldMixin
+from dashboard.models import JsonM2MFieldModelMixin, FileFieldMixin, DictMixin
 
-class Programming(FileFieldMixin, JsonM2MFieldModelMixin, models.Model):
+class Programming(FileFieldMixin, JsonM2MFieldModelMixin, DictMixin, models.Model):
     site = models.ForeignKey(members_models.Site, on_delete=models.CASCADE, related_name='programming')
     title = models.CharField(max_length=128)
     length = models.CharField(max_length=32, blank=True)
@@ -38,7 +38,7 @@ class Programming(FileFieldMixin, JsonM2MFieldModelMixin, models.Model):
             super().get_attached_models(klass, pks)
 
 
-class Theme(FileFieldMixin, models.Model):
+class Theme(DictMixin, models.Model):
     site = models.ForeignKey(members_models.Site, on_delete=models.CASCADE, related_name='themes')
     title = models.CharField(max_length=128)
     required_for = models.TextField(default='[]', blank=True)
@@ -59,9 +59,6 @@ class Theme(FileFieldMixin, models.Model):
                 module.required_for = json.dumps(module_required_for)
                 module.save(required_checked=True)
 
-    def to_dict(self):
-        return model_to_dict(self)
-
 
 class ProfileTheme(models.Model):
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, related_name='profiles')
@@ -69,7 +66,7 @@ class ProfileTheme(models.Model):
     date_completed = models.DateField(blank=True, null=True)
 
 
-class Module(FileFieldMixin, JsonM2MFieldModelMixin, models.Model):
+class Module(FileFieldMixin, JsonM2MFieldModelMixin, DictMixin, models.Model):
     site = models.ForeignKey(members_models.Site, on_delete=models.CASCADE, related_name='modules')
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, related_name='modules')
     required_for = models.TextField(default='[]', blank=True)

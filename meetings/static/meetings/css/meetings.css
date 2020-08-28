@@ -1,6 +1,6 @@
 #content_container {
     position: relative;
-    overflow: auto;
+    overflow: hidden;
 }
 
 #calendar_content {
@@ -87,6 +87,10 @@
     position: relative;
     padding-right: 40px;
     max-width: 100%;
+}
+#meeting_form #id_attendees,
+#meeting_form #id_lists {
+    display: none;
 }
 
 
@@ -289,21 +293,25 @@
 
 
 
+#list_select {
+    justify-content: center;
+}
 
-#people_select {
+
+
+
+#attendance_select {
     display: flex;
     flex-flow: row wrap;
-    width: 90%;
-    margin: 0 auto;
-    max-height: 85%;
+    margin: 1rem 0;
     overflow-y: auto;
 }
-#people_select .attendance-item {
+#attendance_select .attendance-item {
     display: flex;
     width: 100%;
     padding: 0.5em;
     border: 1px solid #dee2e6;
 }
-#people_select a {
+#attendance_select a {
     margin: 0 0.5em;
 }

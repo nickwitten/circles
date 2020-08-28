@@ -9,7 +9,7 @@
 
 {% block content %}
 <div id="main_container" class="shadow container">
-    <a href="#" id="menu_btn" class="fas fa-bars blacklink"></a>
+    <i id="menu_btn" class="fas fa-bars blacklink"></i>
     <div id="header" class=" border-bottom">
         <div id="learning_type_select" class="multi-level-dropdown">
 
@@ -30,9 +30,9 @@
         </div>
         <div class="right">
             <div class="mt-4">
-                <a id="create_programming" href="#" class="btn btn-outline-secondary">+ Programming</a>
-                <a id="create_theme" href="#" class="btn btn-outline-secondary">+ Theme</a>
-                <a id="create_module" href="#" class="btn btn-outline-secondary">+ Module</a>
+                <button id="create_programming" class="btn btn-outline-secondary">+ Programming</button>
+                <button id="create_theme" class="btn btn-outline-secondary">+ Theme</button>
+                <button id="create_module" class="btn btn-outline-secondary">+ Module</button>
             </div>
         </div>
         {% for form in forms %}
@@ -40,7 +40,7 @@
         {% endfor %}
     </div>
     <div id="menu">
-        <a href="#" class="fas fa-times back blacklink"></a>
+        <i class="fas fa-times back blacklink"></i>
         <h3>Sites</h3>
         {% include 'dashboard/site_select.html' with id='menu_site_select' type='radio' chapters=sites %}
     </div>
@@ -67,7 +67,6 @@
         'module': JSON.parse($('#module_fields').text()),
     };
     var url_learning_models = "{% url 'learning-models' %}";
-    var url_learning_files = "{% url 'learning-files' %}";
     var url_members_completed = "{% url 'members-completed' %}";
     var url_profile_detail = "{% url 'profile-detail' pk=0 %}";
     var url_get_profiles = "{% url 'get-profiles' %}";

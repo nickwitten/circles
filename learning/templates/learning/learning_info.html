@@ -4,11 +4,11 @@
             <div class="spinner"></div>
         </div>
     </div>
-    <a href="#" class="info back fas fa-times"></a>
+    <i class="info back fas fa-times blacklink"></i>
     <div class="title border-bottom">
         <h6 class="title-text"></h6>
-        <a href="#" class="edit-btn far fa-edit blacklink" style="display: none;"></a>
-        <a href="#" class="delete-btn far fa-trash-alt blacklink"></a>
+        <i class="edit-btn far fa-edit blacklink" style="display: none;"></i>
+        <i class="delete-btn far fa-trash-alt blacklink"></i>
     </div>
     <div class="content">
         <div id="{{ type }}_detail" class="detail fields-container">
@@ -125,14 +125,14 @@
                 </div>
                 {% endif %}
                 <div class="flex j-center">
-                    <a href="#" class="edit-more-btn text-small btn btn-outline-secondary" style="display: None;">Edit More Fields</a>
+                    <button class="edit-more-btn text-small btn btn-outline-secondary" style="display: None;">Edit More Fields</button>
                 </div>
             </form>
             <div class="btn-container">
                 <div class="">
-                    <a href="#" class="more-info btn text-small btn-outline-secondary mb-1">More Info</a>
+                    <button class="more-info btn text-small btn-outline-secondary mb-1">More Info</button>
                 </div>
-                <a href="#" class="save-btn btn btn-outline-secondary mb-1 text-small">Save</a>
+                <button class="save-btn btn btn-outline-secondary mb-1 text-small">Save</button>
             </div>
         </div>
     </div>
@@ -142,13 +142,13 @@
                 <div class="spinner"></div>
             </div>
         </div>
-        <a href="#" class="more-info back fas fa-times"></a>
+        <i class="more-info back fas fa-times blacklink"></i>
         <div class="header border-bottom">
             {% if type == 'module' or type == 'theme' %}
-            <a href="#" class="members-completed-btn header-btn active blacklink">Members Completed</a>
+            <p class="members-completed-btn header-btn active blacklink">Members Completed</p>
             {% endif %}
             {% if type == 'module' or type == 'programming' %}
-            <a href="#" class="schedule-btn header-btn blacklink">Schedule</a>
+            <p class="schedule-btn header-btn blacklink">Schedule</p>
             {% endif %}
         </div>
         <div class="content">
@@ -206,8 +206,8 @@
                     </table>
                 </div>
                 <div class="buttons">
-                    <a href="#" class="add-member-btn btn btn-outline-secondary text-small">Add Member</a>
-                    <a href="#" class="remove-member-btn btn btn-outline-secondary text-small">Remove Member</a>
+                    <button class="add-member-btn btn btn-outline-secondary text-small">Add Member</button>
+                    <button class="remove-member-btn btn btn-outline-secondary text-small">Remove Member</button>
                 </div>
             </div>
             <div class="schedule">

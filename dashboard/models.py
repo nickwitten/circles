@@ -10,6 +10,16 @@ from django.forms import model_to_dict
 from circles import settings
 
 
+class DictMixin:
+
+    def to_dict(self):
+        data = model_to_dict(self)
+        for key, value in data.items():
+            if isinstance(value, list) and isinstance(next(iter(value), None), models.Model):
+                data[key] = [model.pk for model in value]
+        return data
+
+
 class JsonM2MFieldModelMixin:
     JsonM2MFields = []
 

@@ -1,11 +1,11 @@
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import JsonResponse, Http404
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 import datetime
 from meetings import models
 from meetings import forms
-from members.data import filter_profiles
+from members.data import filter_profiles, unique_maintain_order
 from members.models import FilterSet
 from django.http import QueryDict
 import json
@@ -52,16 +52,26 @@ def get_meeting_info(request):
     return JsonResponse(data)
 
 @login_required
-def get_people(request):
+def get_members(request):
     lists = request.GET.get('lists')
-    lists = [int(lst['pk']) for lst in json.loads(lists)]
-    lists = [list.filters for list in FilterSet.objects.filter(pk__in=lists)]
+    meeting = request.GET.get('meeting', None)
+    if not lists:
+        raise ValidationError()
+    lists = json.loads(lists)
+    lists = [lst.filters for lst in FilterSet.objects.filter(pk__in=lists)]
     people_objs = []
     for filterset in lists:
-        people_objs += filter_profiles(request.user.userinfo.user_profile_access(), json.loads(filterset))
-    people = list(set([(str(profile), profile.pk) for profile in people_objs]))
+        people_objs += filter_profiles(request.user.userinfo.user_profile_access().order_by('last_name'), json.loads(filterset))
+    if int(meeting):
+        meeting = request.user.userinfo.user_meeting_access().filter(pk=meeting).first()
+        if not meeting:
+            raise Http404
+        for attendee in meeting.attendees.all().order_by('last_name'):
+            people_objs += [attendee] if attendee not in people_objs else []
+    people = unique_maintain_order(people_objs)
+    people = [(str(profile), profile.pk) for profile in people]
     data = {
-        'people': people,
+        'members': people,
     }
     return JsonResponse(data)
 
@@ -77,16 +87,17 @@ def post_meeting_info(request, pk):
         if pk:
             files['set_files'] = pk
             meeting = models.Meeting.objects.get(pk=pk)
-            form = forms.MeetingCreationForm(form_dict, user=request.user, instance=meeting)
+            form = forms.MeetingCreationForm(data=form_dict, user=request.user, instance=meeting)
             if form.is_valid():
                 base_meeting = form.save()
                 base_meeting.save(files=files)
                 dates.pop(0)
             else:
+                print(form.errors)
                 return JsonResponse({})
         created_meetings = []
         for date in dates:
-            form = forms.MeetingCreationForm(form_dict, user=request.user)
+            form = forms.MeetingCreationForm(data=form_dict, user=request.user)
             if form.is_valid():
                 meeting = form.save(commit=False)
                 # Change Date

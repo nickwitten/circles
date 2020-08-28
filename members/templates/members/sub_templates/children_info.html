@@ -5,10 +5,10 @@
       <div class="border-bottom m-3 pb-2">
         <h6 class="mb-1 d-inline-block">{{ child.last_name }}, {{ child.first_name }} {{ child.middle_initial }}.</h6>
         {% if 'childrenedit' in request.path %}
-        <a href="#" class="modal-trigger blacklink far fa-edit icon-btn text-small mb-2 ml-2" data-id="{% url 'update-child' child.pk %}" type="button" name="button">
-        </a>
-        <a href="#" class="modal-trigger blacklink far fa-trash-alt icon-btn text-small mb-2 ml-2" data-id="{% url 'delete-child' child.pk %}" type="button" name="button">
-        </a>
+        <i class="modal-trigger blacklink far fa-edit icon-btn text-small mb-2 ml-2" data-id="{% url 'update-child' child.pk %}" type="button" name="button">
+        </i>
+        <i class="modal-trigger blacklink far fa-trash-alt icon-btn text-small mb-2 ml-2" data-id="{% url 'delete-child' child.pk %}" type="button" name="button">
+        </i>
         {% endif %}
         {% for field in child.get_display_fields %}
           <div class="row">
@@ -64,10 +64,10 @@
           <p class="m-0">{{ childinfo.physician_phone|default_if_none:"" }}</p>
         </div>
         {% if 'childrenedit' in request.path %}
-        <a href="#" class="modal-trigger blacklink far fa-edit icon-btn text-small mb-2 mr-2" data-id="{% url 'update-childinfo' childinfo.pk %}">
-        </a>
-        <a href="#" class="modal-trigger blacklink far fa-trash-alt icon-btn text-small mb-2 mr-2" data-id="{% url 'delete-childinfo' childinfo.pk %}">
-        </a>
+        <i class="modal-trigger blacklink far fa-edit icon-btn text-small mb-2 mr-2" data-id="{% url 'update-childinfo' childinfo.pk %}">
+        </i>
+        <i class="modal-trigger blacklink far fa-trash-alt icon-btn text-small mb-2 mr-2" data-id="{% url 'delete-childinfo' childinfo.pk %}">
+        </i>
         {% endif %}
 
       </div>

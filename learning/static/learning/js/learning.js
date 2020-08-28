@@ -39,7 +39,7 @@ class FacilitatorInput extends AutocompleteInput {
 
     add_facilitator_str(element, e) {
         // either clicked enter or button
-        if (($(element).is('input') && e.which == 13) || $(element).is('a')) {
+        if (($(element).is('input') && e.which == 13) || $(element).is('i')) {
             if (this.input.val() == '') {
                 return
             }
@@ -126,8 +126,7 @@ class FacilitatorInput extends AutocompleteInput {
                 .attr("target", '_blank')
                 .text(info['name']);
         }
-        var delete_btn = $('<a/>')
-            .attr("href", "#")
+        var delete_btn = $('<i/>')
             .addClass("fas fa-times")
             .addClass("blacklink");
         profile_container.append(profile);
@@ -141,8 +140,7 @@ class FacilitatorInput extends AutocompleteInput {
         this.element = this.element.find('.autocomplete-input');
         super.build();
         this.element = temp_element;
-        var add_btn = $("<a/>")
-            .attr("href", "#")
+        var add_btn = $("<i/>")
             .addClass("fas fa-plus add-facilitator-btn blacklink");
         var match_instruction_container = $('<div/>')
             .addClass("item instruction");
@@ -254,8 +252,7 @@ class UpdateForm extends CustomForm {
                 var text = hidden_fields[i].split("_").join(" ");
                 var option_text = $('<p/>')
                     .text(text[0].toUpperCase() + text.slice(1));
-                var click_wrapper = $('<a/>')
-                    .attr("href", "#")
+                var click_wrapper = $('<span/>')
                     .addClass("click-wrapper");
                 option_container.append(option_input);
                 option_container.append(option_text);
@@ -455,7 +452,7 @@ class InfoPopup extends JqueryElement{
         this.members_remove_active = true;
         this.members_completed_table.find('.data-row').each(function() {
             var container = $('<td/>');
-            container.append($('<a/>').attr("href", "#")
+            container.append($('<i/>')
                 .addClass('remove-member far fa-trash-alt blacklink text-small'));
             $(this).append(container);
         });
@@ -1068,6 +1065,7 @@ class LearningList extends JqueryElement {
         this.theme_slide = new InfoSlide('theme_info', 'theme');
         this.module_slide = new InfoSlide('module_info', 'module');
         this.slides = [this.programming_slide, this.theme_slide, this.module_slide]
+        this.slide_inds = {'programming': 0, 'theme': 1, 'module': 2};
         this.active_slide = null;
         this.create_programming = $('#create_programming');
         this.create_theme = $('#create_theme');
@@ -1077,31 +1075,63 @@ class LearningList extends JqueryElement {
         this.listeners();
     }
 
-    show_item_info(item) {
-        var type = this.type_select.value[0];
-        var title = $(item).text();
-        var pk = $(item).attr('value');
-        var site_val = this.site_select.value;
-        var site = null
-        this.site_select.element.find('input').each(function () {
-            if ($(this).val() == site_val[0]) {
-                site = [$(this).siblings('.site-name').text(), $(this).val()]
-            }
-        });
+    trigger_show_item_info(item) {
         this.programming_slide.hide();
         this.theme_slide.hide();
         this.module_slide.hide();
-        if (type == 'Programming') {
-            this.programming_slide.show_model(pk, title, site);
-            this.active_slide = this.programming_slide;
-        } else if ($(item).hasClass('sub-item')) {
-            var theme_options = this.get_theme_select_data();
-            var theme = $(item).siblings('.item')
-            var theme_value = [theme.text(), theme.attr("value")];
-            this.module_slide.show_model(pk, title, site, theme_options, theme_value);
-            this.active_slide = this.module_slide
+        var type = this.type_select.value[0].toLowerCase();
+        if (type != 'programming') {
+            if ($(item).hasClass('sub-item')) {
+                type = 'module';
+            } else {
+                type = 'theme';
+            }
+        }
+        var url = type + '?';
+        url += 'id=' + $(item).attr('value');
+        url += '&site=' + this.site_select.value[0];
+        url += '&title=' + $(item).text();
+        if (type == 'module') {
+            url += '&theme=' + $(item).siblings('.item').attr('value');
+        }
+        history.pushState({}, '', url)
+        $(window).trigger('popstate');
+    }
+
+    show_item_info({site, type, title, id, theme=null} = {}) {
+        if (type == 'programming') {
+            this.type_select.set_value('Programming');
         } else {
-            this.theme_slide.show_model(pk, title, site);
+            this.type_select.set_value('All');
+        }
+        this.site_select.set_value(site);
+        var site_info = null;
+        this.site_select.element.find('input').each(function () {
+            if ($(this).val() == site) {
+                site_info = [$(this).siblings('.site-name').text(), $(this).val()]
+            }
+        });
+        if (theme) {
+            console.log(theme);
+            while(!Array.isArray(theme)) {
+                this.element.find('.item').each(function() {
+                    if ($(this).attr('value') == theme) {
+                        theme = [$(this).text(), theme]
+                        console.log(theme);
+                    }
+                });
+            }
+        }
+        console.log(theme);
+        if (type == 'programming') {
+            this.programming_slide.show_model(id, title, site_info);
+            this.active_slide = this.programming_slide;
+        } else if (type == 'module') {
+            var theme_options = this.get_theme_select_data();
+            this.module_slide.show_model(id, title, site_info, theme_options, theme);
+            this.active_slide = this.module_slide;
+        } else {
+            this.theme_slide.show_model(id, title, site_info);
             this.active_slide = this.theme_slide;
         }
     }
@@ -1204,7 +1234,7 @@ class LearningList extends JqueryElement {
     }
 
     update_title() {
-        var site = this.site_select.element.find(':checked').siblings('a').text();
+        var site = this.site_select.element.find(':checked').siblings('p').text();
         var type = this.type_select.value[0];
         if (type == 'All') {
             type = 'Training';
@@ -1252,8 +1282,8 @@ class LearningList extends JqueryElement {
     }
 
     item_listeners() {
-        this.element.find('a').off("click");
-        this.element.find('a').click({func: this.show_item_info, object: this}, this.dispatch);
+        this.element.find('.item, .sub-item').off("click");
+        this.element.find('.item, .sub-item').click({func: this.trigger_show_item_info, object: this}, this.dispatch);
     }
 
     build_items(items) {
@@ -1261,9 +1291,8 @@ class LearningList extends JqueryElement {
         for (let i=0; i<items.length; i++) {
             var item_data = items[i];
             var item_container = $('<li/>').addClass('item-container');
-            var item_element = $('<a/>')
+            var item_element = $('<p/>')
                 .addClass('item blacklink')
-                .attr('href', '#')
                 .attr('value', item_data[1])
                 .text(item_data[0]);
             item_container.append(item_element);
@@ -1271,10 +1300,9 @@ class LearningList extends JqueryElement {
             sub_items = (sub_items) ? sub_items : [];
             for (let j=0; j<sub_items.length; j++) {
                 var sub_data = sub_items[j];
-                var sub_element = $('<a/>')
+                var sub_element = $('<p/>')
                     .addClass('sub-item blacklink')
                     .addClass(sub_data[2])
-                    .attr('href', '#')
                     .attr('value', sub_data[1])
                     .text(sub_data[0]);
                 item_container.append(sub_element);
@@ -1287,6 +1315,24 @@ class LearningList extends JqueryElement {
 
 
 
+function update_page() {
+    console.log('update');
+    var pathname = window.location.pathname.split('/');
+    var query = parseQuery(window.location.search);
+    console.log(query);
+    console.log(pathname);
+    if (learning_list.slide_inds.hasOwnProperty(pathname[2])) {
+        query['type'] = pathname[2];
+        console.log(query);
+        learning_list.show_item_info(query);
+    }
+}
+
+
+
+var learning_list;
 $(document).ready(function() {
-    new LearningList('items');
+    learning_list = new LearningList('items');
+    $(window).on('popstate', update_page);
+    $(window).trigger('popstate');
 });

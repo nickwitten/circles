@@ -38,7 +38,6 @@ class TestLearningFiles(CreateLearningModelsMixin, TestCase):
         self.user = User.objects.create_user('testuser', password='password')
         self.client = Client()
         self.client.login(username='testuser', password='password')
-        self.files_url = reverse('learning-files')
         self.create_learning_models()
 
     def test_upload_file(self):

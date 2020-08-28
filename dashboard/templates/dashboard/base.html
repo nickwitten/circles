@@ -48,7 +48,7 @@
       {% for message in messages %}
           <div class="alert alert-{{ message.tags }}">
             {{ message }}
-            <a href="#" class="close fas fa-times" data-dismiss="alert" aria-label="close"></a>
+            <i class="close fas fa-times blacklink" data-dismiss="alert" aria-label="close"></i>
           </div>
       {% endfor %}
       {% endif %}
@@ -60,14 +60,14 @@
       {% for field in form %}
           {% for error in field.errors %}
               <div class="alert alert-danger">{{ field.label }}: {{ error|escape }}
-                  <a href="#" class="close fas fa-times" data-dismiss="alert" aria-label="close"></a>
+                  <i class="close fas fa-times blacklink" data-dismiss="alert" aria-label="close"></i>
               </div>
           {% endfor %}
       {% endfor %}
       {% for error in form.non_field_errors %}
           <div class="alert alert-danger">
             <strong>{{ error|escape }}</strong>
-            <a href="#" class="close fas fa-times" data-dismiss="alert" aria-label="close"></a>
+            <i class="close fas fa-times blacklink" data-dismiss="alert" aria-label="close"></i>
           </div>
       {% endfor %}
     {% endif %}

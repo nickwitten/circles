@@ -20,14 +20,27 @@ function addAlertHTML(message, type) {
     alert = $('<div/>')
         .addClass('alert alert-' + type)
         .text(message);
-    close_btn = $('<a/>')
-        .attr('href','#')
-        .addClass('close fas fa-times')
+    close_btn = $('<i/>')
+        .addClass('close fas fa-times blacklink')
         .attr('data-dismiss', 'alert')
         .attr('aria-label','close');
     alert.append(close_btn);
     $('.alert-container').append(alert);
 }
+
+
+
+function parseQuery(queryString) {
+    var query = {};
+    var pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
+    for (var i = 0; i < pairs.length; i++) {
+        var pair = pairs[i].split('=');
+        query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+    }
+    return query;
+}
+
+
 
 
 // Returns:
@@ -224,9 +237,8 @@ class Dropdown extends JqueryElement {
             .addClass('value')
         var pointer = $('<i/>')
             .addClass('pointer fas fa-caret-left');
-        var show_wrapper = $('<a/>')
-            .addClass('show-wrapper')
-            .attr('href', "#");
+        var show_wrapper = $('<span/>')
+            .addClass('show-wrapper');
         var options = $('<div/>')
             .addClass('options');
         var options_wrapper = $('<div/>')
@@ -269,18 +281,6 @@ class JsonDropdown extends Dropdown {
         super.update_value();
         this.value = JSON.stringify(this.value);
         this.element.trigger(":change");
-    }
-}
-
-
-
-
-class ObjectSelect extends JsonDropdown {
-    constructor(id, data, {type='checkbox', placeholder='', default_value='[]'} = {}) {
-        super(id, data, {type='checkbox', placeholder='', default_value='[]'} = {});
-    }
-
-    set_value() {
     }
 }
 
@@ -391,15 +391,13 @@ class MultiLevelDropdown extends Dropdown {
     }
 
     build() {
-        var element = $('#' + this.id);
         var value = $('<p/>')
             .addClass('value')
             .text('Value');
         var pointer = $('<i/>')
             .addClass('pointer fas fa-caret-left');
-        var show_wrapper = $('<a/>')
+        var show_wrapper = $('<span/>')
             .addClass('show-wrapper')
-            .attr('href', "#");
         var options = $('<div/>')
             .addClass('options');
         var options_wrapper = $('<div/>')
@@ -441,11 +439,221 @@ class MultiLevelDropdown extends Dropdown {
             options_wrapper.append(option)
         }
         options.append(options_wrapper);
-        element.append(value);
-        element.append(pointer);
-        element.append(show_wrapper);
-        element.append(options);
+        this.element.append(value);
+        this.element.append(pointer);
+        this.element.append(show_wrapper);
+        this.element.append(options);
         return [value, pointer, show_wrapper, options]
+    }
+}
+
+
+
+
+class ObjectSelect extends Dropdown {
+    constructor(id, data, field_id, {object_url=null, type='checkbox', placeholder='', default_value='[]'} = {}) {
+        super(id, data, {type=type, placeholder=placeholder, default_value=default_value} = {});
+        this.form_field = $('#' + field_id);
+        this.object_list = this.element.find('.object-list');
+        this.object_url = object_url;
+        this.initialize();
+    }
+
+    initialize() {
+        super.initialize();
+        if (this.form_field) {
+            this.update_form_field_options();
+        }
+    }
+
+    update_form_field_options() {
+        this.form_field.empty();
+        for (let i=0; i<this.data.length; i++) {
+            var option = $('<option/>')
+                .text(this.data[i][0])
+                .val(this.data[i][1]);
+            if (this.value.includes(this.data[i][1])) {
+                option.prop('selected', true);
+            }
+            this.form_field.append(option);
+        }
+    }
+
+    update_select() {
+        if (this.form_field) {
+            this.update_form_field_options();
+        }
+        this.build();
+        this.styles();
+        this.listeners();
+        this.update_display();
+    }
+
+    update_display() {
+        var select = this;
+        this.object_list.empty();
+        var text = '';
+        this.element.find('input').each(function() {
+            if (select.value.includes(parseInt($(this).val())) || select.value.includes($(this).val())) {
+                $(this).prop('checked', true);
+                text = $(this).siblings('p').text();
+                select.build_object([text, $(this).val()]);
+            } else {
+                $(this).prop('checked', false);
+            }
+        });
+        var value_text = this.element.find('.value').first();
+        if (this.value.length > 1) {
+            text = 'Multiple';
+        } else if (this.value.length < 1) {
+            text = this.placeholder;
+        }
+        value_text.text(text);
+    }
+
+    set_value(value) {
+        this.value = value;
+        this.update_display();
+    }
+
+    select(option, e) {
+        super.select(option, e);
+        console.log(this.value);
+        this.update_display();
+    }
+
+    build_object(object_info) {
+        var object_container = $('<div/>')
+            .addClass('object-container');
+        var object = $('<a/>')
+            .text(object_info[0])
+            .addClass('object');
+        if (this.object_url) {
+            object.attr('href', this.object_url + object_info[1].toString())
+        }
+        object_container.append(object);
+        this.object_list.append(object_container);
+    }
+
+    build() {
+        this.element.empty();
+        this.element.append($('<div/>').addClass('dropdown'))
+        this.element = this.element.find('.dropdown');
+        super.build();
+        this.element = this.element.closest('.object-select');
+        this.element.append($('<div/>').addClass('object-list'));
+    }
+}
+
+
+
+
+class MultiLevelObjectSelect extends MultiLevelDropdown {
+    constructor(id, data, field_id, {object_url=null, type='checkbox', placeholder='', default_value='[]'} = {}) {
+        super(id, data, {type=type, placeholder=placeholder, default_value=default_value} = {});
+        this.form_field = $('#' + field_id);
+        this.object_list = this.element.find('.object-list');
+        this.object_url = object_url;
+        this.initialize();
+    }
+
+    initialize() {
+        super.initialize();
+        if (this.form_field) {
+            this.update_form_field_options();
+        }
+    }
+
+    update_form_field_options() {
+        this.form_field.empty();
+        for (let i=0; i<this.data.length; i++) {
+            var theme = this.data[i];
+            var modules = theme[2];
+            if (!modules) {
+                continue
+            }
+            for (let j=0; j<modules.length; j++) {
+                var option_data = modules[j];
+                var option = $('<option/>')
+                    .text(option_data[0])
+                    .val(option_data[1]);
+                if (this.value.includes(option_data[1])) {
+                    option.prop('selected', true);
+                }
+                this.form_field.append(option);
+            }
+        }
+    }
+
+    update_select() {
+        if (this.form_field) {
+            this.update_form_field_options();
+        }
+        this.build();
+        this.styles();
+        this.listeners();
+        this.update_display();
+    }
+
+    update_display() {
+        var select = this;
+        this.object_list.empty();
+        var text = '';
+        this.element.find('.option').each(function() {
+            var all_checked = true;
+            $(this).find('.sub-options').find('input').each(function() {
+                if (select.value.includes(parseInt($(this).val())) || select.value.includes($(this).val())) {
+                    $(this).prop('checked', true);
+                    text = $(this).siblings('p').text();
+                    select.build_object([text, $(this).val()]);
+                } else {
+                    all_checked = false;
+                    $(this).prop('checked', false);
+                }
+            });
+            if (all_checked) {
+                $(this).find('input').first().prop('checked', true);
+            }
+        });
+        var value_text = this.element.find('.value').first();
+        if (this.value.length > 1) {
+            text = 'Multiple';
+        } else if (this.value.length < 1) {
+            text = this.placeholder;
+        }
+        value_text.text(text);
+    }
+
+    set_value(value) {
+        this.value = value;
+        this.update_display();
+    }
+
+    select(option, e) {
+        super.select(option, e);
+        this.update_display();
+    }
+
+    build_object(object_info) {
+        var object_container = $('<div/>')
+            .addClass('object-container');
+        var object = $('<a/>')
+            .text(object_info[0])
+            .addClass('object');
+        if (this.object_url) {
+            object.attr('href', this.object_url + object_info[1].toString())
+        }
+        object_container.append(object);
+        this.object_list.append(object_container);
+    }
+
+    build() {
+        this.element.empty();
+        this.element.append($('<div/>').addClass('multi-level-dropdown'))
+        this.element = this.element.find('.multi-level-dropdown');
+        super.build();
+        this.element = this.element.closest('.object-select');
+        this.element.append($('<div/>').addClass('object-list'));
     }
 }
 
@@ -674,11 +882,10 @@ class AutocompleteInput extends JqueryElement {
             var match_container = $('<div/>')
                 .addClass("match")
                 .addClass("item");
-            var match = $("<a/>")
+            var match = $("<p/>")
                 .text(data[i][0])
                 .attr("value", data[i][1])
-                .addClass("blacklink")
-                .attr("href", "#");
+                .addClass("blacklink");
             match_container.append(match);
             this.element.find('.matches').append(match_container);
         }
@@ -781,8 +988,7 @@ class FileInput extends JqueryElement {
             .attr("href", item[2])
             .attr("target", "_blank")
             .text(item[0]);
-        var delete_btn = $('<a/>')
-            .attr("href", "#")
+        var delete_btn = $('<i/>')
             .addClass('delete fas fa-times blacklink')
             .attr("value", item[1]);
         container.append(link);
@@ -883,8 +1089,7 @@ class LinkInput extends JqueryElement {
             .attr("href", item[1])
             .attr("target", "_blank")
             .text(item[0]);
-        var delete_btn = $('<a/>')
-            .attr("href", "#")
+        var delete_btn = $('<i/>')
             .addClass('delete fas fa-times blacklink');
         container.append(link);
         container.append(delete_btn);
@@ -902,8 +1107,7 @@ class LinkInput extends JqueryElement {
     }
 
     build() {
-        var btn = $('<a/>')
-            .attr("href", "#")
+        var btn = $('<i/>')
             .addClass("link-upload fas fa-link blacklink");
         var links_container = $('<div/>')
             .addClass("links");
@@ -1244,6 +1448,15 @@ class MenuSiteSelect extends JqueryElement {
     change(selected, e) {
         this.select(selected, e);
         this.element.trigger(':change');
+    }
+
+    set_value(val) {
+        var site_select = this;
+        this.element.find('input').each(function() {
+            if ($(this).val() == val) {
+                site_select.select(this);
+            }
+        });
     }
 
     select(selected, e) {

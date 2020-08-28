@@ -92,10 +92,15 @@ header a{
   color: #000000;
 }
 .blacklink{
-  color: #5b5b5b;;
+  color: #5b5b5b;
+  font-size: 12px;
 }
 .blacklink:hover{
   color:#000000;
+  cursor: pointer;
+}
+.icn:hover {
+  cursor: pointer;
 }
 
 
@@ -261,6 +266,10 @@ header a{
     right: 0;
     bottom: 0;
     left: 0;
+}
+.show-wrapper:hover,
+.click-wrapper:hover {
+    cursor: pointer;
 }
 
 
@@ -552,6 +561,17 @@ header a{
 .multi-level-dropdown .sub-option p {
     padding-left: 0.5rem;
 }
+
+
+
+.object-select {
+    display: flex;
+}
+.object-select .dropdown,
+.object-select .multi-level-dropdown {
+    flex-grow: 1;
+}
+
 
 .modal-container {
     z-index: 500;

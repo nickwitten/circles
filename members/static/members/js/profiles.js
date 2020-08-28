@@ -63,9 +63,8 @@ function addFilterHTML(filter, filter_number) {
       .addClass("d-inline-block")
       .text(filtertext[filter["filterby"]] + ': ' + filter["filterinput"]),
     // X icon next to filter element
-    $('<a/>')
+    $('<i/>')
       .attr("id","delete-" + filter_number.toString())
-      .attr("href", "#")
       .addClass("fas fa-times blacklink text-small filter-remove")
       .click(function() { removeFilter($(this))})
   );
@@ -134,9 +133,8 @@ function addFilterInputHTML(options) {
 // Add filter submit button
 function addFilterSubmitHTML() {
   $("#filter_submit_btn_container").append(
-    $("<a/>")
+    $("<i/>")
       .attr("id","filter_submit")
-      .attr("href", "#")
       .addClass("fas fa-plus-circle blacklink icon-btn d-inline-block")
       .on("click", function() {addFilter();})
   );
@@ -168,9 +166,8 @@ function addListTitleInputHTML(title) {
 // Add the button to delete a filterset
 function addListDeleteBtnHTML(pk) {
   $("#delete_list_btn_container").append(
-    $("<a/>")
+    $("<i/>")
       .attr("id","delete_filterset_btn")
-      .attr("href", "#")
       .attr("data-pk", pk)
       .addClass("far fa-trash-alt blacklink text-small")
       .on("click", function() {deleteFilterset($(this).attr('data-pk'));})

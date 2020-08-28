@@ -7,13 +7,102 @@ class CalendarMenu extends Menu {
 
 
 
+class AttendanceSelect extends JqueryElement {
+    constructor(id, field_id) {
+        super(id);
+        this.default_value = [];
+        this.value = this.default_value;
+        this.data = [];
+        this.form_field = $('#' + field_id);
+        this.update_select();
+    }
 
-class Attendance extends JqueryElement {
+    update_select() {
+        this.element.empty();
+        this.form_field.empty();
+        for (let i=0; i<this.data.length; i++) {
+            this.build_member(this.data[i]);
+            this.build_form_option(this.data[i]);
+        }
+        this.update_display();
+        this.item_listeners();
+    }
+
+    select(option, e) {
+        var input = $(option).find('input');
+        if (!$(e.target).is('input') && !$(e.target).is('a')) {
+            input.prop('checked', !input.prop('checked'));
+        }
+        var value = parseInt($(input).val());
+        if ($(input).is(':checked')) {
+            this.value.push(value);
+        } else {
+            this.value.splice(this.value.indexOf(value), 1);
+        }
+        this.update_display();
+        this.element.trigger(':change');
+    }
+
+    update_display() {
+        var select = this;
+        this.element.find('input').each(function() {
+            if (select.value.includes(parseInt($(this).val()))) {
+                $(this).prop('checked', true);
+            } else {
+                $(this).prop('checked', false);
+            }
+        });
+    }
+
+    set_value(value) {
+        this.value = value;
+        this.update_display();
+        this.element.trigger(':change');
+    }
+
+    build_member(member_data) {
+        var item = $('<div/>')
+            .addClass('attendance-item')
+        item.append(
+            $('<input/>')
+                .attr('type', 'checkbox')
+                .val(member_data[1])
+        );
+        item.append(
+            $('<a/>')
+                .text(member_data[0])
+                .attr('href', url_profile_detail.slice(0,-2) + member_data[1])
+                .attr('target', '_blank')
+        );
+        this.element.append(item);
+    }
+
+    build_form_option(member_data) {
+        var option = $('<option/>')
+            .text(member_data[0])
+            .val(member_data[1]);
+        if (this.value.includes(member_data[1])) {
+            option.prop('selected', true);
+        }
+        this.form_field.append(option);
+    }
+
+    item_listeners() {
+        this.element.find('.attendance-item').click({func: this.select, object: this}, this.dispatch);
+    }
+}
+
+
+
+
+class AttendanceSlide extends JqueryElement {
     constructor(id) {
         super(id);
         this.list_select = new Dropdown('list_select', [], {placeholder: 'Lists'});
+        this.attendance_select = new AttendanceSelect('attendance_select', 'id_attendees');
+        this.loader = this.element.find('.loading');
+        this.close_selector = '#' + this.id + ', #meeting_info_container';
         this.listeners();
-        this.close_selector = '#' + this.id + ', #attendance_btn';
     }
 
     show() {
@@ -34,7 +123,29 @@ class Attendance extends JqueryElement {
         }
     }
 
-    set_value() {
+    get_members(pk) {
+        var data = {
+            'lists': JSON.stringify(this.list_select.value),
+            'meeting': pk,
+        }
+        $.ajax({
+            url: url_get_members,
+            data: data,
+            context: this,
+            beforeSend: function() {
+                this.loader.show();
+            },
+            success: function(data) {
+                this.attendance_select.data = data['members'];
+                this.attendance_select.update_select();
+            },
+            error: function () {
+                addAlertHTML("Something went wrong.", 'danger');
+            },
+            complete: function() {
+                this.loader.hide();
+            }
+        });
     }
 
     listeners() {
@@ -60,42 +171,33 @@ class StartTime extends JqueryElement {
 
     set_value(value) {
         this.value = value
+        this.listeners_off();
         this.date_select.set_value([value.slice(0, 10)]);
         this.time_select.set_value(value.slice(11, 19), true, false);
+        this.listeners();
+        this.update_value();
+    }
+
+    listeners_off() {
+        this.date_select.element.off(":change.starttime");
+        this.time_select.element.off(":change.starttime");
     }
 
     listeners() {
-        this.date_select.element.on(":change", {func: this.update_value, object: this}, this.dispatch)
-        this.time_select.element.on(":change", {func: this.update_value, object: this}, this.dispatch)
+        this.listeners_off();
+        this.date_select.element.on(":change.starttime", {func: this.update_value, object: this}, this.dispatch)
+        this.time_select.element.on(":change.starttime", {func: this.update_value, object: this}, this.dispatch)
     }
 }
 
 
 
 
-class EndTime extends JqueryElement {
-    constructor(id, date_select, time_select) {
-        super(id);
-        this.date_select = date_select
-        this.time_select = time_select;
-        this.default_value = "0000-00-00T12:00:00Z"
-        this.listeners();
-    }
+class EndTime extends StartTime {
 
     update_value() {
         this.value = getDatetime(this.date_select, this.time_select)[1];
         this.element.trigger(":change");
-    }
-
-    set_value(value) {
-        this.value = value;
-        this.date_select.set_value([value.slice(0, 10)]);
-        this.time_select.set_value(value.slice(11, 19), false, true);
-    }
-
-    listeners() {
-        this.date_select.element.on(":change", {func: this.update_value, object: this}, this.dispatch)
-        this.time_select.element.on(":change", {func: this.update_value, object: this}, this.dispatch)
     }
 }
 
@@ -177,15 +279,15 @@ class MeetingInfo extends JqueryElement {
         this.pk = 0;
         this.changes_saved = true;
         this.site_select = new Dropdown('meeting_site_select', [], {type: 'radio'});
-        this.attendance = new Attendance('attendance_container')
+        this.attendance = new AttendanceSlide('attendance_container')
         this.type_select = new TypeSelect('type_select');
         this.color_select = new ColorPicker('meeting_color');
         this.date_select = new MultiDatePicker('meeting_date');
         this.time_select = new TimePicker('meeting_time');
         this.start_time = new StartTime('id_start_time', this.date_select, this.time_select);
         this.end_time = new EndTime('id_end_time', this.date_select, this.time_select);
-        this.programming_select = new ObjectSelect('programming_select', []);
-        this.training_select = new ObjectSelect('training_select', []);
+        this.programming_select = new ObjectSelect('programming_select', [], 'id_programming', {object_url});
+        this.training_select = new MultiLevelObjectSelect('training_select', [], 'id_modules');
         this.file_input = new FileInput('file_input');
         form_fields['files'] = 'json'
         this.link_input = new LinkInput('link_input');
@@ -199,40 +301,38 @@ class MeetingInfo extends JqueryElement {
             'modules': this.training_select,
             'links': this.link_input,
             'files': this.file_input,
+            'lists': this.attendance.list_select,
+            'attendees': this.attendance.attendance_select,
         }
         this.form = new CustomForm('meeting_form', custom_fields, form_fields, 'id_')
-        this.type_select.element.trigger(":change"); // Only for test. REMOVE
-        this.color_select.element.trigger(":change");
-        this.link_input.element.trigger(":change");
+        this.get_user_lists();
         this.loader = this.element.find('.loading');
         this.listeners();
     }
 
     show(pk, date) {
         this.form.erase_data();
-        if (pk) {
-            this.pk = pk;
-            this.get_meeting_info();
-        } else {
-            this.pk = 0;
-        }
 
         // Set site select options
         var sites = this.get_site_select_data();
         this.site_select.data = sites;
         this.site_select.initialize();
-        var first_site_value = this.site_select.element.find('.option').first().find('input').val();
-        this.site_select.set_value(first_site_value);
 
-        // Set date
-        if (date) {
+        // Sync month in date picker with calendar month
+        this.element.trigger(":monthsync");
+
+        if (pk) {
+            this.pk = pk;
+            this.get_meeting_info();
+        } else {
+            this.pk = 0;
+            var first_site_value = this.site_select.element.find('.option').first().find('input').val();
+            this.site_select.set_value(first_site_value);
             this.date_select.set_value([date]);
         }
-        this.element.trigger(":monthsync");
 
         this.element.addClass('show');
         this.attendance.element.addClass('modal-shadow');
-        this.get_user_filtersets();
     }
 
     hide(element, e, data) {
@@ -241,6 +341,7 @@ class MeetingInfo extends JqueryElement {
             this.discard_changes_modal();
             return
         }
+        this.attendance.hide();
         this.element.removeClass('show');
         this.attendance.element.removeClass('modal-shadow');
     }
@@ -309,10 +410,12 @@ class MeetingInfo extends JqueryElement {
             context: this,
             beforeSend: function() {
                 this.loader.show();
+                this.attendance.loader.show();
             },
             success: this.submit_success,
             complete: function () {
                 this.loader.hide();
+                this.attendance.loader.hide();
             },
             error: function() {
             },
@@ -339,7 +442,6 @@ class MeetingInfo extends JqueryElement {
     }
 
     delete_meeting_modal() {
-        console.log(this.changes_saved);
         if (!this.changes_saved) {
             addAlertHTML('Save changes before deleting.', 'secondary');
             return
@@ -386,8 +488,77 @@ class MeetingInfo extends JqueryElement {
         });
     }
 
-    get_user_filtersets() {
+    get_learning_data() {
+        // Site not yet set
+        if (!this.site_select.value[0]) {
+            return
+        }
+        var data = {
+            'site': this.site_select.value[0],
+            'get_site_models': true,
+        };
+        $.ajax({
+            url: url_learning_models,
+            data: data,
+            context: this,
+            beforeSend: function() {
+                this.loader.show();
+            },
+            success: this.learning_data_success,
+            error: function() {
+                addAlertHTML('Something went wrong.', 'danger');
+            },
+            complete: function() {
+                this.loader.hide();
+            },
+        });
+    }
 
+    learning_data_success(data) {
+        data = data.site_data;
+        var programming_options = [];
+        for (let i=0; i<data.programming.length; i++) {
+            programming_options.push(data.programming[i][1]);
+        }
+        this.remove_missing_values(this.programming_select, programming_options);
+        this.programming_select.data = data.programming;
+        this.programming_select.update_select();
+        var theme_data = [];
+        var module_options = [];
+        for (let i=0; i<data.themes.length; i++) {
+            var theme = data.themes[i];
+            var modules = theme.modules;
+            var module_data = [];
+            for (let j=0; j<modules.length; j++) {
+                module_data.push(modules[j].slice(0,2));
+                module_options.push(modules[j][1]);
+            }
+            theme = theme.theme.slice(0,2);
+            theme.push(module_data);
+            theme_data.push(theme)
+        }
+        this.remove_missing_values(this.training_select, module_options);
+        this.training_select.data = theme_data;
+        this.training_select.update_select();
+    }
+
+    remove_missing_values(object, values) {
+        var new_value = [];
+        for (let i=0; i<object.value.length; i++) {
+            if (values.includes(object.value[i])) {
+                new_value.push(object.value[i]);
+            }
+        }
+        object.value = new_value;
+    }
+
+    get_user_lists() {
+        var list_select = this.attendance.list_select
+        list_select.data = [];
+        $('#id_lists').find('option').each(function() {
+            list_select.data.push([$(this).text(), $(this).val()]);
+        });
+        list_select.initialize();
     }
 
     get_site_select_data() {
@@ -409,6 +580,8 @@ class MeetingInfo extends JqueryElement {
         this.element.find('#meeting_submit_btn').click({func: this.submit_form, object: this}, this.dispatch);
         this.element.find('#meeting_delete_btn').click({func: this.delete_meeting_modal, object: this}, this.dispatch);
         this.form.element.on(':change', function() {meeting_info.changes_saved = false});
+        this.attendance.list_select.element.on(':change', function() {meeting_info.attendance.get_members(meeting_info.pk)});
+        this.site_select.element.on(':change', {func: this.get_learning_data, object: this}, this.dispatch);
     }
 }
 
@@ -620,8 +793,7 @@ class Calendar extends JqueryElement {
                 } else {
                     title.text(meeting_info['type']);
                 }
-                var click_wrapper = $('<a/>')
-                    .attr('href', '#')
+                var click_wrapper = $('<span/>')
                     .addClass('show-wrapper');
                 meeting.append(click_wrapper);
                 meeting.append(title)

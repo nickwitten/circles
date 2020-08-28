@@ -2,12 +2,12 @@ import json
 from django.db.models import Value
 from django.db import models as django_models
 from django.db.models.functions import Concat
-from django.http import Http404, HttpResponseServerError, JsonResponse, QueryDict
+from django.http import JsonResponse, QueryDict
 from django.shortcuts import render, get_object_or_404
-from django.views.generic.base import TemplateView, View, ContextMixin
+from django.views.generic.base import TemplateView, View
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.forms.models import model_to_dict
 import members.models as member_models
+from members.data import unique_maintain_order
 from circles import settings
 from . import forms, models
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -505,10 +505,3 @@ class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
         if profile not in self.request.user.userinfo.user_profile_access():
             raise PermissionDenied()
         return model, profile
-
-
-def unique_maintain_order(x):
-    seen = list()
-    seen_add = seen.append
-    z = [y for y in x if not (y in seen or seen_add(y))]
-    return z
