@@ -167,6 +167,7 @@ class StartTime extends JqueryElement {
     update_value() {
         this.value = getDatetime(this.date_select, this.time_select)[0];
         this.element.trigger(":change");
+        console.log(this.value);
     }
 
     set_value(value) {
@@ -198,6 +199,17 @@ class EndTime extends StartTime {
     update_value() {
         this.value = getDatetime(this.date_select, this.time_select)[1];
         this.element.trigger(":change");
+    }
+
+    listeners_off() {
+        this.date_select.element.off(":change.endtime");
+        this.time_select.element.off(":change.endtime");
+    }
+
+    listeners() {
+        this.listeners_off();
+        this.date_select.element.on(":change.endtime", {func: this.update_value, object: this}, this.dispatch)
+        this.time_select.element.on(":change.endtime", {func: this.update_value, object: this}, this.dispatch)
     }
 }
 
@@ -240,7 +252,7 @@ class TypeSelect extends JqueryElement {
     }
 
     select(type) {
-        var value = $(type).find('a').text();
+        var value = $(type).find('p').text();
         this.value = value;
         if (value == "Custom Type") {
             this.input.attr('readonly', false);
@@ -273,6 +285,38 @@ class TypeSelect extends JqueryElement {
 
 
 
+class ProgrammingSelect extends ObjectSelect {
+
+    get_object_url(object_info) {
+        var url = this.object_url;
+        url += '?site=' + this.parent.site_select.value[0];
+        url += '&type=Programming'
+        url += '&model_type=programming'
+        url += '&id=' + object_info[1];
+        return url
+    }
+
+}
+
+
+
+
+class ModuleSelect extends MultiLevelObjectSelect {
+
+    get_object_url(object_info) {
+        var url = this.object_url;
+        url += '?site=' + this.parent.site_select.value[0];
+        url += '&type=All'
+        url += '&model_type=module'
+        url += '&id=' + object_info[1];
+        return url
+    }
+
+}
+
+
+
+
 class MeetingInfo extends JqueryElement {
     constructor(id) {
         super(id);
@@ -286,8 +330,8 @@ class MeetingInfo extends JqueryElement {
         this.time_select = new TimePicker('meeting_time');
         this.start_time = new StartTime('id_start_time', this.date_select, this.time_select);
         this.end_time = new EndTime('id_end_time', this.date_select, this.time_select);
-        this.programming_select = new ObjectSelect('programming_select', [], 'id_programming', {object_url});
-        this.training_select = new MultiLevelObjectSelect('training_select', [], 'id_modules');
+        this.programming_select = new ProgrammingSelect('programming_select', [], 'id_programming', {object_url: url_learning + 'programming', parent: this});
+        this.training_select = new ModuleSelect('training_select', [], 'id_modules', {object_url: url_learning + 'module', parent: this});
         this.file_input = new FileInput('file_input');
         form_fields['files'] = 'json'
         this.link_input = new LinkInput('link_input');
@@ -320,7 +364,7 @@ class MeetingInfo extends JqueryElement {
 
         // Sync month in date picker with calendar month
         this.element.trigger(":monthsync");
-
+        console.log(pk);
         if (pk) {
             this.pk = pk;
             this.get_meeting_info();
@@ -330,6 +374,8 @@ class MeetingInfo extends JqueryElement {
             this.site_select.set_value(first_site_value);
             this.date_select.set_value([date]);
         }
+
+        console.log(this.pk);
 
         this.element.addClass('show');
         this.attendance.element.addClass('modal-shadow');
@@ -394,6 +440,8 @@ class MeetingInfo extends JqueryElement {
             return
         }
         var data = this.file_input.form_data;
+        console.log(this.color_select.value);
+        console.log($('#id_color').val())
         data.append('form', this.form.element.serialize());
         data.append('dates', JSON.stringify(this.date_select.value));
         data.append('delete_files', JSON.stringify(this.file_input.delete_files));
@@ -423,11 +471,11 @@ class MeetingInfo extends JqueryElement {
     }
 
     form_validation() {
-        if (this.date_select.value.length < 1) {
+        if (!this.date_select.value || this.date_select.value.length < 1) {
             addAlertHTML('At least one date required.', 'danger');
             return false
         }
-        if (this.type_select.value.length < 1) {
+        if (!this.type_select.value || this.type_select.value.length < 1) {
             addAlertHTML('Meeting type required.', 'danger');
             return false
         }
@@ -435,6 +483,7 @@ class MeetingInfo extends JqueryElement {
     }
 
     submit_success(data) {
+        console.log(data.id);
         this.pk = data.id;
         this.form.set_data(data);
         this.changes_saved = true;
@@ -601,6 +650,7 @@ class Calendar extends JqueryElement {
         this.meeting_info = new MeetingInfo('meeting_info_container');
         this.site_select = this.menu.site_select;
         this.site_select.select(this.site_select.element.find('.all'));
+        console.log(this.site_select.element.find('.all'));
         this.reload_month();
         this.listeners();
     }
@@ -765,7 +815,7 @@ class Calendar extends JqueryElement {
             } else {
             ////// Add Meeting Button ////
                 var add_btn = $('<i/>')
-                    .addClass('add-meeting-btn fas fa-plus')
+                    .addClass('add-meeting-btn fas fa-plus blacklink')
                 day.append(add_btn);
             }
             ///// Month Number HTML //////

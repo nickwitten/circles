@@ -24,33 +24,33 @@
       <table>
         <tr>
           <td>
-            <p>Site:</p>
+            <p class="label">Site:</p>
           </td>
-          <td>
+          <td class="field">
             <div id="meeting_site_select" class="multi-level-dropdown"></div>
           </td>
         </tr>
         <tr>
           <td>
-            <p>Address:</p>
+            <p class="label">Address:</p>
           </td>
-          <td>
+          <td class="field">
             {{ form.location }}
           </td>
         </tr>
         <tr>
-          <td>
+          <td class="label dropdown-label">
             <p>Programming:</p>
           </td>
-          <td>
+          <td class="field">
             <div id="programming_select" class="object-select"></div>
           </td>
         </tr>
         <tr>
-          <td>
+          <td class="label dropdown-label">
             <p>Training:</p>
           </td>
-          <td>
+          <td class="field">
             <div id="training_select" class="object-select"></div>
           </td>
         </tr>
@@ -59,8 +59,8 @@
       <div id="file_input" class="file-input"></div>
       <div id="link_input" class="link-input"></div>
       <div class="buttons">
-        <button id="meeting_submit_btn" class="btn btn-outline-secondary" data-pk="0">Save</button>
-        <button id="attendance_btn" class="btn btn-outline-secondary">Attendance</button>
+        <button id="meeting_submit_btn" class="btn btn-outline-secondary" data-pk="0" type="button">Save</button>
+        <button id="attendance_btn" class="btn btn-outline-secondary" type="button">Attendance</button>
       </div>
     </div>
   </form>

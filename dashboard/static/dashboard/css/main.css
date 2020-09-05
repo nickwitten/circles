@@ -1,7 +1,9 @@
 @import url(http://fonts.googleapis.com/css?family=Raleway);
 
 
-
+:root {
+  --circles-blue:  #4989c7;
+}
 body {
   background: #fafafa;
   color: #333333;
@@ -201,7 +203,7 @@ header a{
 #cssmenu > ul > li.active:after,
 #cssmenu > ul > li:hover:after,
 #cssmenu > ul > li:hover:after {
-  background: #4989c7;
+  background: var(--circles-blue);
 }
 #cssmenu h2{
   float: right;
@@ -288,7 +290,7 @@ header a{
   transition: all .2s ease;
 }
 .bg-blue{
-  background: #4989c7;
+  background: var(--circles-blue);
 }
 .sub_tags{
   height: 40%;
@@ -561,15 +563,46 @@ header a{
 .multi-level-dropdown .sub-option p {
     padding-left: 0.5rem;
 }
-
+.dropdown-label {
+    vertical-align: baseline;
+}
+.dropdown-label p {
+    margin-top: 4px;
+}
 
 
 .object-select {
     display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
 }
 .object-select .dropdown,
 .object-select .multi-level-dropdown {
     flex-grow: 1;
+    width: 100%;
+}
+.object-select .dropdown.half,
+.object-select .multi-level-dropdown.half {
+    max-width: 50%;
+}
+.object-select .object-list {
+    max-height: 8rem;
+    overflow: auto;
+}
+.object-select .object-list.half {
+    padding: 5px 1rem 1px 1px;
+}
+.object-select .object-container {
+    display: flex;
+    align-items: center;
+    border-color: inherit inherit inherit blue;
+    border-left: 2px solid var(--circles-blue);
+    margin-bottom: 0.5rem;
+    padding-left: 0.25rem;
+}
+.object-select .object-container a {
+    padding: 0.25rem;
+    font-size: calc(10px + 0.3vw);
 }
 
 
@@ -990,12 +1023,12 @@ header a{
     height: 100%;
     margin: 0 0.25em;
 }
-.time-select a {
+.time-select i {
     visibility: hidden;
     color: #a7a8ab;
     font-size: small;
 }
-.time-select:hover a {
+.time-select:hover i {
     visibility: visible;
 }
 

@@ -43,6 +43,28 @@ function parseQuery(queryString) {
 
 
 
+function create_loading_object() {
+    obj = {
+        is_loading_internal: false,
+        is_loading_listener: function(val) {},
+        set is_loading(val) {
+            this.is_loading_internal = val;
+            this.is_loading_listener(val);
+        },
+        get is_loading() {
+            return this.is_loading_internal;
+        },
+        register_listener: function(listener) {
+            this.is_loading_listener = listener;
+        },
+    }
+    return obj
+}
+
+
+
+
+
 // Returns:
 // list of month days,
 // current date in (year, month, day) or null if not in current view,
@@ -95,9 +117,10 @@ function expandTitle(placeholder, selector) {
 
 
 class JqueryElement {
-    constructor(id) {
-        this.id = id
+    constructor(id, parent=null) {
+        this.id = id;
         this.element = $('#' + id);
+        this.parent = parent;
     }
 
     dispatch(event) {
@@ -111,8 +134,8 @@ class JqueryElement {
 }
 
 class Dropdown extends JqueryElement {
-    constructor(id, data, {type='checkbox', placeholder='', default_value=[]} = {}) {
-        super(id);
+    constructor(id, data, {type='checkbox', placeholder='', default_value=[], parent=null} = {}) {
+        super(id, parent);
         this.data = data;
         this.type = type;
         this.placeholder = placeholder;
@@ -268,8 +291,8 @@ class Dropdown extends JqueryElement {
 
 
 class JsonDropdown extends Dropdown {
-    constructor(id, data, {type='checkbox', placeholder='', default_value='[]'} = {}) {
-        super(id, data, {type: type, placeholder: placeholder, default_value: default_value});
+    constructor(id, data, {type='checkbox', placeholder='', default_value='[]', parent=null} = {}) {
+        super(id, data, {type: type, placeholder: placeholder, default_value: default_value, parent: parent});
     }
 
     set_value(value) {
@@ -288,8 +311,8 @@ class JsonDropdown extends Dropdown {
 
 
 class MultiLevelDropdown extends Dropdown {
-    constructor(id, data, {type='checkbox', placeholder='', default_value=[]} = {}) {
-        super(id, data, {type: type, placeholder: placeholder, default_value});
+    constructor(id, data, {type='checkbox', placeholder='', default_value=[], parent=null} = {}) {
+        super(id, data, {type: type, placeholder: placeholder, default_value: default_value, parent:parent});
     }
 
     select(option, e) {
@@ -451,10 +474,9 @@ class MultiLevelDropdown extends Dropdown {
 
 
 class ObjectSelect extends Dropdown {
-    constructor(id, data, field_id, {object_url=null, type='checkbox', placeholder='', default_value='[]'} = {}) {
-        super(id, data, {type=type, placeholder=placeholder, default_value=default_value} = {});
+    constructor(id, data, field_id, {object_url=null, type='checkbox', placeholder='', default_value='[]', parent=null} = {}) {
+        super(id, data, {type:type, placeholder:placeholder, default_value:default_value, parent:parent});
         this.form_field = $('#' + field_id);
-        this.object_list = this.element.find('.object-list');
         this.object_url = object_url;
         this.initialize();
     }
@@ -491,7 +513,7 @@ class ObjectSelect extends Dropdown {
 
     update_display() {
         var select = this;
-        this.object_list.empty();
+        this.element.find('.object-list').empty();
         var text = '';
         this.element.find('input').each(function() {
             if (select.value.includes(parseInt($(this).val())) || select.value.includes($(this).val())) {
@@ -503,9 +525,11 @@ class ObjectSelect extends Dropdown {
             }
         });
         var value_text = this.element.find('.value').first();
+        this.element.children().addClass('half');
         if (this.value.length > 1) {
             text = 'Multiple';
         } else if (this.value.length < 1) {
+            this.element.children().removeClass('half');
             text = this.placeholder;
         }
         value_text.text(text);
@@ -518,8 +542,14 @@ class ObjectSelect extends Dropdown {
 
     select(option, e) {
         super.select(option, e);
-        console.log(this.value);
         this.update_display();
+    }
+
+    get_object_url(object_info) {
+        if (this.object_url) {
+            return this.object_url + object_info[1].toString();
+        }
+        return "#"
     }
 
     build_object(object_info) {
@@ -527,21 +557,21 @@ class ObjectSelect extends Dropdown {
             .addClass('object-container');
         var object = $('<a/>')
             .text(object_info[0])
-            .addClass('object');
-        if (this.object_url) {
-            object.attr('href', this.object_url + object_info[1].toString())
-        }
+            .addClass('object blacklink')
+            .attr('target', '_blank');
+        var url = this.get_object_url(object_info)
+        object.attr("href", url);
         object_container.append(object);
-        this.object_list.append(object_container);
+        this.element.find('.object-list').append(object_container);
     }
 
     build() {
         this.element.empty();
+        this.element.append($('<div/>').addClass('object-list'));
         this.element.append($('<div/>').addClass('dropdown'))
         this.element = this.element.find('.dropdown');
         super.build();
         this.element = this.element.closest('.object-select');
-        this.element.append($('<div/>').addClass('object-list'));
     }
 }
 
@@ -549,10 +579,9 @@ class ObjectSelect extends Dropdown {
 
 
 class MultiLevelObjectSelect extends MultiLevelDropdown {
-    constructor(id, data, field_id, {object_url=null, type='checkbox', placeholder='', default_value='[]'} = {}) {
-        super(id, data, {type=type, placeholder=placeholder, default_value=default_value} = {});
+    constructor(id, data, field_id, {object_url=null, type='checkbox', placeholder='', default_value='[]', parent=null} = {}) {
+        super(id, data, {type:type, placeholder:placeholder, default_value:default_value, parent:parent});
         this.form_field = $('#' + field_id);
-        this.object_list = this.element.find('.object-list');
         this.object_url = object_url;
         this.initialize();
     }
@@ -597,7 +626,7 @@ class MultiLevelObjectSelect extends MultiLevelDropdown {
 
     update_display() {
         var select = this;
-        this.object_list.empty();
+        this.element.find('.object-list').empty();
         var text = '';
         this.element.find('.option').each(function() {
             var all_checked = true;
@@ -616,9 +645,11 @@ class MultiLevelObjectSelect extends MultiLevelDropdown {
             }
         });
         var value_text = this.element.find('.value').first();
+        this.element.children().addClass('half');
         if (this.value.length > 1) {
             text = 'Multiple';
         } else if (this.value.length < 1) {
+            this.element.children().removeClass('half');
             text = this.placeholder;
         }
         value_text.text(text);
@@ -634,26 +665,34 @@ class MultiLevelObjectSelect extends MultiLevelDropdown {
         this.update_display();
     }
 
+    get_object_url(object_info) {
+        if (this.object_url) {
+            return this.object_url + object_info[1].toString();
+        }
+        return "#"
+    }
+
+
     build_object(object_info) {
         var object_container = $('<div/>')
             .addClass('object-container');
         var object = $('<a/>')
             .text(object_info[0])
-            .addClass('object');
-        if (this.object_url) {
-            object.attr('href', this.object_url + object_info[1].toString())
-        }
+            .addClass('object blacklink')
+            .attr('target', '_blank');
+        var url = this.get_object_url(object_info);
+        object.attr("href", url);
         object_container.append(object);
-        this.object_list.append(object_container);
+        this.element.find('.object-list').append(object_container);
     }
 
     build() {
         this.element.empty();
+        this.element.append($('<div/>').addClass('object-list'));
         this.element.append($('<div/>').addClass('multi-level-dropdown'))
         this.element = this.element.find('.multi-level-dropdown');
         super.build();
         this.element = this.element.closest('.object-select');
-        this.element.append($('<div/>').addClass('object-list'));
     }
 }
 
@@ -873,7 +912,7 @@ class AutocompleteInput extends JqueryElement {
     }
 
     match_listeners() {
-        this.element.find('.autocomplete a').click({func: this.autocomplete_select, object: this}, this.dispatch);
+        this.element.find('.autocomplete p').click({func: this.autocomplete_select, object: this}, this.dispatch);
     }
 
     build_matches(data) {
@@ -1421,6 +1460,7 @@ class MenuSiteSelect extends JqueryElement {
         super(id);
         this.value = [];
         this.type = type;
+        this.reset();
         this.listeners();
         this.show_sites(this.element.find('.chapter')[0]);
         this.select(this.element.find('.site')[0]);
@@ -1450,11 +1490,15 @@ class MenuSiteSelect extends JqueryElement {
         this.element.trigger(':change');
     }
 
-    set_value(val) {
+    set_value(val, change) {
         var site_select = this;
         this.element.find('input').each(function() {
             if ($(this).val() == val) {
-                site_select.select(this);
+                if (change) {
+                    site_select.change(this);
+                } else {
+                    site_select.select(this);
+                }
             }
         });
     }
@@ -1522,6 +1566,12 @@ class MenuSiteSelect extends JqueryElement {
         delete closeFunctions['#' + this.id];
     }
 
+    reset() {
+        this.element.find('input').each(function() {
+            $(this).prop('checked', false);
+        });
+    }
+
     listeners() {
         $('#menu_btn').click({func: this.show, object: this}, this.dispatch);
         this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
@@ -1536,11 +1586,13 @@ class MenuSiteSelect extends JqueryElement {
 
 
 class ColorPicker extends JqueryElement {
-    constructor(id) {
+    constructor(id, default_value='hsla(0.0, 93%, 64%, 0.3)') {
         super(id);
         this.styles();
         this.select(this.element.find('.color').first());
         this.close_selector = '.color-select';
+        this.default_value = default_value;
+        this.value = this.default_value;
         this.listeners();
     }
 

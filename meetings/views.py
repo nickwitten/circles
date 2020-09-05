@@ -62,7 +62,7 @@ def get_members(request):
     people_objs = []
     for filterset in lists:
         people_objs += filter_profiles(request.user.userinfo.user_profile_access().order_by('last_name'), json.loads(filterset))
-    if int(meeting):
+    if meeting and int(meeting):
         meeting = request.user.userinfo.user_meeting_access().filter(pk=meeting).first()
         if not meeting:
             raise Http404
@@ -109,6 +109,7 @@ def post_meeting_info(request, pk):
                 meeting.save(files=files)
                 created_meetings += [meeting]
             else:
+                print(form.errors)
                 return JsonResponse({})
         data = base_meeting.to_dict() if base_meeting else created_meetings[0].to_dict()
         return JsonResponse(data)

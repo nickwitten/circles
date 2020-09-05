@@ -30,9 +30,9 @@
         </div>
         <div class="right">
             <div class="mt-4">
-                <button id="create_programming" class="btn btn-outline-secondary">+ Programming</button>
-                <button id="create_theme" class="btn btn-outline-secondary">+ Theme</button>
-                <button id="create_module" class="btn btn-outline-secondary">+ Module</button>
+                <button id="create_programming" class="btn btn-outline-secondary" type="button">+ Programming</button>
+                <button id="create_theme" class="btn btn-outline-secondary" type="button">+ Theme</button>
+                <button id="create_module" class="btn btn-outline-secondary" type="button">+ Module</button>
             </div>
         </div>
         {% for form in forms %}
@@ -66,6 +66,7 @@
         'theme': JSON.parse($('#theme_fields').text()),
         'module': JSON.parse($('#module_fields').text()),
     };
+    var url_learning = "{% url 'learning' %}";
     var url_learning_models = "{% url 'learning-models' %}";
     var url_members_completed = "{% url 'members-completed' %}";
     var url_profile_detail = "{% url 'profile-detail' pk=0 %}";

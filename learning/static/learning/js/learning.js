@@ -476,7 +476,6 @@ class InfoPopup extends JqueryElement{
     remove_member(data) {
         data['delete'] = true;
         data['profile_pk'] = this.remove_member_pk;
-        console.log(data);
         var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
         $.ajax({
             url: url_members_completed,
@@ -556,8 +555,9 @@ class InfoPopup extends JqueryElement{
 
 
 class InfoSlide extends JqueryElement {
-    constructor(id, type) {
+    constructor(id, type, parent) {
         super(id)
+        this.parent = parent;
         this.type = type;
         this.model_infos = [];
         this.site_select = new MultiLevelDropdown(type + '_site_select', this.get_site_select_data());
@@ -608,24 +608,8 @@ class InfoSlide extends JqueryElement {
         this.item_listeners();
     }
 
-    show_model(pk, title, site, theme_options=null, theme=null) {
+    show_model(pk) {
         this.info_update_listeners_off();
-        this.base_info = {'site': parseInt(site[1]), 'site_str': site[0], 'title': title, "pk": pk};
-        this.model_infos = [this.base_info];
-        this.mode = 'update';
-        this.update_form.show_fields('all');
-        this.loader_element.show();
-        this.site_select.set_value([site[1]]);
-        if (theme) {
-            this.base_info['theme'] = theme[0];
-            title = theme[0] + ' - ' + title;
-            if (this.theme_select) {
-                this.theme_select.element.empty(); // delete previous
-            }
-            this.theme_select = new Dropdown(this.type + '_theme_select', theme_options);
-            this.theme_select.set_value(theme);
-        }
-        this.element.find('.title-text').first().text(title);
         this.element.addClass('show');
         var data = {
             'pk': pk,
@@ -636,14 +620,51 @@ class InfoSlide extends JqueryElement {
             method: 'GET',
             data: data,
             context: this,
+            beforeSend: function() {
+                this.loader_element.show();
+            },
             success: this.model_info_success,
             error: this.model_info_error,
         });
     }
 
     model_info_success(data) {
+        var info_slide = this;
+        // If model info xhr returns before get_items set listener
+        if (this.parent.site_data.is_loading) {
+            this.parent.site_data.register_listener(function(is_loading) {
+                if (!is_loading) {
+                    info_slide.model_info_success(data);
+                }
+            });
+            return
+        } else {
+            this.parent.site_data.register_listener(function(is_loading) {});
+        }
+        this.base_info = {
+            'site': data.site,
+            'site_str': this.parent.sites[data.site],
+            'title': data.title,
+            "pk": data.id
+        };
+        this.model_infos = [this.base_info];
+        this.mode = 'update';
+        this.update_form.show_fields('all');
+        var title = data.title;
+        if (data.theme) {
+            this.base_info['theme'] = this.parent.themes[data.theme];
+            title = this.parent.themes[data.theme] + ' - ' + data.title;
+            if (this.theme_select) {
+                this.theme_select.element.empty(); // delete previous
+            }
+            this.theme_select = new Dropdown(this.type + '_theme_select', this.parent.get_theme_select_data());
+            this.theme_select.set_value(this.parent.themes[data.theme]);
+        }
+        this.element.find('.title-text').first().text(title);
+
         this.loader_element.hide();
         this.update_form.set_data(data);
+        this.site_select.set_value(data.site);
         this.item_listeners(); // Item specific listeners
     }
 
@@ -665,6 +686,10 @@ class InfoSlide extends JqueryElement {
         this.info_update_listeners_off();
         this.element.removeClass('show');
         this.delayed_erase_data(this, "timeup");
+    }
+
+    reset_url() {
+        history.pushState({}, '', url_learning)
     }
 
     delayed_erase_data(self, timeup) {
@@ -1028,6 +1053,7 @@ class InfoSlide extends JqueryElement {
 
     listeners() {
         this.element.find('.info.back').click({func: this.hide, object: this}, this.dispatch);
+        this.element.find('.info.back').click({func: this.reset_url, object: this}, this.dispatch);
         this.element.find('.edit-btn').click({func: this.show_update_info, object: this}, this.dispatch);
         this.element.find('.delete-btn').click({func: this.delete_models, object: this}, this.dispatch);
         this.element.find('.save-btn').click({func: this.submit_form, object: this}, this.dispatch);
@@ -1056,14 +1082,17 @@ class InfoSlide extends JqueryElement {
 class LearningList extends JqueryElement {
     constructor(id) {
         super(id);
-        this.site_data = null;
+        this.site_data = create_loading_object();
+        this.sites = {}
+        this.themes = {}
+        this.update_sites_object();
         this.menu = new LearningMenu('menu', 'menu_btn');
         this.site_select = this.menu.site_select;
         var type_data = this.get_type_select_data();
         this.type_select = new LearningTypeDropdown('learning_type_select', type_data, {type: 'radio'});
-        this.programming_slide = new InfoSlide('programming_info', 'programming');
-        this.theme_slide = new InfoSlide('theme_info', 'theme');
-        this.module_slide = new InfoSlide('module_info', 'module');
+        this.programming_slide = new InfoSlide('programming_info', 'programming', this);
+        this.theme_slide = new InfoSlide('theme_info', 'theme', this);
+        this.module_slide = new InfoSlide('module_info', 'module', this);
         this.slides = [this.programming_slide, this.theme_slide, this.module_slide]
         this.slide_inds = {'programming': 0, 'theme': 1, 'module': 2};
         this.active_slide = null;
@@ -1079,61 +1108,20 @@ class LearningList extends JqueryElement {
         this.programming_slide.hide();
         this.theme_slide.hide();
         this.module_slide.hide();
-        var type = this.type_select.value[0].toLowerCase();
-        if (type != 'programming') {
-            if ($(item).hasClass('sub-item')) {
-                type = 'module';
-            } else {
-                type = 'theme';
-            }
-        }
-        var url = type + '?';
-        url += 'id=' + $(item).attr('value');
-        url += '&site=' + this.site_select.value[0];
-        url += '&title=' + $(item).text();
-        if (type == 'module') {
-            url += '&theme=' + $(item).siblings('.item').attr('value');
-        }
+        var type = $(item).attr('data-type');
+        var url = '?';
+        url += 'site=' + this.site_select.value[0];
+        url += '&type=' + this.type_select.value[0];
+        url += '&model_type=' + type;
+        url += '&id=' + $(item).attr('value');
         history.pushState({}, '', url)
         $(window).trigger('popstate');
     }
 
-    show_item_info({site, type, title, id, theme=null} = {}) {
-        if (type == 'programming') {
-            this.type_select.set_value('Programming');
-        } else {
-            this.type_select.set_value('All');
-        }
-        this.site_select.set_value(site);
-        var site_info = null;
-        this.site_select.element.find('input').each(function () {
-            if ($(this).val() == site) {
-                site_info = [$(this).siblings('.site-name').text(), $(this).val()]
-            }
-        });
-        if (theme) {
-            console.log(theme);
-            while(!Array.isArray(theme)) {
-                this.element.find('.item').each(function() {
-                    if ($(this).attr('value') == theme) {
-                        theme = [$(this).text(), theme]
-                        console.log(theme);
-                    }
-                });
-            }
-        }
-        console.log(theme);
-        if (type == 'programming') {
-            this.programming_slide.show_model(id, title, site_info);
-            this.active_slide = this.programming_slide;
-        } else if (type == 'module') {
-            var theme_options = this.get_theme_select_data();
-            this.module_slide.show_model(id, title, site_info, theme_options, theme);
-            this.active_slide = this.module_slide;
-        } else {
-            this.theme_slide.show_model(id, title, site_info);
-            this.active_slide = this.theme_slide;
-        }
+    show_item_info(type, id) {
+        var slide = this.slides[this.slide_inds[type]]
+        slide.show_model(id)
+        this.active_slide = slide;
     }
 
     create_model(button) {
@@ -1166,7 +1154,11 @@ class LearningList extends JqueryElement {
     }
 
     get_items() {
-        $.ajax({
+        if (this.get_items_xhr) {
+            this.aborted = true;
+            this.get_items_xhr.abort();
+        }
+        this.get_items_xhr = $.ajax({
             url: url_learning_models,
             type: 'get',
             data: {
@@ -1175,14 +1167,22 @@ class LearningList extends JqueryElement {
             },
             context: this,
             beforeSend: function() {
+                this.site_data.is_loading = true;
                 this.loader_element.show();
             },
             success: function(data) {
-                this.site_data = data['site_data'];
+                this.get_items_xhr = null;
+                this.site_data.programming = data.site_data.programming;
+                this.site_data.themes = data.site_data.themes;
+                this.update_themes_object();
+                this.site_data.is_loading = false;
                 this.update_items();
             },
             error: function() {
-                addAlertHTML("Something Went Wrong", 'danger');
+                if (!this.aborted) {
+                    addAlertHTML("Something Went Wrong", 'danger');
+                }
+                this.aborted = false;
             },
             complete: function() {
                 this.loader_element.hide();
@@ -1193,15 +1193,21 @@ class LearningList extends JqueryElement {
     update_items() {
         this.update_title(); // Update title with items
         var type = this.type_select.value[0];
-        if (!(this.site_data && type)) {
+        if (this.site_data.is_loading || !type) {
             return
         }
+        var item_type = '';
+        var sub_item_type = '';
         if (type == 'Programming') {
+            item_type = 'programming'
+            sub_item_type = '';
             var items = this.site_data.programming
             this.create_programming.show();
             this.create_theme.hide();
             this.create_module.hide();
         } else {
+            item_type = 'theme';
+            sub_item_type = 'module';
             this.create_programming.hide();
             this.create_theme.show();
             this.create_module.show();
@@ -1229,7 +1235,7 @@ class LearningList extends JqueryElement {
                 }
             }
         }
-        this.build_items(items);
+        this.build_items(items, [item_type, sub_item_type]);
         this.item_listeners();
     }
 
@@ -1267,6 +1273,25 @@ class LearningList extends JqueryElement {
         }
     }
 
+    update_sites_object() {
+        // Hash id to title
+        for (let i=0; i<user_sites.length; i++) {
+            var chapter = user_sites[i];
+            for (let j=0; j<chapter.sites.length; j++) {
+                var site = chapter.sites[j];
+                this.sites[site.pk] = site.str;
+            }
+        }
+    }
+
+    update_themes_object() {
+        // Hash id to title
+        for (let i=0; i<this.site_data.themes.length; i++) {
+            var theme = this.site_data.themes[i].theme;
+            this.themes[theme[1]] = theme[0];
+        }
+    }
+
     listeners() {
         this.site_select.element.on(':change', {func: this.get_items, object: this}, this.dispatch);
         this.site_select.element.on(':change', {func: this.hide_resize_slides, object: this}, this.dispatch);
@@ -1286,7 +1311,7 @@ class LearningList extends JqueryElement {
         this.element.find('.item, .sub-item').click({func: this.trigger_show_item_info, object: this}, this.dispatch);
     }
 
-    build_items(items) {
+    build_items(items, types) {
         this.element.empty();
         for (let i=0; i<items.length; i++) {
             var item_data = items[i];
@@ -1294,6 +1319,7 @@ class LearningList extends JqueryElement {
             var item_element = $('<p/>')
                 .addClass('item blacklink')
                 .attr('value', item_data[1])
+                .attr('data-type', types[0])
                 .text(item_data[0]);
             item_container.append(item_element);
             var sub_items = item_data[2];
@@ -1304,6 +1330,7 @@ class LearningList extends JqueryElement {
                     .addClass('sub-item blacklink')
                     .addClass(sub_data[2])
                     .attr('value', sub_data[1])
+                    .attr('data-type', types[1])
                     .text(sub_data[0]);
                 item_container.append(sub_element);
             }
@@ -1316,15 +1343,15 @@ class LearningList extends JqueryElement {
 
 
 function update_page() {
-    console.log('update');
-    var pathname = window.location.pathname.split('/');
     var query = parseQuery(window.location.search);
-    console.log(query);
-    console.log(pathname);
-    if (learning_list.slide_inds.hasOwnProperty(pathname[2])) {
-        query['type'] = pathname[2];
-        console.log(query);
-        learning_list.show_item_info(query);
+    if (query.site) {
+        learning_list.site_select.set_value(query.site, true);
+    }
+    if (query.type) {
+        learning_list.type_select.set_value(query.type);
+    }
+    if (query.id && learning_list.slide_inds.hasOwnProperty(query.model_type)) {
+        learning_list.show_item_info(query.model_type, query.id);
     }
 }
 

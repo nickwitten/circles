@@ -88,8 +88,17 @@
     padding-right: 40px;
     max-width: 100%;
 }
+#meeting_form .label {
+    padding-right: 1rem;
+    white-space: nowrap;
+}
+#meeting_form .field {
+    width: 100%;
+}
 #meeting_form #id_attendees,
-#meeting_form #id_lists {
+#meeting_form #id_lists,
+#meeting_form #id_programming,
+#meeting_form #id_modules {
     display: none;
 }
 

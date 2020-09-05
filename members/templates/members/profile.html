@@ -85,10 +85,10 @@
 
                 {% if update %}
                 <button class="create-residence modal-trigger btn btn-outline-secondary mt-2"
-                        data-id="{% url 'create-residence' object.pk %}">Add Home Info
+                        data-id="{% url 'create-residence' object.pk %}" type="button">Add Home Info
                 </button>
                 {% elif create %}
-                <button class="create-residence btn btn-outline-secondary mt-2">Add Home Info
+                <button class="create-residence btn btn-outline-secondary mt-2" type="button">Add Home Info
                 </button>
                 {% endif %}
 
@@ -122,11 +122,11 @@
                 </div>
                 <!-- Add Child Button -->
                 {% if create %}
-                <button class="btn btn-outline-secondary mt-2">Edit Children</button>
+                <button class="btn btn-outline-secondary mt-2" type="button">Edit Children</button>
                 {% elif update %}
                 <a class="btn btn-outline-secondary mt-2" href="{% url 'edit-children' object.pk %}">Edit Children</a>
                 {% elif object.order_children %}
-                <button class="btn btn-outline-secondary more-child-info mt-2">More Info</button>
+                <button class="btn btn-outline-secondary more-child-info mt-2" type="button">More Info</button>
                 {% endif %}
 
             </div>
@@ -193,10 +193,10 @@
                 <!----- Add Role Button ------>
                 {% if update %}
                 <button class="create-role modal-trigger btn btn-outline-secondary mt-2"
-                   data-id="{% url 'create-role' object.pk %}">Add Role
+                   data-id="{% url 'create-role' object.pk %}" type="button">Add Role
                 </button>
                 {% elif create %}
-                <button class="create-role btn btn-outline-secondary mt-2">Add Role</button>
+                <button class="create-role btn btn-outline-secondary mt-2" type="button">Add Role</button>
                 {% endif %}
             </div>
 
@@ -239,10 +239,10 @@
                 </div>
                 <!-- Add Training Button -->
                 {% if create %}
-                <button class="btn btn-outline-secondary mt-2">Add Training</button>
+                <button class="btn btn-outline-secondary mt-2" type="button">Add Training</button>
                 {% elif update %}
                 <button class="btn btn-outline-secondary modal-trigger mt-2"
-                   data-id="{% url 'add-training' object.pk %}">Add Training</button>
+                   data-id="{% url 'add-training' object.pk %}" type="button">Add Training</button>
                 {% endif %}
 
             </div>
@@ -257,7 +257,7 @@
         <div class="buttons">
             {% if update %}
                 <button class="btn btn-outline-secondary" type="submit" name="button">Save</button>
-                <button class="btn btn-outline-danger modal-trigger" data-id="{% url 'profile-delete' object.id %}">Delete Profile</button>
+                <button class="btn btn-outline-danger modal-trigger" data-id="{% url 'profile-delete' object.id %}" type="button">Delete Profile</button>
             {% elif detail %}
                 <a class="btn btn-outline-secondary" href="{% url 'profile-update' object.id %}">Edit Profile</a>
             {% endif %}
