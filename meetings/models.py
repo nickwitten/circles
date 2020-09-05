@@ -31,10 +31,14 @@ class Meeting(FileFieldMixin, DictMixin, models.Model):
         return f'{self.site} - {self.type}'
 
     def save(self, *args, **kwargs):
+        training = kwargs.pop('training', {})
         super().save(*args, **kwargs)
-        for module in self.modules.all():
-            for attendee in self.attendees.all():
-                print("add " + str(module) + " training to " + str(attendee))
+        print(training)
+        for module_pk, attendees in training.items():
+            module = self.modules.filter(pk=module_pk).first()
+            attendees = self.attendees.all() if attendees == 'all' else self.attendees.filter(pk__in=attendees)
+            for attendee in attendees:
+                attendee.add_learning(module, learning_models.ProfileModule, self.start_time.strftime('%Y-%m-%d'))
 
 
 class MeetingFile(models.Model):

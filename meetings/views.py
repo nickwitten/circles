@@ -80,6 +80,7 @@ def post_meeting_info(request, pk):
     if request.method == 'POST':
         form_dict = QueryDict(request.POST.get('form'))
         dates = json.loads(request.POST.get('dates'))
+        training = json.loads(request.POST.get('training'))
         files = request.FILES
         delete_files = request.POST.get('delete_files', None)
         files['delete_files'] = json.loads(delete_files) if delete_files else None
@@ -90,7 +91,7 @@ def post_meeting_info(request, pk):
             form = forms.MeetingCreationForm(data=form_dict, user=request.user, instance=meeting)
             if form.is_valid():
                 base_meeting = form.save()
-                base_meeting.save(files=files)
+                base_meeting.save(files=files, training=training)
                 dates.pop(0)
             else:
                 print(form.errors)
@@ -106,7 +107,7 @@ def post_meeting_info(request, pk):
                 day = int(date[8:])
                 meeting.start_time = meeting.start_time.replace(month=month, day=day, year=year)
                 meeting.end_time = meeting.end_time.replace(month=month, day=day, year=year)
-                meeting.save(files=files)
+                meeting.save(files=files, training=training)
                 created_meetings += [meeting]
             else:
                 print(form.errors)

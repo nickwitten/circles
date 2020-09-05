@@ -1,3 +1,5 @@
+import json
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -59,6 +61,32 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
             img.thumbnail(output_size)
             img.save(self.image.path)
 
+    def add_learning(self, learning, profile_learning_class, date_completed):
+        profile_learning = learning.profiles.filter(profile=self).first()
+        if profile_learning and profile_learning.date_completed:
+            return False
+        else:
+            pk = profile_learning.pk if profile_learning else None
+            attrs = {learning.__class__.__name__.lower(): learning, 'profile': self, 'date_completed': date_completed}
+            obj, created = profile_learning_class.objects.update_or_create(pk=pk, defaults=attrs)
+            obj.save()
+            return True
+
+    def remove_learning(self, learning):
+        profile_learning = learning.profiles.filter(profile=self).first()
+        if not profile_learning:
+            return
+        required_for = json.loads(learning.required_for)
+        print(required_for)
+        if self.roles.filter(position__in=required_for):
+            # Don't delete just remove date completed
+            print('is required')
+            profile_learning.date_completed = None
+            profile_learning.save()
+        else:
+            print('isnt required')
+            profile_learning.delete()
+
     def order_residences(self):
         return self.residences.order_by('-start_date')
 
@@ -67,12 +95,12 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
 
     def order_training(self):
         return self.training.order_by('-end_date')
-
     # Get all ChildInfos
+
     def get_child_infos(self):
         return self.childinfos.all()
-
     # Get all Children
+
     def order_children(self):
         return Child.objects.filter(child_info__profile=self)
 

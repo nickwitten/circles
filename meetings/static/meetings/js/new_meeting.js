@@ -8,8 +8,8 @@ class CalendarMenu extends Menu {
 
 
 class AttendanceSelect extends JqueryElement {
-    constructor(id, field_id) {
-        super(id);
+    constructor(id, field_id, parent) {
+        super(id, parent);
         this.default_value = [];
         this.value = this.default_value;
         this.data = [];
@@ -96,10 +96,12 @@ class AttendanceSelect extends JqueryElement {
 
 
 class AttendanceSlide extends JqueryElement {
-    constructor(id) {
-        super(id);
+    constructor(id, parent) {
+        super(id, parent);
         this.list_select = new Dropdown('list_select', [], {placeholder: 'Lists'});
-        this.attendance_select = new AttendanceSelect('attendance_select', 'id_attendees');
+        this.attendance_select = new AttendanceSelect('attendance_select', 'id_attendees', this);
+        this.training = {}; // module_pk hash to profiles to add to or 'all'
+        this.messages = this.element.find('.messages');
         this.loader = this.element.find('.loading');
         this.close_selector = '#' + this.id + ', #meeting_info_container';
         this.listeners();
@@ -148,8 +150,40 @@ class AttendanceSlide extends JqueryElement {
         });
     }
 
+    update_module_info() {
+        this.messages.empty();
+        var modules = this.parent.training_select.value;
+        // Add newly selected modules
+        for (let i=0; i<modules.length; i++) {
+            var id = modules[i];
+            this.build_module_message(id);
+            if (!this.training.hasOwnProperty(id)) {
+                this.training[id] = 'all';
+            }
+        }
+        // Get rid of unselected trainings
+        for (const module_id in this.training) {
+            if (!modules.includes(parseInt(module_id))) {
+                delete this.training[module_id];
+            }
+        }
+    }
+
+    build_module_message(id) {
+        var title = this.parent.training_select.titles[id];
+        var container = $('<div/>');
+        var modal_text = $('<a/>').text('All').attr('href', '#').attr('data-pk', id);
+        var message = $('<p/>').text(' attendees will receive - ' + title + ' - training.');
+        container.append(modal_text);
+        container.append(message);
+        this.messages.append(container);
+    }
+
+
     listeners() {
         this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
+        this.parent.training_select.element.on(':change', {func: this.update_module_info, object: this}, this.dispatch);
+        this.parent.training_select.element.on(':update', {func: this.update_module_info, object: this}, this.dispatch);
     }
 }
 
@@ -167,7 +201,6 @@ class StartTime extends JqueryElement {
     update_value() {
         this.value = getDatetime(this.date_select, this.time_select)[0];
         this.element.trigger(":change");
-        console.log(this.value);
     }
 
     set_value(value) {
@@ -323,7 +356,6 @@ class MeetingInfo extends JqueryElement {
         this.pk = 0;
         this.changes_saved = true;
         this.site_select = new Dropdown('meeting_site_select', [], {type: 'radio'});
-        this.attendance = new AttendanceSlide('attendance_container')
         this.type_select = new TypeSelect('type_select');
         this.color_select = new ColorPicker('meeting_color');
         this.date_select = new MultiDatePicker('meeting_date');
@@ -332,6 +364,7 @@ class MeetingInfo extends JqueryElement {
         this.end_time = new EndTime('id_end_time', this.date_select, this.time_select);
         this.programming_select = new ProgrammingSelect('programming_select', [], 'id_programming', {object_url: url_learning + 'programming', parent: this});
         this.training_select = new ModuleSelect('training_select', [], 'id_modules', {object_url: url_learning + 'module', parent: this});
+        this.attendance = new AttendanceSlide('attendance_container', this);
         this.file_input = new FileInput('file_input');
         form_fields['files'] = 'json'
         this.link_input = new LinkInput('link_input');
@@ -364,7 +397,6 @@ class MeetingInfo extends JqueryElement {
 
         // Sync month in date picker with calendar month
         this.element.trigger(":monthsync");
-        console.log(pk);
         if (pk) {
             this.pk = pk;
             this.get_meeting_info();
@@ -375,7 +407,6 @@ class MeetingInfo extends JqueryElement {
             this.date_select.set_value([date]);
         }
 
-        console.log(this.pk);
 
         this.element.addClass('show');
         this.attendance.element.addClass('modal-shadow');
@@ -440,11 +471,10 @@ class MeetingInfo extends JqueryElement {
             return
         }
         var data = this.file_input.form_data;
-        console.log(this.color_select.value);
-        console.log($('#id_color').val())
         data.append('form', this.form.element.serialize());
         data.append('dates', JSON.stringify(this.date_select.value));
         data.append('delete_files', JSON.stringify(this.file_input.delete_files));
+        data.append('training', JSON.stringify(this.attendance.training))
         var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
         $.ajax({
             url: url_meeting_post.slice(0,-1) + this.pk,
@@ -483,7 +513,6 @@ class MeetingInfo extends JqueryElement {
     }
 
     submit_success(data) {
-        console.log(data.id);
         this.pk = data.id;
         this.form.set_data(data);
         this.changes_saved = true;
@@ -650,7 +679,6 @@ class Calendar extends JqueryElement {
         this.meeting_info = new MeetingInfo('meeting_info_container');
         this.site_select = this.menu.site_select;
         this.site_select.select(this.site_select.element.find('.all'));
-        console.log(this.site_select.element.find('.all'));
         this.reload_month();
         this.listeners();
     }

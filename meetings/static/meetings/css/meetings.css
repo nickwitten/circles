@@ -299,19 +299,14 @@
 #attendance_container .loading {
     border-radius: 5px;
 }
-
-
-
-#list_select {
+#attendance_container #list_select {
     justify-content: center;
 }
-
-
-
-
 #attendance_select {
     display: flex;
     flex-flow: row wrap;
+    align-content: flex-start;
+    flex-grow: 1;
     margin: 1rem 0;
     overflow-y: auto;
 }
@@ -323,4 +318,9 @@
 }
 #attendance_select a {
     margin: 0 0.5em;
+}
+#attendance_container .messages a,
+#attendance_container .messages p {
+    font-size: calc(8px + 0.3vw);
+    display: inline;
 }
