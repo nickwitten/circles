@@ -141,7 +141,7 @@ class Dropdown extends JqueryElement {
         this.placeholder = placeholder;
         this.default_value = default_value;
         this.value = default_value;
-        this.titles = {}; // Hash values to display text
+        this.val_to_text = {}; // Hash values to display text
         this.text = '';
         this.initialize();
     }
@@ -257,7 +257,7 @@ class Dropdown extends JqueryElement {
 
     build() {
         this.element.empty();
-        this.titles = {};
+        this.val_to_text = {};
         var value = $('<p/>')
             .addClass('value')
         var pointer = $('<i/>')
@@ -270,7 +270,7 @@ class Dropdown extends JqueryElement {
             .addClass('options-wrapper');
         for (let i=0; i<this.data.length; i++) {
             var option_data = this.data[i];
-            this.titles[option_data[1]] = option_data[0];
+            this.val_to_text[option_data[1]] = option_data[0];
             var option = $('<div/>')
                 .addClass('option');
             var input = $('<input/>')
@@ -443,7 +443,7 @@ class MultiLevelDropdown extends Dropdown {
                 .addClass('sub-options-wrapper')
             for (let j=0; j<option_data[2].length; j++) {
                 var sub_option_data = option_data[2][j];
-                this.titles[sub_option_data[1]] = sub_option_data[0];
+                this.val_to_text[sub_option_data[1]] = sub_option_data[0];
                 var sub_option = $('<div/>')
                     .addClass('sub-option');
                 var sub_input = $('<input/>')
@@ -478,7 +478,7 @@ class MultiLevelDropdown extends Dropdown {
 
 
 class ObjectSelect extends Dropdown {
-    constructor(id, data, field_id, {object_url=null, type='checkbox', placeholder='', default_value='[]', parent=null} = {}) {
+    constructor(id, data, field_id, {object_url=null, type='checkbox', placeholder='', default_value=[], parent=null} = {}) {
         super(id, data, {type:type, placeholder:placeholder, default_value:default_value, parent:parent});
         this.form_field = $('#' + field_id);
         this.object_url = object_url;
@@ -537,12 +537,12 @@ class ObjectSelect extends Dropdown {
             text = this.placeholder;
         }
         value_text.text(text);
+        this.element.trigger(':update');
     }
 
     set_value(value) {
         this.value = value;
         this.update_display();
-        this.element.trigger(':update');
     }
 
     select(option, e) {
@@ -584,7 +584,7 @@ class ObjectSelect extends Dropdown {
 
 
 class MultiLevelObjectSelect extends MultiLevelDropdown {
-    constructor(id, data, field_id, {object_url=null, type='checkbox', placeholder='', default_value='[]', parent=null} = {}) {
+    constructor(id, data, field_id, {object_url=null, type='checkbox', placeholder='', default_value=[], parent=null} = {}) {
         super(id, data, {type:type, placeholder:placeholder, default_value:default_value, parent:parent});
         this.form_field = $('#' + field_id);
         this.object_url = object_url;
@@ -658,6 +658,7 @@ class MultiLevelObjectSelect extends MultiLevelDropdown {
             text = this.placeholder;
         }
         value_text.text(text);
+        this.element.trigger(':update');
     }
 
     set_value(value) {
@@ -710,16 +711,17 @@ class Modal extends JqueryElement {
         super(id);
         this.modal_element = this.element.find('.modal');
         this.escapable = escapable;
+        this.build_func = build_func;
         this.action_func = action_func;
         this.action_data = action_data;
         this.cancel_func = cancel_func;
         this.cancel_data = cancel_data;
         this.offset_height = 30;
-        if (build_func) {
-            build_func.call(this);
+        if (this.build_func) {
+            this.build_func.call(this);
         }
-        this.listeners();
         this.show();
+        this.listeners();
     }
 
     check_submit(element, e) {
@@ -756,6 +758,7 @@ class Modal extends JqueryElement {
         if (this.escapable) {
             delete closeFunctions['.modal'];
         }
+        this.element.trigger(":hide");
     }
 }
 

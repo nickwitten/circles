@@ -1,3 +1,5 @@
+import json
+
 from django.db import models
 
 from members.models import Profile, FilterSet, Site
@@ -14,6 +16,7 @@ class Meeting(FileFieldMixin, DictMixin, models.Model):
                                                  blank=True, related_name='programming')
     modules = models.ManyToManyField(learning_models.Module,
                                             blank=True, related_name='modules')
+    modules_to_attendees = models.TextField(default='{}')
     location = models.CharField(max_length=128, blank=True)
     start_time = models.DateTimeField(verbose_name="Start Time", )
     end_time = models.DateTimeField(verbose_name="End Time")
@@ -30,12 +33,11 @@ class Meeting(FileFieldMixin, DictMixin, models.Model):
     def __str__(self):
         return f'{self.site} - {self.type}'
 
-    def save(self, *args, **kwargs):
-        training = kwargs.pop('training', {})
-        super().save(*args, **kwargs)
-        print(training)
-        for module_pk, attendees in training.items():
+    def train_members(self):
+        for module_pk, attendees in json.loads(self.modules_to_attendees).items():
             module = self.modules.filter(pk=module_pk).first()
+            if not module:
+                continue
             attendees = self.attendees.all() if attendees == 'all' else self.attendees.filter(pk__in=attendees)
             for attendee in attendees:
                 attendee.add_learning(module, learning_models.ProfileModule, self.start_time.strftime('%Y-%m-%d'))

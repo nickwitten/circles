@@ -506,6 +506,10 @@ header a{
     overflow-y: hidden;
     z-index: 5;
 }
+.multi-level-dropdown .options {
+    max-height: 20rem;
+    overflow: auto;
+}
 .multi-level-dropdown .options-wrapper,
 .dropdown .options-wrapper {
     position: relative;
@@ -514,6 +518,10 @@ header a{
     -webkit-box-shadow: 1px 1px 7px 0px #cccccc96;
     -moz-box-shadow:   1px 1px 7px 0px #cccccc96;
     box-shadow:        1px 1px 7px 0px #cccccc96;
+}
+.dropdown .options-wrapper {
+    max-height: 20rem;
+    overflow: auto;
 }
 .multi-level-dropdown .option,
 .dropdown .option {

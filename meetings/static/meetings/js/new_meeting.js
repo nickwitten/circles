@@ -13,6 +13,7 @@ class AttendanceSelect extends JqueryElement {
         this.default_value = [];
         this.value = this.default_value;
         this.data = [];
+        this.val_to_text = {};
         this.form_field = $('#' + field_id);
         this.update_select();
     }
@@ -34,10 +35,13 @@ class AttendanceSelect extends JqueryElement {
             input.prop('checked', !input.prop('checked'));
         }
         var value = parseInt($(input).val());
+        var text = $(input).siblings('a').text();
         if ($(input).is(':checked')) {
             this.value.push(value);
+            this.val_to_text[value] = text;
         } else {
             this.value.splice(this.value.indexOf(value), 1);
+            delete this.val_to_text[value];
         }
         this.update_display();
         this.element.trigger(':change');
@@ -45,9 +49,11 @@ class AttendanceSelect extends JqueryElement {
 
     update_display() {
         var select = this;
+        this.val_to_text = {};
         this.element.find('input').each(function() {
             if (select.value.includes(parseInt($(this).val()))) {
                 $(this).prop('checked', true);
+                select.val_to_text[$(this).val()] = $(this).siblings('a').text();
             } else {
                 $(this).prop('checked', false);
             }
@@ -75,6 +81,7 @@ class AttendanceSelect extends JqueryElement {
                 .attr('target', '_blank')
         );
         this.element.append(item);
+        return item;
     }
 
     build_form_option(member_data) {
@@ -100,10 +107,11 @@ class AttendanceSlide extends JqueryElement {
         super(id, parent);
         this.list_select = new Dropdown('list_select', [], {placeholder: 'Lists'});
         this.attendance_select = new AttendanceSelect('attendance_select', 'id_attendees', this);
-        this.training = {}; // module_pk hash to profiles to add to or 'all'
+        this.default_value = '{}'; // module_pk hash to profiles to add to or 'all'
+        this.value = this.default_value; // module_pk hash to profiles to add to or 'all'
         this.messages = this.element.find('.messages');
         this.loader = this.element.find('.loading');
-        this.close_selector = '#' + this.id + ', #meeting_info_container';
+        this.close_selector = '#' + this.id + ', #meeting_info_container, .modal-container';
         this.listeners();
     }
 
@@ -150,35 +158,138 @@ class AttendanceSlide extends JqueryElement {
         });
     }
 
+    set_value(val) {
+        this.value = val;
+        this.element.trigger(':change');
+    }
+
+    modal_select(option, e) {
+        // this is modal
+        var modal = this
+        var input = $(option).find('input');
+        if (!$(e.target).is('input') && !$(e.target).is('a')) {
+            input.prop('checked', !input.prop('checked'));
+        }
+        if (input.val() == 'all') {
+            this.element.find('input').prop('checked', input.prop('checked'));
+        }
+        var all_checked = true;
+        this.element.find('input').not('.all').each(function() {
+            if (!$(this).prop('checked')) {
+                all_checked = false;
+            }
+        });
+        this.element.find('input.all').prop('checked', all_checked);
+    }
+
+    module_modal(elem) {
+        var module_id = parseInt($(elem).attr('data-pk'));
+        var title = $(elem).attr('data-title');
+        var attendance_slide = this;
+        var build_func = function() {
+            var modal = this;
+            var select = attendance_slide.attendance_select;
+            this.id = module_id;
+            var module_value = JSON.parse(attendance_slide.value)[module_id];
+
+            this.element.find('.content-container').empty()
+            this.element.find('.header-text').text('Attendees Receiving - ' + title + ' - Training');
+            this.element.find('.action.btn').attr('class', 'btn action btn-primary');
+
+            this.element = this.element.find('.content-container');
+            this.element.addClass('attendance-select');
+            var attendees = select.value;
+            var all_option = select.build_member.call(this, ['All', 'all']).find('input');
+            all_option.addClass('all');
+            if (module_value == 'all') {
+                all_option.prop('checked', true);
+            }
+            for (let i=0; i<attendees.length; i++) {
+                var id = attendees[i];
+                var item = select.build_member.call(this, [select.val_to_text[id], id]);
+                if (module_value == 'all' || module_value.includes(id)) {
+                    item.find('input').prop('checked', true);
+                }
+            }
+            this.element.find('.attendance-item').click({object: this, func: attendance_slide.modal_select}, this.dispatch)
+
+            this.element = this.element.closest('.modal');
+            this.element.on(':hide', function() {
+               setTimeout(function() {modal.element.find('.attendance-select').removeClass('attendance-select');}, 500);
+            });
+        }
+        this.modal = new Modal('modal', {
+            build_func: build_func,
+            action_func: this.dispatch,
+            action_data: {object: this, func: this.modal_submit}
+        });
+    }
+
+    modal_submit() {
+        var attendance_slide = this;
+        var all_checked = attendance_slide.modal.element.find('input.all').prop('checked');
+        var value = JSON.parse(attendance_slide.value);
+        if (all_checked) {
+            value[this.modal.id] = 'all';
+        } else {
+            value[this.modal.id] = [];
+            attendance_slide.modal.element.find('input').not('.all').each(function() {
+                if ($(this).prop('checked')) {
+                    value[attendance_slide.modal.id].push(parseInt($(this).val()));
+                }
+            });
+        }
+        attendance_slide.value = JSON.stringify(value);
+        attendance_slide.element.trigger(':change');
+        attendance_slide.update_module_info();
+    }
+
     update_module_info() {
         this.messages.empty();
         var modules = this.parent.training_select.value;
+        var value = JSON.parse(this.value);
         // Add newly selected modules
         for (let i=0; i<modules.length; i++) {
             var id = modules[i];
             this.build_module_message(id);
-            if (!this.training.hasOwnProperty(id)) {
-                this.training[id] = 'all';
+            if (!value.hasOwnProperty(id)) {
+                value[id] = [];
             }
         }
         // Get rid of unselected trainings
-        for (const module_id in this.training) {
-            if (!modules.includes(parseInt(module_id))) {
-                delete this.training[module_id];
+        for (const module_id in value) {
+            if (!modules.includes(parseInt(module_id)) && !modules.includes(module_id.toString())) {
+                delete value[module_id];
             }
+        }
+        var old_value = this.value;
+        this.value = JSON.stringify(value);
+        if (this.value != old_value) {
+            this.element.trigger(':change');
         }
     }
 
     build_module_message(id) {
-        var title = this.parent.training_select.titles[id];
+        var attendees = JSON.parse(this.value)[id];
+        var title = this.parent.training_select.val_to_text[id];
         var container = $('<div/>');
-        var modal_text = $('<a/>').text('All').attr('href', '#').attr('data-pk', id);
+        var modal_text = $('<a/>').attr('href', '#')
+                         .attr('data-pk', id).attr('data-title', title);
+        if (attendees == 'all') {
+            modal_text.text('All');
+        } else {
+            modal_text.text('Selected');
+        }
         var message = $('<p/>').text(' attendees will receive - ' + title + ' - training.');
         container.append(modal_text);
         container.append(message);
         this.messages.append(container);
+        this.item_listeners();
     }
 
+    item_listeners() {
+        this.messages.find('a').click({func: this.module_modal, object: this}, this.dispatch);
+    }
 
     listeners() {
         this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
@@ -376,6 +487,7 @@ class MeetingInfo extends JqueryElement {
             'end_time': this.end_time,
             'programming': this.programming_select,
             'modules': this.training_select,
+            'modules_to_attendees': this.attendance,
             'links': this.link_input,
             'files': this.file_input,
             'lists': this.attendance.list_select,
@@ -425,9 +537,11 @@ class MeetingInfo extends JqueryElement {
 
     discard_changes_modal() {
         var type = this.type_select.value;
+        type = type ? type : 'Meeting';
         var site = this.site_select.element.find('input:checked').siblings('p').text();
         var build_func = function() {
             this.element.find('.header-text').text('Discard Changes?');
+            this.element.find('.action.btn').attr('class', 'btn action btn-danger');
             var text = $('<p/>').text([site, type].join(' - ')).addClass('text-medium');
             var content = this.element.find('.content-container');
             content.empty();
@@ -474,7 +588,7 @@ class MeetingInfo extends JqueryElement {
         data.append('form', this.form.element.serialize());
         data.append('dates', JSON.stringify(this.date_select.value));
         data.append('delete_files', JSON.stringify(this.file_input.delete_files));
-        data.append('training', JSON.stringify(this.attendance.training))
+        console.log($('#id_modules_to_attendees').val());
         var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
         $.ajax({
             url: url_meeting_post.slice(0,-1) + this.pk,
@@ -527,6 +641,7 @@ class MeetingInfo extends JqueryElement {
         var type = this.type_select.value;
         var site = this.site_select.element.find('input:checked').siblings('p').text();
         var build_func = function() {
+            this.element.find('.action.btn').attr('class', 'btn action btn-danger');
             this.element.find('.header-text').text('Delete Meeting?');
             var text = $('<p/>').text([site, type].join(' - ')).addClass('text-medium');
             var content = this.element.find('.content-container');

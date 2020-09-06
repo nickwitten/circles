@@ -53,10 +53,10 @@ def get_meeting_info(request):
 
 @login_required
 def get_members(request):
-    lists = request.GET.get('lists')
+    lists = request.GET.get('lists', None)
     meeting = request.GET.get('meeting', None)
     if not lists:
-        raise ValidationError()
+        return JsonResponse({})
     lists = json.loads(lists)
     lists = [lst.filters for lst in FilterSet.objects.filter(pk__in=lists)]
     people_objs = []
@@ -80,7 +80,6 @@ def post_meeting_info(request, pk):
     if request.method == 'POST':
         form_dict = QueryDict(request.POST.get('form'))
         dates = json.loads(request.POST.get('dates'))
-        training = json.loads(request.POST.get('training'))
         files = request.FILES
         delete_files = request.POST.get('delete_files', None)
         files['delete_files'] = json.loads(delete_files) if delete_files else None
@@ -90,8 +89,10 @@ def post_meeting_info(request, pk):
             meeting = models.Meeting.objects.get(pk=pk)
             form = forms.MeetingCreationForm(data=form_dict, user=request.user, instance=meeting)
             if form.is_valid():
-                base_meeting = form.save()
-                base_meeting.save(files=files, training=training)
+                base_meeting = form.save(commit=False)
+                base_meeting.save(files=files)
+                form.save_m2m()
+                base_meeting.train_members()
                 dates.pop(0)
             else:
                 print(form.errors)
@@ -107,7 +108,9 @@ def post_meeting_info(request, pk):
                 day = int(date[8:])
                 meeting.start_time = meeting.start_time.replace(month=month, day=day, year=year)
                 meeting.end_time = meeting.end_time.replace(month=month, day=day, year=year)
-                meeting.save(files=files, training=training)
+                meeting.save(files=files)
+                form.save_m2m()
+                meeting.train_members()
                 created_meetings += [meeting]
             else:
                 print(form.errors)

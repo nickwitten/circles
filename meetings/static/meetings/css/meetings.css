@@ -302,7 +302,7 @@
 #attendance_container #list_select {
     justify-content: center;
 }
-#attendance_select {
+.attendance-select {
     display: flex;
     flex-flow: row wrap;
     align-content: flex-start;
@@ -310,13 +310,13 @@
     margin: 1rem 0;
     overflow-y: auto;
 }
-#attendance_select .attendance-item {
+.attendance-select .attendance-item {
     display: flex;
     width: 100%;
     padding: 0.5em;
     border: 1px solid #dee2e6;
 }
-#attendance_select a {
+.attendance-select a {
     margin: 0 0.5em;
 }
 #attendance_container .messages a,

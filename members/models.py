@@ -62,6 +62,7 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
             img.save(self.image.path)
 
     def add_learning(self, learning, profile_learning_class, date_completed):
+        assert learning.site in self.sites()
         profile_learning = learning.profiles.filter(profile=self).first()
         if profile_learning and profile_learning.date_completed:
             return False
@@ -86,6 +87,9 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
         else:
             print('isnt required')
             profile_learning.delete()
+
+    def sites(self):
+        return [role.site for role in self.roles.all()]
 
     def order_residences(self):
         return self.residences.order_by('-start_date')
