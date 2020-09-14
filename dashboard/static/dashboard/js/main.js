@@ -35,9 +35,34 @@ function parseQuery(queryString) {
     var pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
     for (var i = 0; i < pairs.length; i++) {
         var pair = pairs[i].split('=');
-        query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+        var name = decodeURIComponent(pair[0]);
+        var value = decodeURIComponent(pair[1] || '');
+        if (name.slice(-2) == '[]') {
+            name = name.slice(0, -2);
+            if (query.hasOwnProperty(name)) {
+                query[name].push(value);
+            } else {
+                query[name] = [value];
+            }
+        } else {
+            query[name] = value;
+        }
     }
     return query;
+}
+
+
+
+function arraysEqual(a, b) {
+    if (a === b) return true;
+    if (a == null || b == null) return false;
+    if (a.length !== b.length) return false;
+    a = a.slice().sort();
+    b = b.slice().sort();
+    for (var i = 0; i < a.length; ++i) {
+        if (a[i] !== b[i]) return false;
+    }
+    return true;
 }
 
 

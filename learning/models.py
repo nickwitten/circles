@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 
 from django.db import models
 from django.forms import model_to_dict
@@ -36,6 +37,18 @@ class Programming(FileFieldMixin, JsonM2MFieldModelMixin, DictMixin, models.Mode
             return profiles
         else:
             super().get_attached_models(klass, pks)
+
+
+class ProgrammingFile(models.Model):
+    model = models.ForeignKey(Programming, on_delete=models.CASCADE, related_name='files')
+    file = models.FileField(upload_to='learning_files/')
+    title = models.CharField(max_length=128)
+
+    def delete_file(self):
+        try:
+            os.remove('/'.join([settings.MEDIA_ROOT, self.file.name]))
+        except:
+            print('file not deleted at', '/'.join([settings.MEDIA_ROOT, self.file.name]))
 
 
 class Theme(DictMixin, models.Model):
@@ -113,17 +126,19 @@ class ProfileModule(models.Model):
     profile = models.ForeignKey(members_models.Profile, on_delete=models.CASCADE, related_name='modules')
     date_completed = models.DateField(blank=True, null=True)
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        #TODO: if all profilemodules are completed in theme set date completed
+        # if self.date_completed:
+        #     completed = [True for profile_module in self.profile.modules.filter(module=self.module) if profile_module.date_completed]
+        #     print(completed)
+        #     if all(completed):
+        #         theme = self.profile.themes.filter(theme__modules=self.module).first()
+        #         assert theme
+        #         theme.date_completed = self.module.date_completed
+        #         print(datetime.now)
 
-class ProgrammingFile(models.Model):
-    model = models.ForeignKey(Programming, on_delete=models.CASCADE, related_name='files')
-    file = models.FileField(upload_to='learning_files/')
-    title = models.CharField(max_length=128)
 
-    def delete_file(self):
-        try:
-            os.remove('/'.join([settings.MEDIA_ROOT, self.file.name]))
-        except:
-            print('file not deleted at', '/'.join([settings.MEDIA_ROOT, self.file.name]))
 
 
 class ModuleFile(models.Model):

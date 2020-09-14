@@ -462,8 +462,8 @@ class ModuleSelect extends MultiLevelObjectSelect {
 
 
 class MeetingInfo extends JqueryElement {
-    constructor(id) {
-        super(id);
+    constructor(id, parent) {
+        super(id, parent);
         this.pk = 0;
         this.changes_saved = true;
         this.site_select = new Dropdown('meeting_site_select', [], {type: 'radio'});
@@ -588,7 +588,6 @@ class MeetingInfo extends JqueryElement {
         data.append('form', this.form.element.serialize());
         data.append('dates', JSON.stringify(this.date_select.value));
         data.append('delete_files', JSON.stringify(this.file_input.delete_files));
-        console.log($('#id_modules_to_attendees').val());
         var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
         $.ajax({
             url: url_meeting_post.slice(0,-1) + this.pk,
@@ -630,7 +629,7 @@ class MeetingInfo extends JqueryElement {
         this.pk = data.id;
         this.form.set_data(data);
         this.changes_saved = true;
-        this.element.trigger(":update");
+        this.element.trigger(":reload");
     }
 
     delete_meeting_modal() {
@@ -670,7 +669,7 @@ class MeetingInfo extends JqueryElement {
             },
             success: function() {
                 this.hide();
-                this.element.trigger(':update');
+                this.element.trigger(':reload');
             },
             error: function() {
                 addAlertHTML('Something went wrong.', 'danger');
@@ -769,6 +768,7 @@ class MeetingInfo extends JqueryElement {
     listeners() {
         var meeting_info = this
         this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
+        this.element.find('.back').click({func: this.parent.update_url, object: this.parent}, this.dispatch);
         this.element.find('#attendance_btn').click({func: this.attendance.toggle, object: this.attendance}, this.dispatch);
         this.element.find('#meeting_submit_btn').click({func: this.submit_form, object: this}, this.dispatch);
         this.element.find('#meeting_delete_btn').click({func: this.delete_meeting_modal, object: this}, this.dispatch);
@@ -791,7 +791,7 @@ class Calendar extends JqueryElement {
         this.days = this.element.find('.days-container');
         this.loader = this.element.find('.loading');
         this.menu = new CalendarMenu('menu', 'menu_btn');
-        this.meeting_info = new MeetingInfo('meeting_info_container');
+        this.meeting_info = new MeetingInfo('meeting_info_container', this);
         this.site_select = this.menu.site_select;
         this.site_select.select(this.site_select.element.find('.all'));
         this.reload_month();
@@ -919,20 +919,6 @@ class Calendar extends JqueryElement {
         this.show_weeks();
     }
 
-    show_meeting(element) {
-        var pk = null;
-        var date = null;
-        if ($(element).hasClass('calendar-meeting')) {
-            var pk = $(element).attr('data-pk');
-        } else {
-            var year = this.year.text();
-            var month = this.month.attr('data-number');
-            var day = $(element).siblings('.monthnum').text().padStart(2, '0');
-            date = [year, month, day].join('-');
-        }
-        this.meeting_info.show(pk, date);
-    }
-
     make_meeting_text_color(color_str) {
         var s = (parseInt(color_str.slice(10,12),10) + 20).toString();
         var l = (parseInt(color_str.slice(15,17),10) - 35).toString();
@@ -943,6 +929,30 @@ class Calendar extends JqueryElement {
 
     month_sync() {
         this.meeting_info.date_select.month_offset = this.monthOffset;
+    }
+
+    update_url(change) {
+        var sites = this.site_select.value
+        var url = '?';
+        for (let i=0; i<sites.length; i++) {
+            url += i ? '&' : '';
+            url += 'sites[]=' + sites[i].toString();
+        }
+        if (!sites.length) {
+            url += '&sites[]=';
+        }
+        if ($(change).hasClass('calendar-meeting')) {
+            url += '&meeting=' + $(change).attr('data-pk');
+        }
+        if ($(change).hasClass('add-meeting-btn')) {
+            var year = this.year.text();
+            var month = this.month.attr('data-number');
+            var day = $(change).siblings('.monthnum').text().padStart(2, '0');
+            var date = [year, month, day].join('-');
+            url += '&new_meeting=' + date;
+        }
+        history.pushState({}, '', url);
+        $(window).trigger('popstate');
     }
 
     build_week(days, include_site) {
@@ -1003,15 +1013,16 @@ class Calendar extends JqueryElement {
     }
 
     item_listeners() {
-        this.element.find('.add-meeting-btn').click({func: this.show_meeting, object: this}, this.dispatch);
-        this.element.find('.calendar-meeting').click({func: this.show_meeting, object: this}, this.dispatch);
+        this.element.find('.add-meeting-btn').click({func: this.update_url, object: this}, this.dispatch);
+        this.element.find('.calendar-meeting').click({func: this.update_url, object: this}, this.dispatch);
     }
 
     listeners() {
         this.element.find('.next').click({func: this.change_month, object: this}, this.dispatch);
         this.element.find('.previous').click({func: this.change_month, object: this}, this.dispatch);
+        this.site_select.element.on(":change", {func: this.update_url, object: this}, this.dispatch);
         this.site_select.element.on(":change", {func: this.reload_month, object: this}, this.dispatch);
-        this.meeting_info.element.on(":update", {func: this.reload_month, object: this}, this.dispatch);
+        this.meeting_info.element.on(":reload", {func: this.reload_month, object: this}, this.dispatch);
         this.meeting_info.element.on(":monthsync", {func: this.month_sync, object: this}, this.dispatch);
     }
 }
@@ -1039,6 +1050,27 @@ function getDatetime(date_select, time_select) {
 }
 
 
+
+
+function update_page() {
+    var query = parseQuery(window.location.search);
+    if (query.sites) {
+        var old = calendar.site_select.value;
+        if (!arraysEqual(old, query.sites)) {
+            calendar.site_select.set_value(query.sites, true);
+        }
+    }
+    if (query.meeting) {
+        calendar.meeting_info.show(query.meeting);
+    }
+    if (query.new_meeting) {
+        calendar.meeting_info.show(0, query.new_meeting);
+    }
+}
+
+var calendar;
 $(document).ready(function() {
-    new Calendar('calendar');
+    calendar = new Calendar('calendar');
+    $(window).on('popstate', update_page);
+    $(window).trigger('popstate');
 });

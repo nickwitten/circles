@@ -313,15 +313,16 @@ class MemberAutocomplete extends AutocompleteInput {
 
 class InfoPopup extends JqueryElement{
 
-    constructor(id, site_select) {
-        super(id);
+    constructor(id, site_select, parent) {
+        super(id, parent);
         this.site_select = site_select;
         this.members_completed_element = this.element.find('.members-completed');
-        this.members_completed_table = this.element.find('.profiles table');
+        this.members_completed_table = this.element.find('.members-completed table');
         this.members_completed_btn = this.element.find('.members-completed-btn');
         this.add_member_btn = this.element.find('.add-member-btn');;
         this.remove_member_btn = this.element.find('.remove-member-btn');;
         this.schedule_element = this.element.find('.schedule');
+        this.schedule_table = this.schedule_element.find('table');
         this.schedule_btn = this.element.find('.schedule-btn');
         this.loader_element = this.element.find('.loading');
         this.close_selectors = '.info-popup, .modal-container, .alert'
@@ -345,6 +346,7 @@ class InfoPopup extends JqueryElement{
         this.hide_sub_info();
         this.schedule_btn.addClass('active');
         this.schedule_element.show();
+        this.get_scheduled_learning();
     }
 
     hide() {
@@ -499,6 +501,33 @@ class InfoPopup extends JqueryElement{
         this.show_members_completed();
     }
 
+    get_scheduled_learning() {
+        $.ajax({
+            url: url_schedule,
+            type: 'GET',
+            data: {
+                'pk': this.parent.base_info['pk'],
+                'model_type': this.parent.type,
+            },
+            context: this,
+            beforeSend: function() {
+                this.loader_element.show();
+            },
+            success: this.scheduled_learning_success,
+            error: function() {
+                addAlertHTML("Something went wrong.", 'danger');
+            },
+            complete: function() {
+                this.loader_element.hide();
+            },
+        });
+    }
+
+    scheduled_learning_success(data) {
+        console.log(data.meetings);
+        this.build_meetings(data.meetings);
+    }
+
     build_members(members) {
         this.members_completed_table.empty()
         var labels = $('<tr/>');
@@ -525,12 +554,51 @@ class InfoPopup extends JqueryElement{
             date_container.append(date);
             row.append(name_container);
             row.append(date_container);
+            console.log(row);
             this.members_completed_table.append(row);
         }
         if (members.length == 0) {
             this.members_completed_table.empty()
             var message = $('<p/>').text('No Information Available');
             this.members_completed_table.append(message);
+        }
+        console.log(members);
+    }
+
+    build_meetings(meetings) {
+        this.schedule_table.empty();
+        var labels = $('<tr/>');
+        var label_container = $('<th/>');
+        var label = $('<p/>').text('Meeting');
+        label_container.append(label);
+        labels.append(label_container);
+        label_container = $('<th/>').addClass('t-center');
+        label = $('<p/>').text("Date");
+        label_container.append(label);
+        labels.append(label_container);
+        this.schedule_table.append(labels);
+        for (let i=0; i<meetings.length; i++) {
+            var row = $('<tr/>').addClass('data-row');
+            var name_container = $('<td/>').addClass('name');
+            var date_container = $('<td/>').addClass('date');
+            var url = url_meetings;
+            url += '?sites[]=' + meetings[i]['site'].toString();
+            url += '&meeting=' + meetings[i]['pk'].toString();
+            var name = $('<a/>').text(meetings[i]['type'])
+                .attr('href', url)
+                .attr('target', '_blank')
+                .addClass('blacklink');
+            var date = $('<p/>').text(meetings[i]['date']);
+            name_container.append(name);
+            date_container.append(date);
+            row.append(name_container);
+            row.append(date_container);
+            this.schedule_table.append(row);
+        }
+        if (meetings.length == 0) {
+            this.schedule_table.empty()
+            var message = $('<p/>').text('No Information Available');
+            this.schedule_table.append(message);
         }
     }
 
@@ -582,7 +650,7 @@ class InfoSlide extends JqueryElement {
             custom_fields['files'] = this.file_input;
         }
         this.update_form = new UpdateForm(type + '_form', custom_fields, form_fields[type], type + '_');
-        this.info_popup = new InfoPopup(type + '_info_popup', this.site_select);
+        this.info_popup = new InfoPopup(type + '_info_popup', this.site_select, this);
         this.loader_element = this.element.find('.loading');
         this.listeners();
         this.resize();

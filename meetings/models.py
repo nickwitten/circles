@@ -13,9 +13,9 @@ class Meeting(FileFieldMixin, DictMixin, models.Model):
     site = models.ForeignKey(Site, on_delete=models.CASCADE, related_name='meetings',
                              null=True)
     programming = models.ManyToManyField(learning_models.Programming,
-                                                 blank=True, related_name='programming')
+                                                 blank=True, related_name='meetings')
     modules = models.ManyToManyField(learning_models.Module,
-                                            blank=True, related_name='modules')
+                                            blank=True, related_name='meetings')
     modules_to_attendees = models.TextField(default='{}')
     location = models.CharField(max_length=128, blank=True)
     start_time = models.DateTimeField(verbose_name="Start Time", )

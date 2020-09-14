@@ -305,7 +305,7 @@ h3 {
 }
 
 
-.members-completed {
+.info-popup .wrapper {
     display: flex;
     flex-flow: column;
     align-items: center;
@@ -313,10 +313,10 @@ h3 {
     height: 100%;
     overflow: hidden;
 }
-.members-completed p {
+.info-popup .wrapper p {
     font-size: calc(10px + 0.3vw);
 }
-.members-completed .profiles {
+.info-popup .table-container {
     display: flex;
     flex-flow: column;
     align-items: center;
@@ -326,40 +326,33 @@ h3 {
     margin-bottom: 0.5rem;
     width: -webkit-fill-available;
 }
-.members-completed .buttons {
+.info-popup .buttons {
     border-top: 1px solid #dee2e6;
     padding: 0.5rem;
 }
-.members-completed .buttons buttons {
+.info-popup .buttons buttons {
     margin: 0 0.5rem;
 }
-.members-completed th {
+.info-popup th {
     padding-bottom: 1rem;
 }
-.members-completed .name,
-.members-completed .date,
-.members-completed .remove-member {
+.info-popup .name,
+.info-popup .date,
+.info-popup .remove-member {
     padding: 0.5rem 0;
 }
-.members-completed .name {
+.info-popup .name {
     white-space: nowrap;
     max-width: calc(5rem + 17vw);
     overflow: auto;
     padding-right: 2rem;
 }
-.members-completed .date {
+.info-popup .date {
     text-align: center;
 }
 
 
-.schedule {
-    display: flex;
-    flex-flow: column;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
+
 
 #modal .option-container {
     position: relative;

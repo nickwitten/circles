@@ -1,4 +1,6 @@
 import json
+from datetime import datetime, date, time
+
 from django.db.models import Value
 from django.db import models as django_models
 from django.db.models.functions import Concat
@@ -496,3 +498,29 @@ class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
         if profile not in self.request.user.userinfo.user_profile_access():
             raise PermissionDenied()
         return model, profile
+
+
+class LearningSchedule(LoginRequiredMixin, AjaxMixin, View):
+    data = {}
+    models = {
+        'programming': models.Programming,
+        'module': models.Module,
+    }
+
+    def get(self, request, *args, **kwargs):
+        pk = self.kwargs.get('pk', None)
+        model_type = self.models.get(self.kwargs.get('model_type', None), None)
+        if not (pk and model_type):
+            raise ValidationError()
+        learning = get_object_or_404(model_type, pk=pk)
+        if learning.site not in request.user.userinfo.user_site_access():
+            raise PermissionDenied()
+        today_beginning = datetime.combine(date.today(), time())
+        queryset = learning.meetings.filter(start_time__gte=today_beginning).order_by('start_time').values('type', 'start_time', 'pk', 'site')
+        meetings = []
+        for meeting in queryset:
+            meeting['date'] = meeting.pop('start_time').strftime('%m/%d/%Y')
+            meetings.append(meeting)
+        self.data['meetings'] = meetings
+        return JsonResponse(self.data)
+
