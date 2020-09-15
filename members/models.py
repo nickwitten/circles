@@ -78,14 +78,11 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
         if not profile_learning:
             return
         required_for = json.loads(learning.required_for)
-        print(required_for)
         if self.roles.filter(position__in=required_for):
             # Don't delete just remove date completed
-            print('is required')
             profile_learning.date_completed = None
             profile_learning.save()
         else:
-            print('isnt required')
             profile_learning.delete()
 
     def sites(self):

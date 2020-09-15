@@ -140,12 +140,14 @@ class ProfileModule(models.Model):
             profile_module = module.profiles.filter(profile=self.profile).first()
             if not profile_module or not profile_module.date_completed:
                 all_completed = False
-        theme_profile = self.module.theme.profiles.filter(profile=self.profile).first()
+        # theme_profile = self.module.theme.profiles.filter(profile=self.profile).first()
         if all_completed:
             self.profile.add_learning(self.module.theme, ProfileTheme, self.date_completed)
-        elif theme_profile and theme_profile.date_completed:
-            theme_profile.date_completed = None
-            theme_profile.save()
+        # This removes theme completion.  If more modules were added to theme,
+        # profiles would lose theme completion on save
+        # elif theme_profile and theme_profile.date_completed:
+        #     theme_profile.date_completed = None
+        #     theme_profile.save()
 
 
 class ModuleFile(models.Model):
