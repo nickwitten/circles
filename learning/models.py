@@ -128,17 +128,24 @@ class ProfileModule(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        #TODO: if all profilemodules are completed in theme set date completed
-        # if self.date_completed:
-        #     completed = [True for profile_module in self.profile.modules.filter(module=self.module) if profile_module.date_completed]
-        #     print(completed)
-        #     if all(completed):
-        #         theme = self.profile.themes.filter(theme__modules=self.module).first()
-        #         assert theme
-        #         theme.date_completed = self.module.date_completed
-        #         print(datetime.now)
+        self.update_theme_completion()
 
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        self.update_theme_completion()
 
+    def update_theme_completion(self):
+        all_completed = True
+        for module in self.module.theme.modules.all():
+            profile_module = module.profiles.filter(profile=self.profile).first()
+            if not profile_module or not profile_module.date_completed:
+                all_completed = False
+        theme_profile = self.module.theme.profiles.filter(profile=self.profile).first()
+        if all_completed:
+            self.profile.add_learning(self.module.theme, ProfileTheme, self.date_completed)
+        elif theme_profile and theme_profile.date_completed:
+            theme_profile.date_completed = None
+            theme_profile.save()
 
 
 class ModuleFile(models.Model):
