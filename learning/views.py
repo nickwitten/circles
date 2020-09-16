@@ -482,6 +482,8 @@ class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
             added = profile.add_learning(learning, self.model_type[1], self.kwargs.get('date_completed'))
             if not added:
                 self.data['message'] = 'Member has already completed this training.'
+            else:
+                self.data.pop('message', None)
         return JsonResponse(self.data)
 
     def _get_args(self):

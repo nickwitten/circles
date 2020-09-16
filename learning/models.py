@@ -103,13 +103,24 @@ class Module(FileFieldMixin, JsonM2MFieldModelMixin, DictMixin, models.Model):
         required_checked = kwargs.pop('required_checked', None)
         super().save(*args, **kwargs)
         if not required_checked:
-            # Overwrite themes required_for if this doesn't include it
-            module_required_for = json.loads(self.required_for)
-            theme_required_for = json.loads(self.theme.required_for)
-            theme_required_for = [position for position in theme_required_for
-                                  if position in module_required_for]
-            self.theme.required_for = json.dumps(theme_required_for)
-            self.theme.save(required_checked=True)
+            self.update_theme_required_for()
+        self.add_to_profiles()
+
+    def add_to_profiles(self):
+        required_positions = json.loads(self.required_for)
+        profiles = self.site.profiles().filter(roles__position__in=required_positions)
+        for profile in profiles:
+            if not self.profiles.filter(profile=profile):
+                print(ProfileModule.objects.create(module=self, profile=profile))
+
+    def update_theme_required_for(self):
+        # Overwrite themes required_for if this doesn't include it
+        module_required_for = json.loads(self.required_for)
+        theme_required_for = json.loads(self.theme.required_for)
+        theme_required_for = [position for position in theme_required_for
+                              if position in module_required_for]
+        self.theme.required_for = json.dumps(theme_required_for)
+        self.theme.save(required_checked=True)
 
     def get_attached_models(self, klass, pks):
         if klass == members_models.Profile:
@@ -120,6 +131,9 @@ class Module(FileFieldMixin, JsonM2MFieldModelMixin, DictMixin, models.Model):
         else:
             super().get_attached_models(klass, pks)
 
+    def create_profile_connection(self, profile):
+        print(ProfileModule.objects.create(module=self, profile=profile))
+
 
 class ProfileModule(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='profiles')
@@ -127,27 +141,26 @@ class ProfileModule(models.Model):
     date_completed = models.DateField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
+        check_remove = kwargs.pop('theme_remove', False)
         super().save(*args, **kwargs)
-        self.update_theme_completion()
+        self.update_theme_completion(check_remove=check_remove)
 
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
-        self.update_theme_completion()
+        self.update_theme_completion(check_remove=True)
 
-    def update_theme_completion(self):
+    def update_theme_completion(self, check_remove=False):
         all_completed = True
         for module in self.module.theme.modules.all():
             profile_module = module.profiles.filter(profile=self.profile).first()
             if not profile_module or not profile_module.date_completed:
                 all_completed = False
-        # theme_profile = self.module.theme.profiles.filter(profile=self.profile).first()
+        theme_profile = self.module.theme.profiles.filter(profile=self.profile).first()
         if all_completed:
             self.profile.add_learning(self.module.theme, ProfileTheme, self.date_completed)
-        # This removes theme completion.  If more modules were added to theme,
-        # profiles would lose theme completion on save
-        # elif theme_profile and theme_profile.date_completed:
-        #     theme_profile.date_completed = None
-        #     theme_profile.save()
+        elif check_remove and theme_profile and theme_profile.date_completed:
+            theme_profile.date_completed = None
+            theme_profile.save()
 
 
 class ModuleFile(models.Model):

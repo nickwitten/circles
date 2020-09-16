@@ -53,13 +53,27 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+        self.update_required_modules()
+        self.crop_image()
 
+    def crop_image(self):
         img = Image.open(self.image.path)
-
         if img.height > 300 or img.width > 300:
             output_size = (300, 300)
             img.thumbnail(output_size)
             img.save(self.image.path)
+
+    def update_required_modules(self):
+        for site in self.roles.all().values_list('site', flat=True).distinct():
+            modules = Site.objects.filter(pk=site).first().modules.all()
+            for module in modules:
+                profile_module = self.modules.filter(module=module).first()
+                required_positions = json.loads(module.required_for)
+                if self.roles.filter(position__in=required_positions):
+                    if not profile_module:
+                        module.create_profile_connection(self)
+                elif profile_module and not profile_module.date_completed:
+                    profile_module.delete()
 
     def add_learning(self, learning, profile_learning_class, date_completed):
         assert learning.site in self.sites()
@@ -81,7 +95,7 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
         if self.roles.filter(position__in=required_for):
             # Don't delete just remove date completed
             profile_learning.date_completed = None
-            profile_learning.save()
+            profile_learning.save(theme_remove=True)
         else:
             profile_learning.delete()
 
@@ -96,11 +110,9 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
 
     def order_training(self):
         return self.training.order_by('-end_date')
-    # Get all ChildInfos
 
     def get_child_infos(self):
         return self.childinfos.all()
-    # Get all Children
 
     def order_children(self):
         return Child.objects.filter(child_info__profile=self)
@@ -148,9 +160,12 @@ class Role(models.Model):
     resource_team_role = models.CharField(blank=True,null=True,max_length=32)
     display_fields = ['cohort', 'resource_team_name', 'resource_team_role', 'site',]
 
-
     def __str__(self):
         return f'{self.profile} {self.start_date}'
+
+    def save(self, *args, **kwargs):
+        self.save(*args, **kwargs)
+        self.profile.save()
 
     @staticmethod
     def get_related(profile):
