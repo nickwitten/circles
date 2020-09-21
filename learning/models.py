@@ -72,6 +72,11 @@ class Theme(DictMixin, models.Model):
                 module.required_for = json.dumps(module_required_for)
                 module.save(required_checked=True)
 
+    def order_open_modules(self, profile):
+        modules = ProfileModule.objects.filter(profile=profile, module__theme=self).order_by('module__title')
+        complete = modules.filter(date_completed__isnull=False)
+        incomplete = modules.filter(date_completed__isnull=True)
+        return complete | incomplete
 
 class ProfileTheme(models.Model):
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, related_name='profiles')
@@ -104,14 +109,19 @@ class Module(FileFieldMixin, JsonM2MFieldModelMixin, DictMixin, models.Model):
         super().save(*args, **kwargs)
         if not required_checked:
             self.update_theme_required_for()
-        self.add_to_profiles()
+        self.update_profile_connections()
 
-    def add_to_profiles(self):
+    def update_profile_connections(self):
         required_positions = json.loads(self.required_for)
         profiles = self.site.profiles().filter(roles__position__in=required_positions)
+        # Add to profiles with required position
         for profile in profiles:
             if not self.profiles.filter(profile=profile):
                 print(ProfileModule.objects.create(module=self, profile=profile))
+        # Remove from profiles without required position and not completed
+        for profile_module in self.profiles.exclude(profile__in=profiles):
+            if not profile_module.date_completed:
+                profile_module.delete()
 
     def update_theme_required_for(self):
         # Overwrite themes required_for if this doesn't include it

@@ -33,6 +33,10 @@ h6 {
   margin-bottom: 1rem;
   background-color: white;
 }
+.other-container {
+  overflow: auto;
+  max-height: 15rem;
+}
 
 .buttons {
     display: flex;

@@ -38,7 +38,7 @@
 
             {% with residences=object.order_residences %}
 
-            <div id="housing_container" class="profile-container shadow">
+            <div id="housing_container" class="profile-container other-container shadow">
 
                 <div class="border-bottom text-center">
                     <h3>Housing</h3>
@@ -103,7 +103,7 @@
 
             {% with children=object.order_children %}
 
-            <div id="children_container" class="profile-container shadow">
+            <div id="children_container" class="profile-container other-container shadow">
                 <div class="border-bottom text-center">
                     <h3>Children</h3>
                 </div>
@@ -137,7 +137,7 @@
 
             {% with roles=object.order_roles %}
 
-            <div id="roles_container" class="profile-container shadow">
+            <div id="roles_container" class="profile-container other-container shadow">
 
                 <div class="border-bottom text-center">
                     <h3>Roles</h3>
@@ -206,7 +206,7 @@
 
             {% with trainings=object.order_training %}
 
-            <div id="trainings_container" class="profile-container shadow">
+            <div id="trainings_container" class="profile-container other-container shadow">
                 <div class="border-bottom text-center">
                     <h3>Training</h3>
                 </div>
@@ -217,21 +217,36 @@
                             <h6 class="subject d-inline-block">Subject</h6>
                             <h6 class="date d-inline-block">Date Completed</h6>
                         </div>
-                        {% for training in trainings %}
-                        <div class="training-container">
-                            <p class="subject">{{ training.subject }}</p>
-                            <p class="date">{{ training.end_date }}</p>
-                            {% if update %}
-                            <div class="edit-buttons">
-                                <a class="modal-trigger blacklink far fa-edit icon-btn text-small"
-                                   data-id="{% url 'update-training' training.pk %}">
-                                </a>
-                                <a class="modal-trigger blacklink far fa-trash-alt icon-btn text-small"
-                                   data-id="{% url 'delete-training' training.pk %}">
-                                </a>
-                            </div>
+                        {% for site in trainings %}
+                            {% if trainings|length > 1 %}
+                                <p class="Site">{{ site.site }}</p>
                             {% endif %}
-                        </div>
+                            {% for theme in site.themes %}
+                                <div class="training-container">
+                                    <a href=
+                                    "{% url 'learning' %}?site={{site.site.pk}}&type=All&model_type=theme&id={{ theme.theme.pk }}"
+                                    target="_blank" class="subject blacklink">{{ theme.theme }}</a>
+                                    <p class="date">{{ theme.profile_theme.date_completed|default_if_none:"" }}</p>
+                                </div>
+                                {% for profile_module in theme.profile_modules %}
+                                    <div class="training-container">
+                                        <a href=
+                                        "{% url 'learning' %}?site={{site.site.pk}}&type=All&model_type=module&id={{ profile_module.module.pk }}"
+                                        target="_blank" class="subject blacklink">{{ profile_module.module }}</a>
+                                        <p class="date">{{ profile_module.date_completed|default_if_none:"" }}</p>
+                                        {% if update %}
+                                        <div class="edit-buttons">
+                                            <a class="modal-trigger blacklink far fa-edit icon-btn text-small"
+                                               data-id="">
+                                            </a>
+                                            <a class="modal-trigger blacklink far fa-trash-alt icon-btn text-small"
+                                               data-id="">
+                                            </a>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% endfor %}
                         {% endfor %}
                     {% else %}
                         <p class="no-info">No Training Information</p>

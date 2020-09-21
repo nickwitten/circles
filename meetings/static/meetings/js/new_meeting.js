@@ -786,6 +786,7 @@ class Calendar extends JqueryElement {
         super(id);
         this.monthOffset = 0;
         this.meetings = {};
+        this.meetings_request = null;
         this.month = this.element.find('.month');
         this.year = this.element.find('.year');
         this.days = this.element.find('.days-container');
@@ -854,7 +855,7 @@ class Calendar extends JqueryElement {
                 var day = {monthnum: monthnum, meetings: found_meetings, active: active};
                 days.push(day);
             }
-            var include_site = (this.site_select.site_ct > 1) ? true : false;
+            var include_site = (this.site_select.value.length > 1) ? true : false;
             this.build_week(days, include_site);
         }
         this.item_listeners();
@@ -877,7 +878,12 @@ class Calendar extends JqueryElement {
     }
 
     get_meetings(baseyear, basemonth, endyear, endmonth) {
+        if (this.meetings_request) {
+            this.aborted = true;
+            this.meetings_request.abort();
+        }
         var sites = JSON.stringify(this.site_select.value);
+        console.log(sites);
         var data = {
             'site_pks': sites,
             'baseyear': baseyear,
@@ -885,7 +891,7 @@ class Calendar extends JqueryElement {
             'endyear': endyear,
             'endmonth': endmonth,
         }
-        $.ajax({
+        this.meetings_request = $.ajax({
             url: "get-meetings",
             data: data,
             method: 'GET',
@@ -898,12 +904,18 @@ class Calendar extends JqueryElement {
             },
             success: this.get_meetings_success,
             error: function() {
+                if (this.aborted) {
+                    this.aborted = false;
+                    return
+                }
                 addAlertHTML('Something went wrong.', 'danger');
             }
         });
     }
 
     get_meetings_success(data) {
+        this.meetings_request = null;
+        console.log(data);
         this.meetings = {};
         for (var i=0; i<data.meetings.length; i++) {
             var meeting = data.meetings[i];
@@ -1055,8 +1067,10 @@ function getDatetime(date_select, time_select) {
 function update_page() {
     var query = parseQuery(window.location.search);
     if (query.sites) {
+        query.sites = (query.sites[0] == '') ? [] : query.sites; // None selected
         var old = calendar.site_select.value;
         if (!arraysEqual(old, query.sites)) {
+            console.log('update site select');
             calendar.site_select.set_value(query.sites, true);
         }
     }
@@ -1065,6 +1079,12 @@ function update_page() {
     }
     if (query.new_meeting) {
         calendar.meeting_info.show(0, query.new_meeting);
+    }
+    if (query.programming) {
+        calendar.meeting_info.programming_select.set_value([parseInt(query.programming)]);
+    }
+    if (query.module) {
+        calendar.meeting_info.training_select.set_value([parseInt(query.module)]);
     }
 }
 

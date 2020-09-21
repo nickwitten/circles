@@ -53,7 +53,6 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.update_required_modules()
         self.crop_image()
 
     def crop_image(self):
@@ -62,18 +61,6 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
             output_size = (300, 300)
             img.thumbnail(output_size)
             img.save(self.image.path)
-
-    def update_required_modules(self):
-        for site in self.roles.all().values_list('site', flat=True).distinct():
-            modules = Site.objects.filter(pk=site).first().modules.all()
-            for module in modules:
-                profile_module = self.modules.filter(module=module).first()
-                required_positions = json.loads(module.required_for)
-                if self.roles.filter(position__in=required_positions):
-                    if not profile_module:
-                        module.create_profile_connection(self)
-                elif profile_module and not profile_module.date_completed:
-                    profile_module.delete()
 
     def add_learning(self, learning, profile_learning_class, date_completed):
         assert learning.site in self.sites()
@@ -100,7 +87,8 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
             profile_learning.delete()
 
     def sites(self):
-        return [role.site for role in self.roles.all()]
+        sites = [role.site.pk for role in self.roles.all()]
+        return Site.objects.filter(pk__in=sites).order_by('site')
 
     def order_residences(self):
         return self.residences.order_by('-start_date')
@@ -109,7 +97,17 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
         return self.roles.order_by('-start_date')
 
     def order_training(self):
-        return self.training.order_by('-end_date')
+        trainings = []
+        for site in self.sites():
+            temp_site = {'site': site, 'themes': []}
+            for theme in site.themes.order_by('title'):
+                temp_theme = {'theme': theme, 'profile_theme': theme.profiles.filter(profile=self).first(), 'profile_modules': theme.order_open_modules(self)}
+                if temp_theme['profile_modules']:
+                    temp_site['themes'] += [temp_theme]
+            if temp_site['themes']:
+                trainings += [temp_site]
+            print(trainings)
+        return trainings
 
     def get_child_infos(self):
         return self.childinfos.all()
@@ -164,8 +162,24 @@ class Role(models.Model):
         return f'{self.profile} {self.start_date}'
 
     def save(self, *args, **kwargs):
-        self.save(*args, **kwargs)
-        self.profile.save()
+        super().save(*args, **kwargs)
+        self.update_required_modules()
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        self.update_required_modules()
+
+    def update_required_modules(self):
+        modules = self.site.modules.all()
+        for module in modules:
+            profile_module = module.profiles.filter(profile=self.profile).first()
+            required_positions = json.loads(module.required_for)
+            if self.profile.roles.filter(position__in=required_positions):
+                if not profile_module:
+                    module.create_profile_connection(self.profile)
+            elif profile_module and not profile_module.date_completed:
+                profile_module.delete()
+
 
     @staticmethod
     def get_related(profile):

@@ -1000,9 +1000,9 @@ header a{
     background-color: #0000001a;
 }
 .calendar .monthnum {
-    margin: 0;
+    position: absolute;
+    right: 0;
     padding: calc(0.25vh + 0.25vw);
-    float: right;
     margin: 0;
     font-size: calc(50% + 0.3vw);
 }

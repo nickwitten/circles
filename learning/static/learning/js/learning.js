@@ -324,6 +324,7 @@ class InfoPopup extends JqueryElement{
         this.schedule_element = this.element.find('.schedule');
         this.schedule_table = this.schedule_element.find('table');
         this.schedule_btn = this.element.find('.schedule-btn');
+        this.schedule_meeting_btn = this.element.find('.meeting-schedule');
         this.loader_element = this.element.find('.loading');
         this.close_selectors = '.info-popup, .modal-container, .alert'
         this.listeners();
@@ -361,6 +362,14 @@ class InfoPopup extends JqueryElement{
         this.element.find('.content').children().each(function() {
             $(this).hide();
         });
+    }
+
+    schedule_meeting() {
+        var url = url_meetings;
+        url += '?sites[]=' + this.parent.parent.site_select.value[0].toString();
+        url += '&new_meeting=' + moment().format('YYYY-MM-DD');
+        url += '&' + this.parent.type + '=' + this.parent.base_info.pk.toString();
+        window.open(url, '_blank');
     }
 
     get_members_completed(data) {
@@ -524,7 +533,6 @@ class InfoPopup extends JqueryElement{
     }
 
     scheduled_learning_success(data) {
-        console.log(data.meetings);
         this.build_meetings(data.meetings);
     }
 
@@ -554,7 +562,6 @@ class InfoPopup extends JqueryElement{
             date_container.append(date);
             row.append(name_container);
             row.append(date_container);
-            console.log(row);
             this.members_completed_table.append(row);
         }
         if (members.length == 0) {
@@ -562,7 +569,6 @@ class InfoPopup extends JqueryElement{
             var message = $('<p/>').text('No Information Available');
             this.members_completed_table.append(message);
         }
-        console.log(members);
     }
 
     build_meetings(meetings) {
@@ -615,6 +621,7 @@ class InfoPopup extends JqueryElement{
         }
         if (this.schedule_element.length) {
             this.schedule_btn.click({object: this, func: this.show_schedule}, this.dispatch);
+            this.schedule_meeting_btn.click({object: this, func: this.schedule_meeting}, this.dispatch);
         }
     }
 }

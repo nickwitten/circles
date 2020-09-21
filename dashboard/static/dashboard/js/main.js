@@ -1514,9 +1514,11 @@ class MenuSiteSelect extends JqueryElement {
         var site_select = this;
         this.element.find('.site input').each(function() {
             if ($(this).is(':checked')) {
+                console.log($(this));
                 site_select.value.push($(this).val());
             }
         });
+        console.log(this.value);
     }
 
     change(selected, e) {
@@ -1525,16 +1527,21 @@ class MenuSiteSelect extends JqueryElement {
     }
 
     set_value(val, change) {
+        this.value = val;
+        if (!Array.isArray(val)) {
+            val = [val];
+        }
         var site_select = this;
         this.element.find('input').each(function() {
-            if ($(this).val() == val) {
-                if (change) {
-                    site_select.change(this);
-                } else {
-                    site_select.select(this);
-                }
+            if (val.includes($(this).val())) {
+                $(this).prop('checked', true);
+            } else {
+                $(this).prop('checked', false);
             }
         });
+        if (change) {
+            this.element.trigger(':change');
+        }
     }
 
     select(selected, e) {
