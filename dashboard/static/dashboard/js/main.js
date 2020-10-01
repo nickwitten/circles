@@ -1514,11 +1514,9 @@ class MenuSiteSelect extends JqueryElement {
         var site_select = this;
         this.element.find('.site input').each(function() {
             if ($(this).is(':checked')) {
-                console.log($(this));
                 site_select.value.push($(this).val());
             }
         });
-        console.log(this.value);
     }
 
     change(selected, e) {

@@ -17,3 +17,9 @@ def register(request):
 
 class LoginView(auth_views.LoginView):
     form_class = LoginForm
+
+    def get_success_url(self):
+        return '/members/'
+
+class LogoutView(auth_views.LogoutView):
+    next_page = '/login/'

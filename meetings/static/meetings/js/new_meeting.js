@@ -134,10 +134,14 @@ class AttendanceSlide extends JqueryElement {
     }
 
     get_members(pk) {
+        if (!pk) {
+            return
+        }
         var data = {
             'lists': JSON.stringify(this.list_select.value),
             'meeting': pk,
         }
+        console.log(data);
         $.ajax({
             url: url_get_members,
             data: data,
@@ -500,6 +504,7 @@ class MeetingInfo extends JqueryElement {
     }
 
     show(pk, date) {
+        this.pk = null; // reset pk
         this.form.erase_data();
 
         // Set site select options
@@ -883,7 +888,6 @@ class Calendar extends JqueryElement {
             this.meetings_request.abort();
         }
         var sites = JSON.stringify(this.site_select.value);
-        console.log(sites);
         var data = {
             'site_pks': sites,
             'baseyear': baseyear,
@@ -915,7 +919,6 @@ class Calendar extends JqueryElement {
 
     get_meetings_success(data) {
         this.meetings_request = null;
-        console.log(data);
         this.meetings = {};
         for (var i=0; i<data.meetings.length; i++) {
             var meeting = data.meetings[i];
@@ -1070,7 +1073,6 @@ function update_page() {
         query.sites = (query.sites[0] == '') ? [] : query.sites; // None selected
         var old = calendar.site_select.value;
         if (!arraysEqual(old, query.sites)) {
-            console.log('update site select');
             calendar.site_select.set_value(query.sites, true);
         }
     }
