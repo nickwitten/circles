@@ -23,7 +23,7 @@ class Site(models.Model):
     def __str__(self):
         return f'{self.site}'
 
-class Profile(models.Model): # ForeignKey field must have same name as related model
+class Profile(models.Model):  # ForeignKey field must have same name as related model
     circles_ID = models.CharField(blank=True,null=True,max_length = 16)
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
@@ -39,7 +39,7 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
     e_last_name = models.CharField(blank=True,null=True,max_length=32)
     e_phone = PhoneNumberField(blank=True,null=True)
     status = models.CharField(blank=True,null=True,max_length=16,choices=[('Potential','Potential'),('Active','Active'),('Inactive','Inactive')])
-    main_fields = ['first_name', 'last_name', 'DOB', 'gender', 'race',
+    main_fields = ['first_name', 'last_name', 'DOB', 'gender', 'race', 'email_address',
                    'cell_phone', 'other_phone',]
     e_fields = ['e_relationship', 'e_first_name', 'e_last_name', 'e_phone',]
     third_fields = ['DOB', 'gender', 'race',]
@@ -115,6 +115,7 @@ class Profile(models.Model): # ForeignKey field must have same name as related m
     def order_children(self):
         return Child.objects.filter(child_info__profile=self)
 
+
 class Residence(models.Model):
     profile = models.ForeignKey(Profile,on_delete=models.CASCADE,related_name='residences')
     street_address = models.CharField(max_length=64)
@@ -184,19 +185,6 @@ class Role(models.Model):
     @staticmethod
     def get_related(profile):
         return profile.order_roles()
-
-
-class Training(models.Model):
-    profile = models.ForeignKey(Profile,on_delete=models.CASCADE,related_name='training')
-    subject = models.CharField(max_length=32)
-    end_date = models.DateField(blank=True,null=True)
-
-    def __str__(self):
-        return f'{self.profile} - {self.subject}'
-
-    @staticmethod
-    def get_related(profile):
-        return profile.order_training()
 
 
 class ChildInfo(models.Model):

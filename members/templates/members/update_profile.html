@@ -17,6 +17,15 @@
 
 {% block content %}
 
+<!---------------------- Modal Popup ------------------>
+
+<div class="modal fade" tabindex="-1" role="dialog" id="modal" aria-modal="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content popup">
+        </div>
+    </div>
+</div>
+
 <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     <div class="d-none">
@@ -26,15 +35,6 @@
     {% include 'members/profile.html' with create=False update=True detail=False %}
 
 </form>
-
-<!---------------------- Modal Popup ------------------>
-
-<div class="modal fade show" tabindex="-1" role="dialog" id="modal" aria-modal="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content popup">
-        </div>
-    </div>
-</div>
 
 <script type="text/javascript">
 

@@ -1,9 +1,10 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.views.generic import CreateView,DetailView,UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
 from django.http import QueryDict, Http404
-from .models import Profile, Residence, Role, Training, Child, ChildInfo, FilterSet
+from .models import Profile, Residence, Role, Child, ChildInfo, FilterSet
 from . import forms
 from bootstrap_modal_forms.generic import BSModalCreateView, BSModalUpdateView, BSModalDeleteView
 from django.http import JsonResponse, HttpResponse
@@ -194,47 +195,6 @@ class RoleDeleteView(LoginRequiredMixin, SiteAccessMixin, BSModalDeleteView):
         return context
 
 
-class TrainingAddView(LoginRequiredMixin, SiteAccessMixin, BSModalCreateView):
-    model = Training
-    template_name = 'members/modal_create.html'
-    form_class = forms.TrainingAddForm
-
-    def get_success_url(self):
-        return reverse('profile-update', args=(self.object.profile.id,))
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Add Training'
-        return context
-
-class TrainingUpdateView(LoginRequiredMixin, SiteAccessMixin, BSModalUpdateView):
-    model = Training
-    template_name = 'members/modal_create.html'
-    form_class = forms.TrainingAddForm
-
-    def get_success_url(self):
-        return reverse('profile-update',args=(self.object.profile.id,))
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Update Training'
-        return context
-
-class TrainingDeleteView(LoginRequiredMixin, SiteAccessMixin, BSModalDeleteView):
-    model = Training
-    template_name = 'members/modal_delete.html'
-    success_message = 'Deleted'
-
-    def get_success_url(self):
-        return reverse('profile-update',args=(self.object.profile.id,))
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['object_type'] = 'training'
-        context['instance'] = self.object.subject
-        return context
-
-
 class ChildrenEditView(LoginRequiredMixin, SiteAccessMixin, DetailView):
     model = Profile
     template_name = 'members/children_edit.html'
@@ -347,9 +307,8 @@ class ChildDeleteView(LoginRequiredMixin, BSModalDeleteView):
         context['instance'] = self.object.first_name
         return context
 
+@login_required
 def profiles(request):
-    if not request.user.is_authenticated:
-        raise Http404()
     filterset_objects = request.user.filtersets.all()
     form = forms.ProfilesToolsForm
     list_form = forms.UserListForm(auto_id="listform_%s")  # For unique ids

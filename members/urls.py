@@ -1,5 +1,4 @@
 from django.urls import path
-from django.conf.urls import url
 from . import views
 
 urlpatterns = [
@@ -14,9 +13,6 @@ urlpatterns = [
     path('profile/<int:pk>/update/role', views.RoleCreateView.as_view(), name='create-role'),
     path('profile/role/<int:pk>/update',views.RoleUpdateView.as_view(),name='update-role'),
     path('profile/role/delete/<int:pk>',views.RoleDeleteView.as_view(),name='delete-role'),
-    path('profile/<int:pk>/update/training', views.TrainingAddView.as_view(), name='add-training'),
-    path('profile/training/<int:pk>/update',views.TrainingUpdateView.as_view(),name='update-training'),
-    path('profile/training/delete/<int:pk>',views.TrainingDeleteView.as_view(),name='delete-training'),
     path('profile/<int:pk>/update/childrenedit', views.ChildrenEditView.as_view(), name='edit-children'),
     path('profile/<int:pk>/update/childrenedit/childinfo',views.ChildInfoCreateView.as_view(), name='create-childinfo'),
     path('profile/childinfo/<int:pk>/update',views.ChildInfoUpdateView.as_view(), name='update-childinfo'),

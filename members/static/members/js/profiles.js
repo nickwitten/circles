@@ -37,6 +37,7 @@ function addProfileHTML(profile) {
   $(left).append(
     $('<a/>')
       .attr("href","profile/" + profile['pk'].toString())
+      .attr("target", '_blank')
       .text(profile['first name'] + ' ' + profile['last name'])
   );
   // Add each data that was requested

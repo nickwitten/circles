@@ -83,6 +83,12 @@ class ProfileTheme(models.Model):
     profile = models.ForeignKey(members_models.Profile, on_delete=models.CASCADE, related_name='themes')
     date_completed = models.DateField(blank=True, null=True)
 
+    @staticmethod
+    def get_related(profile):
+        trainings = ProfileTheme.objects.filter(profile=profile).order_by('theme__title')
+        print(trainings)
+        return trainings
+        # pks = [theme.pk for theme in trainings['sites']]
 
 class Module(FileFieldMixin, JsonM2MFieldModelMixin, DictMixin, models.Model):
     site = models.ForeignKey(members_models.Site, on_delete=models.CASCADE, related_name='modules')
@@ -172,6 +178,8 @@ class ProfileModule(models.Model):
             theme_profile.date_completed = None
             theme_profile.save()
 
+    def get_related(self, profile):
+        return self.objects.filter(profile=profile)
 
 class ModuleFile(models.Model):
     model = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='files')

@@ -338,6 +338,7 @@ button:focus {
   margin: 1px;
 }
 #filter_list {
+    margin-top: 10px;
     display: flex;
     flex-flow: row wrap;
 }

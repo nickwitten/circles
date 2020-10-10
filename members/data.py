@@ -1,8 +1,8 @@
 from django.db.models.functions import Concat
 from django.db.models import Value
-from django.db import models
 from phonenumber_field.phonenumber import PhoneNumber
-from .models import Profile, Site, Residence, Role, Training, ChildInfo, Child
+from .models import Profile, Site, Residence, Role, Child
+from learning.models import ProfileModule, ProfileTheme
 import json
 from io import BytesIO
 import xlsxwriter
@@ -10,81 +10,58 @@ import xlsxwriter
 ######### Fill for new fields and models #########
 
 # All data values that are models
-model_data = (Site, Child)
+model_data = (Site, Child, ProfileModule, ProfileTheme)
 
-# HTML Value --> Model Field Name
-keywords = {
-    # Residence Data
-    'first_city':'city',
-    'first_state':'state',
-    'first_zip':'zip',
-    'first_street_address':'street_address',
-    'first_home_ownership':'ownership',
-    'first_habitat_home':'habitat',
-    'first_safe_home':'safe',
-    'first_repair_home':'repair',
-    # Role Data
-    'current_site':'site',
-    'current_role':'position',
-    'all_roles':'position',
-    'current_cohort':'cohort',
-    'current_resource_team':'resource_team_name',
-    'current_resource_team_role':'resource_team_role',
-    # Training Data
-    'excurrent_training':'subject',
-    'current_training':'subject',
-    # Child Data
-    'all_children':'first_name',
-    # Profile Data
-    'email':'email',
-    'cell':'cell',
-    'circles_id':'circles_id',
-    'status':'status',
-    'birthdate':'birthdate',
-    'race':'race',
-    'gender':'gender',
-    'e_phone':'e_phone',
-}
-# Data Fields that are in related models
-residence_data = list(keywords.keys())[0:8]
-role_data = list(keywords.keys())[8:14]
-training_data = list(keywords.keys())[14:16]
-child_data = list(keywords.keys())[16]
-# HTML Value --> HTML Display
-form_display_text = {
-    'current_site': 'Site',
-    'current_role':'Current Role',
-    'all_roles':'All Roles',
-    'current_cohort':'Cohort',
-    'current_resource_team':'Resource Team',
-    'current_resource_team_role':'Resource Team Role',
-    'excurrent_training':'Training',
-    'current_training': 'Incomplete Training',
-    'email':'Email',
-    'cell':'Cell',
-    'circles_id':'ID',
-    'status':'Status',
-    'birthdate':'Birthdate',
-    'race':'Race',
-    'gender':'Gender',
-    'all_children':'Children',
-    'first_street_address':'Address',
-    'first_city':'City',
-    'first_state':'State',
-    'first_zip':'Zip',
-    'first_home_ownership':'Home Ownership',
-    'first_habitat_home':'Habitat Home',
-    'first_safe_home':'Safe Home',
-    'first_repair_home':'Repair Home',
-    'e_phone':'Emergency Number',
-}
+# HTML Value --> (Model Field Name, HTML Display)
 
-form_choices_text = [[key, value] for key, value in form_display_text.items()]
+profile_data = {
+    'email': ('email_address', 'Email'),
+    'cell': ('cell_phone', 'Cell'),
+    'circles_id': ('circles_ID', 'ID'),
+    'status': ('status', 'Status'),
+    'birthdate': ('DOB', 'Birthdate'),
+    'race': ('race', 'Race'),
+    'gender': ('gender', 'Gender'),
+    'e_phone': ('e_phone', 'Emergency Number'),
+}
+residence_data = {
+    'first_city': ('city', 'City'),
+    'first_state': ('state', 'State'),
+    'first_zip': ('zip', 'Zip'),
+    'first_street_address': ('street_address', 'Address'),
+    'first_home_ownership': ('ownership', 'Home Ownership'),
+    'first_habitat_home': ('habitat', 'Habitat Home'),
+    'first_safe_home': ('safety', 'Safe Home'),
+    'first_repair_home': ('repair', 'Repair Home'),
+}
+role_data = {
+    'current_site': ('site', 'Site'),
+    'current_role': ('position', 'Current Role'),
+    'all_roles': ('position', 'All Roles'),
+    'current_cohort': ('cohort', 'Cohort'),
+    'current_resource_team': ('resource_team_name', 'Resource Team'),
+    'current_resource_team_role': ('resource_team_role', 'Resource Team Role'),
+}
+module_data = {
+    'excurrent_module': ('module__title', 'Completed Modules'),  # completed modules
+    'current_module': ('module__title', 'Incomplete Required Modules'),  # incomplete modules
+}
+theme_data = {
+    'current_theme': ('theme__title', 'Completed Theme'),  # completed themes
+    'excurrent_theme': ('theme__title', 'Incomplete Required Themes'),  # incomplete themes
+}
+child_data = {
+    'all_children': ('first_name', 'Children'),
+}
+field_names = {}
+for data in [profile_data, residence_data, role_data, module_data, theme_data, child_data]:
+    field_names.update(data)
+
+form_choices_text = [[key, value[1]] for key, value in field_names.items()]
 form_choices_text.insert(0, ["",""])
 
 
 ########## Main Functions #########################
-
 
 
 def get_profiles(tool_inputs, user):
@@ -132,23 +109,25 @@ def filter_profiles(profiles,filters):
         # Get model that the field is in
         model = field_to_model(filterby)
         # Get the field from the model
-        field = model._meta.get_field(keywords[filterby])
+        field = model._meta.get_field(field_names[filterby][0])
         # If the field is a related model change search type
         if field.get_internal_type() == 'ForeignKey':
-            search_type = '__' + keywords[filterby]
+            search_type = '__' + field_names[filterby][0]
         else:
             search_type = '__icontains'
         # When the field is in the top Profile model
         if model == Profile:
             query = {}
-            query[filterby + search_type] = filterinput
+            query[field_names[filterby][0] + search_type] = filterinput
             profiles = profiles.filter(**query)
         # When the field is in a related model
         else:
             # Build query
             query = {}
-            if filterby[0:7]=='current': query['end_date'] = None
-            query[keywords[filterby] + search_type] = filterinput
+            if filterby[0:7] == 'current':
+                query['end_date'] = None
+            query[field_names[filterby][0] + search_type] = filterinput
+            print(query)
             # All profiles who have an object that passes query in this List
             profile_ids = []
             for profile in profiles:
@@ -173,15 +152,16 @@ def get_profile_data(profiles, data_types):
             if data_type:
                 model = field_to_model(data_type)
                 if model == Profile:
-                    value = getattr(profile,data_type)
+                    value = getattr(profile,field_names[data_type][0])
                     data_temp += data_to_string(value)
                 else:
+                    print(model)
                     related_models = model.get_related(profile)
                     # Different Queries on Related Models
                     related_models = query_related(related_models, data_type)
                     for index, related_model in enumerate(related_models):
                         if related_model:
-                            field = keywords[data_type]
+                            field = field_names[data_type][0]
                             value = getattr(related_model, field)
                             data_temp += data_to_string(value)
                             if index < len(related_models) - 1:
@@ -204,7 +184,7 @@ def sort_profiles(profiles, sort_by):
         else:
             model = field_to_model(sort_by)
             if model == Profile:
-                value = getattr(profile,sort_by)
+                value = getattr(profile,field_names[sort_by][0])
                 if value:
                     name = data_to_string(value)
                     group_names.append(name)
@@ -213,7 +193,7 @@ def sort_profiles(profiles, sort_by):
                 related_models = query_related(related_models, sort_by)
                 for model in related_models:
                     if model:
-                        value = getattr(model, keywords[sort_by])
+                        value = getattr(model, field_names[sort_by][0])
                         if value:
                             name = data_to_string(value)
                             group_names.append(name)
@@ -258,7 +238,7 @@ def sort_profiles(profiles, sort_by):
 def get_field_options(filterby):
     options = []
     model = field_to_model(filterby)
-    field = model._meta.get_field(keywords[filterby])
+    field = model._meta.get_field(field_names[filterby][0])
     # IF the field is a related model, get all the objects
     if field.get_internal_type() == 'ForeignKey':
         temp_options = field.remote_field.model.objects.all()
@@ -305,7 +285,7 @@ def create_excel(tools_form, sorted_profiles):
             for j, data in enumerate(profile["data"]):
                 worksheet.write(row, j+1, data, light)
             row += 1 # move down a row
-        row += 1 # skip a row after each group
+        row += 1  # skip a row after each group
     workbook.close()
     output.seek(0)
     return output
@@ -319,8 +299,10 @@ def field_to_model(field):
         return Residence
     elif field in role_data:
         return Role
-    elif field in training_data:
-        return Training
+    elif field in module_data:
+        return ProfileModule
+    elif field in theme_data:
+        return ProfileTheme
     elif field in child_data:
         return Child
     else:

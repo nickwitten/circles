@@ -373,6 +373,9 @@ class InfoPopup extends JqueryElement{
     }
 
     get_members_completed(data) {
+        if (!data.pk) {
+            return
+        }
         $.ajax({
             url: url_members_completed,
             type: 'GET',
@@ -511,6 +514,9 @@ class InfoPopup extends JqueryElement{
     }
 
     get_scheduled_learning() {
+        if (!this.parent.base_info['pk']) {
+            return
+        }
         $.ajax({
             url: url_schedule,
             type: 'GET',

@@ -1,6 +1,6 @@
 from django import forms
 from bootstrap_modal_forms.forms import BSModalForm
-from .models import Profile, Residence, Role, Training, Child, ChildInfo, Site, FilterSet
+from .models import Profile, Residence, Role, Child, ChildInfo, Site, FilterSet
 from django.contrib.auth.models import User
 from .data import form_choices_text
 
@@ -68,17 +68,6 @@ class ResidenceCreationForm(FieldStyleMixin, BSModalForm):
         super().__init__(*args, **kwargs)
         self.field_styles()
 
-
-class TrainingAddForm(FieldStyleMixin, BSModalForm):
-    class Meta:
-        model = Training
-        exclude = ('profile',)
-        labels = {
-        }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.field_styles()
 
 class ChildCreationForm(FieldStyleMixin, forms.ModelForm):
     class Meta:
