@@ -2,7 +2,7 @@ from django.db.models.functions import Concat
 from django.db.models import Value
 from phonenumber_field.phonenumber import PhoneNumber
 from .models import Profile, Site, Residence, Role, Child
-from learning.models import ProfileModule, ProfileTheme
+from learning.models import ProfileModule, ProfileTheme, Module, Theme
 import json
 from io import BytesIO
 import xlsxwriter
@@ -10,7 +10,7 @@ import xlsxwriter
 ######### Fill for new fields and models #########
 
 # All data values that are models
-model_data = (Site, Child, ProfileModule, ProfileTheme)
+model_data = (Site, Child, Module, Theme)
 
 # HTML Value --> (Model Field Name, HTML Display)
 
@@ -132,8 +132,6 @@ def filter_profiles(profiles,filters):
             profile_ids = []
             for profile in profiles:
                 related_models = model.get_related(profile)
-                print(related_models)
-                print(query)
                 if 'excurrent' in filterby:
                     related_models = related_models.exclude(end_date=None)
                 if 'not' in filterby and not related_models.filter(**query):
@@ -157,7 +155,6 @@ def get_profile_data(profiles, data_types):
                     value = getattr(profile,field_names[data_type][0])
                     data_temp += data_to_string(value)
                 else:
-                    print(model)
                     related_models = model.get_related(profile)
                     # Different Queries on Related Models
                     related_models = query_related(related_models, data_type)
@@ -316,13 +313,16 @@ def field_to_model(field):
 
 
 def data_to_string(value):
+    print(value.__class__)
     if isinstance(value,PhoneNumber):
         return value.as_e164
     elif isinstance(value,model_data):
+        print('isis')
         return value.__str__()
     elif isinstance(value,str):
         return value
     else:
+        print('not')
         return ''
 
 
@@ -331,7 +331,6 @@ def query_related(related_models, data_type):
     elif 'all' in data_type: related_models = list(related_models)
     elif 'current' in data_type: related_models = list(related_models.filter(end_date=None))
     elif 'excurrent' in data_type: related_models = list(related_models.exclude(end_date=None))
-
     return related_models
 
 
