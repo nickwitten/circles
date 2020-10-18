@@ -43,12 +43,12 @@ role_data = {
     'current_resource_team_role': ('resource_team_role', 'Resource Team Role'),
 }
 module_data = {
-    'excurrent_module': ('module__title', 'Completed Modules'),  # completed modules
-    'current_module': ('module__title', 'Incomplete Required Modules'),  # incomplete modules
+    'excurrent_module': ('module', 'Completed Modules'),  # completed modules
+    'current_module': ('module', 'Incomplete Required Modules'),  # incomplete modules
 }
 theme_data = {
-    'current_theme': ('theme__title', 'Completed Theme'),  # completed themes
-    'excurrent_theme': ('theme__title', 'Incomplete Required Themes'),  # incomplete themes
+    'current_theme': ('theme', 'Completed Theme'),  # completed themes
+    'excurrent_theme': ('theme', 'Incomplete Required Themes'),  # incomplete themes
 }
 child_data = {
     'all_children': ('first_name', 'Children'),
@@ -59,7 +59,7 @@ for data in [profile_data, residence_data, role_data, module_data, theme_data, c
 
 form_choices_text = [[key, value[1]] for key, value in field_names.items()]
 form_choices_text.insert(0, ["",""])
-
+site_spec_fields = list(module_data.keys()) + list(theme_data.keys())
 
 ########## Main Functions #########################
 
@@ -86,7 +86,7 @@ def get_profiles(tool_inputs, user):
     sorted_profiles = sort_profiles(profiles, tool_inputs['sortby'] or '')
 
     data = {
-        'groups' : sorted_profiles
+        'groups': sorted_profiles
     }
     return data
 
@@ -166,7 +166,8 @@ def get_profile_data(profiles, data_types):
                             data_temp += data_to_string(value)
                             if index < len(related_models) - 1:
                                 data_temp += ', '
-                if not data_temp: data_temp = 'Not Available'
+                if not data_temp:
+                    data_temp = 'Not Available'
             data.append(data_temp)
         profiles_temp.append({'profile':profile,'data':data})
     profiles = profiles_temp
@@ -244,7 +245,10 @@ def get_field_options(filterby):
         temp_options = field.remote_field.model.objects.all()
         # Add the names of the objects to the options
         for option in temp_options:
-            options.append(option.__str__())
+            option_str = option.__str__()
+            if filterby in site_spec_fields:
+                option_str = '{} - {}'.format(option.site, option_str)
+            options.append(option_str)
     # For a regular field type
     else:
         temp_options = field.choices
