@@ -74,19 +74,18 @@ class Theme(DictMixin, models.Model):
 
     def order_open_modules(self, profile):
         modules = ProfileModule.objects.filter(profile=profile, module__theme=self).order_by('module__title')
-        complete = modules.filter(date_completed__isnull=False)
-        incomplete = modules.filter(date_completed__isnull=True)
+        complete = modules.filter(end_date__isnull=False)
+        incomplete = modules.filter(end_date__isnull=True)
         return complete | incomplete
 
 class ProfileTheme(models.Model):
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, related_name='profiles')
     profile = models.ForeignKey(members_models.Profile, on_delete=models.CASCADE, related_name='themes')
-    date_completed = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
 
     @staticmethod
     def get_related(profile):
         trainings = ProfileTheme.objects.filter(profile=profile).order_by('theme__title')
-        print(trainings)
         return trainings
         # pks = [theme.pk for theme in trainings['sites']]
 
@@ -123,10 +122,10 @@ class Module(FileFieldMixin, JsonM2MFieldModelMixin, DictMixin, models.Model):
         # Add to profiles with required position
         for profile in profiles:
             if not self.profiles.filter(profile=profile):
-                print(ProfileModule.objects.create(module=self, profile=profile))
+                ProfileModule.objects.create(module=self, profile=profile)
         # Remove from profiles without required position and not completed
         for profile_module in self.profiles.exclude(profile__in=profiles):
-            if not profile_module.date_completed:
+            if not profile_module.end_date:
                 profile_module.delete()
 
     def update_theme_required_for(self):
@@ -148,13 +147,13 @@ class Module(FileFieldMixin, JsonM2MFieldModelMixin, DictMixin, models.Model):
             super().get_attached_models(klass, pks)
 
     def create_profile_connection(self, profile):
-        print(ProfileModule.objects.create(module=self, profile=profile))
+        ProfileModule.objects.create(module=self, profile=profile)
 
 
 class ProfileModule(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='profiles')
     profile = models.ForeignKey(members_models.Profile, on_delete=models.CASCADE, related_name='modules')
-    date_completed = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         check_remove = kwargs.pop('theme_remove', False)
@@ -169,17 +168,20 @@ class ProfileModule(models.Model):
         all_completed = True
         for module in self.module.theme.modules.all():
             profile_module = module.profiles.filter(profile=self.profile).first()
-            if not profile_module or not profile_module.date_completed:
+            if not profile_module or not profile_module.end_date:
                 all_completed = False
         theme_profile = self.module.theme.profiles.filter(profile=self.profile).first()
         if all_completed:
-            self.profile.add_learning(self.module.theme, ProfileTheme, self.date_completed)
-        elif check_remove and theme_profile and theme_profile.date_completed:
-            theme_profile.date_completed = None
+            self.profile.add_learning(self.module.theme, ProfileTheme, self.end_date)
+        elif check_remove and theme_profile and theme_profile.end_date:
+            theme_profile.end_date = None
             theme_profile.save()
 
-    def get_related(self, profile):
-        return self.objects.filter(profile=profile)
+    @staticmethod
+    def get_related(profile):
+        trainings = ProfileModule.objects.filter(profile=profile).order_by('module__title')
+        return trainings
+
 
 class ModuleFile(models.Model):
     model = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='files')

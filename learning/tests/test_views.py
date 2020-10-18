@@ -88,7 +88,7 @@ class TestMembersCompleted(CreateLearningModelsMixin, TestCase):
         models.ProfileTheme.objects.create(
             theme=theme,
             profile=profile,
-            date_completed='1999-12-21'
+            end_date ='1999-12-21'
         )
         models.ProfileTheme.objects.create(
             theme=theme,
@@ -112,7 +112,7 @@ class TestMembersCompleted(CreateLearningModelsMixin, TestCase):
         models.ProfileModule.objects.create(
             module=module,
             profile=profile,
-            date_completed='1999-12-21'
+            end_date ='1999-12-21'
         )
         models.ProfileModule.objects.create(
             module=module,

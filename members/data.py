@@ -47,8 +47,8 @@ module_data = {
     'current_module': ('module', 'Incomplete Required Modules'),  # incomplete modules
 }
 theme_data = {
-    'current_theme': ('theme', 'Completed Theme'),  # completed themes
-    'excurrent_theme': ('theme', 'Incomplete Required Themes'),  # incomplete themes
+    'excurrent_theme': ('theme', 'Completed Theme'),  # completed themes
+    'current_theme': ('theme', 'Incomplete Required Themes'),  # incomplete themes
 }
 child_data = {
     'all_children': ('first_name', 'Children'),
@@ -112,7 +112,8 @@ def filter_profiles(profiles,filters):
         field = model._meta.get_field(field_names[filterby][0])
         # If the field is a related model change search type
         if field.get_internal_type() == 'ForeignKey':
-            search_type = '__' + field_names[filterby][0]
+            # search_type = '__' + field_names[filterby][0]
+            search_type = '__pk'
         else:
             search_type = '__icontains'
         # When the field is in the top Profile model
@@ -127,11 +128,12 @@ def filter_profiles(profiles,filters):
             if filterby[0:7] == 'current':
                 query['end_date'] = None
             query[field_names[filterby][0] + search_type] = filterinput
-            print(query)
             # All profiles who have an object that passes query in this List
             profile_ids = []
             for profile in profiles:
                 related_models = model.get_related(profile)
+                print(related_models)
+                print(query)
                 if 'excurrent' in filterby:
                     related_models = related_models.exclude(end_date=None)
                 if 'not' in filterby and not related_models.filter(**query):
@@ -248,14 +250,13 @@ def get_field_options(filterby):
             option_str = option.__str__()
             if filterby in site_spec_fields:
                 option_str = '{} - {}'.format(option.site, option_str)
-            options.append(option_str)
+            options.append([option_str, option.pk])
     # For a regular field type
     else:
         temp_options = field.choices
         # Places the readable option into a list
         for option in temp_options:
-            options.append(option[1])
-
+            options.append([option[1], option[1]])
     return options
 
 def create_excel(tools_form, sorted_profiles):
@@ -274,7 +275,7 @@ def create_excel(tools_form, sorted_profiles):
     if fields[0]:
         # Fill first row with field description
         for i, field in enumerate(fields):
-            worksheet.write(row, i+1, form_display_text[field], bold)
+            worksheet.write(row, i+1, form_choices_text[field], bold)
 
         row += 1 # move down a row
 

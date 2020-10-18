@@ -428,7 +428,7 @@ class InfoPopup extends JqueryElement{
             addAlertHTML('Profile selection required.', 'danger');
             return
         }
-        data['date_completed'] = this.modal.date_input.value;
+        data['end_date'] = this.modal.date_input.value;
         var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
         $.ajax({
             url: url_members_completed,
@@ -563,7 +563,7 @@ class InfoPopup extends JqueryElement{
                 .attr('target', '_blank')
                 .attr('value', members[i]['pk'])
                 .addClass('blacklink');
-            var date = $('<p/>').text(members[i]['date_completed']);
+            var date = $('<p/>').text(members[i]['end_date']);
             name_container.append(name);
             date_container.append(date);
             row.append(name_container);

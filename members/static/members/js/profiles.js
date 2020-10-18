@@ -51,6 +51,7 @@ function addProfileHTML(profile) {
 
 // Add the filter and delete button into the list of active filters
 function addFilterHTML(filter, filter_number) {
+  console.log(filter);
   filtertext = {};
   for (var i = 0; i < form_choices_text.length; i++) {
     filtertext[form_choices_text[i][0]] = form_choices_text[i][1];
@@ -62,7 +63,7 @@ function addFilterHTML(filter, filter_number) {
     // Filter element
     $('<a/>')
       .addClass("d-inline-block")
-      .text(filtertext[filter["filterby"]] + ': ' + filter["filterinput"]),
+      .text(filtertext[filter["filterby"]] + ': ' + filter["inputtext"]),
     // X icon next to filter element
     $('<i/>')
       .attr("id","delete-" + filter_number.toString())
@@ -110,12 +111,13 @@ function addFilterInputHTML(options) {
         .attr("disabled","disabled")
         .text("Select")
     )
+    console.log(options);
     // Add each option that was passed into the function
     for (i=0;i<options.length;i++) {
       $("#filter_input").append(
         $("<option/>")
-          .text(options[i])
-          .attr("value",options[i])
+          .text(options[i][0])
+          .attr("value",options[i][1])
       );
     }
   // Add an input field if there were no options passed in
@@ -340,8 +342,10 @@ function getFilters(){
 function addFilter() {
   var filterBy = $('#filter_by').val(); // Get user inputs
   var filterInput = $('#filter_input').val();
+  var filterInputText = $('#filter_input').find('option[value="'+ filterInput + '"]').text();
+  console.log(filterInputText);
   // Add to the active filters
-  filters.push( {"filterby": filterBy, "filterinput": filterInput} );
+  filters.push( {"filterby": filterBy, "filterinput": filterInput, "inputtext": filterInputText} );
   // Update the page
   getFilters();
   // Clear the filter by

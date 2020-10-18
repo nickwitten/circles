@@ -223,14 +223,14 @@
                                         <a href=
                                         "{% url 'learning' %}?site={{site.site.pk}}&type=All&model_type=theme&id={{ theme.theme.pk }}"
                                         target="_blank" class="subject theme blacklink">{{ theme.theme }}</a>
-                                        <p class="date">{{ theme.profile_theme.date_completed|default_if_none:"" }}</p>
+                                        <p class="date">{{ theme.profile_theme.end_date|default_if_none:"" }}</p>
                                     </div>
                                     {% for profile_module in theme.profile_modules %}
                                         <div class="training-container">
                                             <a href=
                                             "{% url 'learning' %}?site={{site.site.pk}}&type=All&model_type=module&id={{ profile_module.module.pk }}"
                                             target="_blank" class="subject module blacklink">{{ profile_module.module }}</a>
-                                            <p class="date">{{ profile_module.date_completed|default_if_none:"" }}</p>
+                                            <p class="date">{{ profile_module.end_date|default_if_none:"" }}</p>
 <!--                                            {% if update %}-->
 <!--                                            <div class="edit-buttons">-->
 <!--                                                <a class="modal-trigger blacklink far fa-edit icon-btn text-small"-->

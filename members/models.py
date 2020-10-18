@@ -62,14 +62,14 @@ class Profile(models.Model):  # ForeignKey field must have same name as related 
             img.thumbnail(output_size)
             img.save(self.image.path)
 
-    def add_learning(self, learning, profile_learning_class, date_completed):
+    def add_learning(self, learning, profile_learning_class, end_date):
         assert learning.site in self.sites()
         profile_learning = learning.profiles.filter(profile=self).first()
-        if profile_learning and profile_learning.date_completed:
+        if profile_learning and profile_learning.end_date:
             return False
         else:
             pk = profile_learning.pk if profile_learning else None
-            attrs = {learning.__class__.__name__.lower(): learning, 'profile': self, 'date_completed': date_completed}
+            attrs = {learning.__class__.__name__.lower(): learning, 'profile': self, 'end_date': end_date}
             obj, created = profile_learning_class.objects.update_or_create(pk=pk, defaults=attrs)
             obj.save()
             return True
@@ -81,7 +81,7 @@ class Profile(models.Model):  # ForeignKey field must have same name as related 
         required_for = json.loads(learning.required_for)
         if self.roles.filter(position__in=required_for):
             # Don't delete just remove date completed
-            profile_learning.date_completed = None
+            profile_learning.end_date = None
             profile_learning.save(theme_remove=True)
         else:
             profile_learning.delete()
@@ -178,7 +178,7 @@ class Role(models.Model):
             if self.profile.roles.filter(position__in=required_positions):
                 if not profile_module:
                     module.create_profile_connection(self.profile)
-            elif profile_module and not profile_module.date_completed:
+            elif profile_module and not profile_module.end_date:
                 profile_module.delete()
 
 

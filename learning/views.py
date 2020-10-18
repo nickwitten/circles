@@ -461,11 +461,11 @@ class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
             raise PermissionDenied()
         members_completed = []
         for profile_model in model.profiles.all():
-            if profile_model.date_completed:
+            if profile_model.end_date:
                 members_completed += [{
                     'name': str(profile_model.profile),
                     'pk': profile_model.profile.pk,
-                    'date_completed': profile_model.date_completed.strftime('%m/%d/%Y'),
+                    'end_date': profile_model.end_date.strftime('%m/%d/%Y'),
                 }]
         self.data = {
             'profiles': json.dumps(members_completed)
@@ -479,7 +479,7 @@ class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
             profile.remove_learning(learning)
         else:
             # add training to member
-            added = profile.add_learning(learning, self.model_type[1], self.kwargs.get('date_completed'))
+            added = profile.add_learning(learning, self.model_type[1], self.kwargs.get('end_date'))
             if not added:
                 self.data['message'] = 'Member has already completed this training.'
             else:
