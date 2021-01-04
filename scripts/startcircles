@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+cd "${HOME}/circles"
+git fetch --all
+git reset --hard origin/master
+python manage.py makemigrations --noinput
+python manage.py migrate --noinput
+exec python manage.py runserver
