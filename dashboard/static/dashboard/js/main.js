@@ -1,3 +1,20 @@
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+
 var closeFunctions = {
 }
 
@@ -1497,7 +1514,10 @@ class MenuSiteSelect extends JqueryElement {
         this.reset();
         this.listeners();
         this.show_sites(this.element.find('.chapter')[0]);
-        this.select(this.element.find('.site')[0]);
+        if (type == 'radio')  // One must be chosen for radio button
+        {
+            this.select(this.element.find('.site')[0]);
+        }
     }
 
     show_sites(chapter) {
@@ -1530,13 +1550,28 @@ class MenuSiteSelect extends JqueryElement {
             val = [val];
         }
         var site_select = this;
-        this.element.find('input').each(function() {
-            if (val.includes($(this).val())) {
-                $(this).prop('checked', true);
+        var all_chapters = true;
+        this.element.find('.chapter').each(function() {
+            var all_sites = true;
+            $(this).find('.site input').each(function() {
+                if (val.includes($(this).val())) {
+                    $(this).prop('checked', true);
+                } else {
+                    $(this).prop('checked', false);
+                    all_sites = false;
+                }
+            });
+            if (all_sites) {
+                $(this).children('input').first().prop('checked', true);
+                console.log($(this).children('input').first());
             } else {
-                $(this).prop('checked', false);
+                $(this).children('input').first().prop('checked', false);
+                all_chapters = false;
             }
         });
+        if (all_chapters) {
+            this.element.find('.all input').prop('checked', true);
+        }
         if (change) {
             this.element.trigger(':change');
         }

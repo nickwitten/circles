@@ -537,6 +537,7 @@ class MeetingInfo extends JqueryElement {
         this.attendance.hide();
         this.element.removeClass('show');
         this.attendance.element.removeClass('modal-shadow');
+        this.parent.update_url();
     }
 
     discard_changes_modal() {
@@ -772,7 +773,7 @@ class MeetingInfo extends JqueryElement {
     listeners() {
         var meeting_info = this
         this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
-        this.element.find('.back').click({func: this.parent.update_url, object: this.parent}, this.dispatch);
+        // this.element.find('.back').click({func: this.parent.update_url, object: this.parent}, this.dispatch);
         this.element.find('#attendance_btn').click({func: this.attendance.toggle, object: this.attendance}, this.dispatch);
         this.element.find('#meeting_submit_btn').click({func: this.submit_form, object: this}, this.dispatch);
         this.element.find('#meeting_delete_btn').click({func: this.delete_meeting_modal, object: this}, this.dispatch);
@@ -798,7 +799,7 @@ class Calendar extends JqueryElement {
         this.menu = new CalendarMenu('menu', 'menu_btn');
         this.meeting_info = new MeetingInfo('meeting_info_container', this);
         this.site_select = this.menu.site_select;
-        this.site_select.select(this.site_select.element.find('.all'));
+	this.initialize_site_select();
         this.reload_month();
         this.listeners();
     }
@@ -933,6 +934,24 @@ class Calendar extends JqueryElement {
         this.show_weeks();
     }
 
+    initialize_site_select() {
+        var sites_cookie = getCookie('viewing_sites');
+        if (sites_cookie.length && sites_cookie != 'all') {
+            // if the cookie is found and is something other than all
+            var sites = JSON.parse(sites_cookie); 
+            this.site_select.set_value(sites, true);
+        } else {
+            // if there is no cookie set it to all
+            document.cookie = 'viewing_sites=all; path=/';
+            this.site_select.select(this.site_select.element.find('.all'));
+        }
+    }
+
+    update_site_select_cookie() {
+        document.cookie = 'viewing_sites=' + JSON.stringify(this.site_select.value) +
+            '; path=/';
+    }
+
     make_meeting_text_color(color_str) {
         var s = (parseInt(color_str.slice(10,12),10) + 20).toString();
         var l = (parseInt(color_str.slice(15,17),10) - 35).toString();
@@ -1036,6 +1055,7 @@ class Calendar extends JqueryElement {
         this.element.find('.previous').click({func: this.change_month, object: this}, this.dispatch);
         this.site_select.element.on(":change", {func: this.update_url, object: this}, this.dispatch);
         this.site_select.element.on(":change", {func: this.reload_month, object: this}, this.dispatch);
+        this.site_select.element.on(":change", {func: this.update_site_select_cookie, object: this}, this.dispatch);
         this.meeting_info.element.on(":reload", {func: this.reload_month, object: this}, this.dispatch);
         this.meeting_info.element.on(":monthsync", {func: this.month_sync, object: this}, this.dispatch);
     }

@@ -1169,6 +1169,7 @@ class LearningList extends JqueryElement {
         this.update_sites_object();
         this.menu = new LearningMenu('menu', 'menu_btn');
         this.site_select = this.menu.site_select;
+	this.initialize_site_select();
         var type_data = this.get_type_select_data();
         this.type_select = new LearningTypeDropdown('learning_type_select', type_data, {type: 'radio'});
         this.programming_slide = new InfoSlide('programming_info', 'programming', this);
@@ -1331,6 +1332,24 @@ class LearningList extends JqueryElement {
         this.type_select.element.find('.title').text(site + ' ' + type);
     }
 
+    initialize_site_select() {
+        var sites_cookie = getCookie('viewing_sites');
+        if (sites_cookie.length && sites_cookie != 'all') {
+            // if the cookie is found and is something other than all
+            var sites = JSON.parse(sites_cookie); 
+            this.site_select.set_value(sites[0], true);
+        } else {
+            // if there is no cookie set it to all
+            document.cookie = 'viewing_sites=all; path=/';
+        }
+    }
+
+    update_site_select_cookie() {
+        document.cookie = 'viewing_sites=' + JSON.stringify(this.site_select.value) +
+            '; path=/';
+    }
+        
+
     get_type_select_data() {
         var training_options = [['All', 'All']].concat(role_positions);
         training_options = training_options.slice(0, -1); // Remove Other option
@@ -1376,6 +1395,7 @@ class LearningList extends JqueryElement {
     listeners() {
         this.site_select.element.on(':change', {func: this.get_items, object: this}, this.dispatch);
         this.site_select.element.on(':change', {func: this.hide_resize_slides, object: this}, this.dispatch);
+        this.site_select.element.on(':change', {func: this.update_site_select_cookie, object: this}, this.dispatch);
         this.type_select.element.on(':change', {func: this.update_items, object: this}, this.dispatch);
         this.type_select.element.on(':change', {func: this.hide_resize_slides, object: this}, this.dispatch);
         for (let i=0; i<this.slides.length; i++) {
