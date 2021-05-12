@@ -34,7 +34,7 @@ class Profile(models.Model):  # ForeignKey field must have same name as related 
     cell_phone = PhoneNumberField(blank=True,null=True)
     other_phone = PhoneNumberField(blank=True,null=True)
     image = models.ImageField(blank=True, null=True, default='default.jpg',upload_to='profile_pics')
-    e_relationship = models.CharField(blank=True,null=True,max_length=10,choices=[('Friend','Friend',),('Parent','Parent'),('Sibling','Sibling')])
+    e_relationship = models.CharField(blank=True,null=True,max_length=10,choices=[('Spouse', 'Spouse'), ('Friend','Friend'),('Parent','Parent'),('Sibling','Sibling')])
     e_first_name = models.CharField(blank=True,null=True,max_length=32)
     e_last_name = models.CharField(blank=True,null=True,max_length=32)
     e_phone = PhoneNumberField(blank=True,null=True)
