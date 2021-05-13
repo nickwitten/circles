@@ -51,7 +51,6 @@ function addProfileHTML(profile) {
 
 // Add the filter and delete button into the list of active filters
 function addFilterHTML(filter, filter_number) {
-  console.log(filter);
   filtertext = {};
   for (var i = 0; i < form_choices_text.length; i++) {
     filtertext[form_choices_text[i][0]] = form_choices_text[i][1];
@@ -101,7 +100,7 @@ function addFilterInputHTML(options) {
       $('<select/>')
         .addClass("d-inline-block form-control m-0")
         .attr("id","filter_input")
-        .change(function() {getProfiles()})
+        .change(function() {getProfiles();})
         .val('')
     );
     // disabled option that just says select
@@ -111,7 +110,6 @@ function addFilterInputHTML(options) {
         .attr("disabled","disabled")
         .text("Select")
     )
-    console.log(options);
     // Add each option that was passed into the function
     for (i=0;i<options.length;i++) {
       $("#filter_input").append(
@@ -127,7 +125,7 @@ function addFilterInputHTML(options) {
         .addClass("form-control")
         .attr("id","filter_input")
         .attr("placeholder","Enter Value")
-        .on("keyup", function() {getProfiles()})
+        .on("keyup", function() {getProfiles();})
         .val("")
     );
   }
@@ -207,20 +205,86 @@ function addDataDeleteBtnHTML() {
 var filters = [];
 // Form that contains user inputs to filter out and display profile data
 var toolinputform;
+// Values in tools that may be set before they are available
+var active_list;
+var filter_input;
 
 
 // Initialize page
 $(document).ready(function(){
+  var existing_inputs = initialize_tools();
   getProfiles();
-  getUserFilterSets();
+  if (!existing_inputs) {
+    // document.getElementById('profile_search_content').scrollTop = 12;
+    $('#tool_container').hide();
+  }
+  listeners();
+});
+
+
+
+function update_tools_cookies() {
+  document.cookie = "searchinput=" + $('#id_searchinput').val();
+  document.cookie = "filters=" + JSON.stringify(filters);
+  document.cookie = "filterby=" + $('#filter_by').val();
+  document.cookie = "filterinput=" + $('#filter_input').val();
+  document.cookie = "sortby=" + $('#id_sortby').val();
+  document.cookie = "datadisplayed=" + $('#data_displayed_container select').val();
+  document.cookie = "active_list=" + $('#list_select').val();
+  var active_list_pk = $("#list_select").find('option:selected').attr('data-pk');
+  active_list_pk = (active_list_pk) ? active_list_pk : '';
+  document.cookie = "active_list_pk=" + active_list_pk;
+
+  filters_str = getCookie('filters');
+  filters = (filters_str.length) ? JSON.parse(filters_str) : [];
+  var search_input = getCookie('searchinput');
+  var filter_by = getCookie('filterby')
+  getFilterInputField(filter_by);
+  filter_input = getCookie('filterinput');  // set global variable
+  var sort_by = getCookie('sortby');
+  var data_displayed = getCookie('datadisplayed');
+  active_list = getCookie('active_list');  // set global variable
+  active_list_pk = getCookie('active_list_pk');
+  console.log({'filters': filters,
+  'search_input': search_input,
+  'filter_by': filter_by,
+  'filter_input': filter_input,
+  'sort_by': sort_by,
+  'data_displayed': data_displayed,
+  'active_list': active_list,
+  'active_list_pk': active_list_pk});
+}
+
+
+function initialize_tools() {
+  filters_str = getCookie('filters');
+  filters = (filters_str.length) ? JSON.parse(filters_str) : [];
+  for (var i = 0; i < filters.length; i++)
+  {
+    addFilterHTML(filters[i], i);
+  }
+  var search_input = getCookie('searchinput');
+  $('#id_searchinput').val(search_input);
+  var filter_by = getCookie('filterby')
+  $('#filter_by').val(filter_by);
+  getFilterInputField(filter_by);
+  filter_input = getCookie('filterinput');  // set global variable
+  var sort_by = getCookie('sortby');
+  $('#id_sortby').val(sort_by);
   // Add data select
   addDataSelectHTML();
-  // Add filter input
-  addFilterInputHTML([]);
-  // Hide filter and search
-  document.getElementById('profile_search_content').scrollTop = 12;
-  document.getElementById('top_search_container').classList.remove('d-none');
-});
+  var data_displayed = getCookie('datadisplayed');
+  $('#data_displayed_container select').val(data_displayed);
+
+  active_list = getCookie('active_list');  // set global variable
+  active_list_pk = getCookie('active_list_pk');
+  getUserFilterSets();
+  activateFilterset(active_list, active_list_pk);
+
+  var existing_inputs = filters.length || search_input.length || filter_input.length ||
+    sort_by.length || data_displayed.length;
+  return existing_inputs;
+}
 
 
 
@@ -264,6 +328,7 @@ function getProfiles() {
           addProfileHTML(group['profiles'][k]);
         };
       };
+      update_tools_cookies();
     },
     error: function() {
         addAlertHTML("Failed to Fetch Profiles", 'danger');
@@ -342,8 +407,11 @@ function getFilters(){
 function addFilter() {
   var filterBy = $('#filter_by').val(); // Get user inputs
   var filterInput = $('#filter_input').val();
-  var filterInputText = $('#filter_input').find('option[value="'+ filterInput + '"]').text();
-  console.log(filterInputText);
+  if ($('#filter_input').is('select')) {
+    var filterInputText = $('#filter_input').find('option[value="'+ filterInput + '"]').text();
+  } else {
+    var filterInputText = filterInput;
+  }
   // Add to the active filters
   filters.push( {"filterby": filterBy, "filterinput": filterInput, "inputtext": filterInputText} );
   // Update the page
@@ -397,6 +465,7 @@ function getUserFilterSets() {
       // Data contains list of filterset objects which contain
       // a title and a list of filter objects
       addFilterSetsHTML(data.filtersets); // Add the html elements
+      $('#list_select').val(active_list);
     },
     error: function() {
         addAlertHTML("Unable to Fetch User Lists", 'danger');
@@ -407,7 +476,6 @@ function getUserFilterSets() {
 
 // Change the filter input to the appropriate options
 function getFilterInputField(filter_by) {
-  $("#filter_input_container").empty(); // Clear the input container
   $("#filter_submit_btn_container").empty(); // Clear the button container
   $.ajax({
     url: "/members/profile/get-filterinput",
@@ -422,8 +490,10 @@ function getFilterInputField(filter_by) {
         $('#filter_container .loading').hide();
     },
     success: function (data) {
+        $('#filter_input_container').empty();
         addFilterInputHTML(data.options); // Add the correct input type to the container
         addFilterSubmitHTML();
+        $('#filter_input').val(filter_input);
     },
     error: function() {
         addAlertHTML("Failed to Load Field Values", 'danger');
@@ -501,6 +571,7 @@ function addFiltersetTitle(title, pk) {
                 $(this).attr("selected", "selected");
             }
         });
+        update_tools_cookies();
     },
     error: function() {
         addAlertHTML('Unable to Update List Title', 'danger');
@@ -531,7 +602,6 @@ function deleteFilterset(pk) {
     },
     success: function (data) {
       filters = []; // Remove all filters
-      getProfiles(); // Update page
       getFilters();
       // Remove list from list select
       $("#list_select option").each(function() {
@@ -541,6 +611,7 @@ function deleteFilterset(pk) {
       });
       $("#list_title").empty(); // Clear the title
       $("#delete_list_btn_container").empty(); // Clear the button
+      getProfiles(); // Update page
     },
     error: function() {
         addAlertHTML("Unable to Delete List", 'danger');
@@ -555,8 +626,7 @@ function getFiltersetForm() {
 }
 
 // Add a filterset's filters to active filters
-function activateFilterset(option_val) {
-  pk = $("#list_select").find('option:selected').attr('data-pk');
+function activateFilterset(option_val, pk) {
   // Get the filterset from the option value
   if (option_val) {
     var value = JSON.parse(option_val);
@@ -625,40 +695,45 @@ function exportToExcel() {
  }
 
 /////////////// Listners to update the page //////////////////////
-$('#tool_input_form').on('submit', function(event){
-    event.preventDefault();
-});
-$('#list_form').on('submit', function(event) {
-    event.preventDefault();
-});
-$("#id_searchinput").on("keyup", function(){
-  getProfiles();
-});
-$("#filter_by").change(function() {
-  getFilterInputField($(this).val()); // Add an input field
-  if ($(this).val() == '') {
+
+function listeners() {
+  $('#tool_input_form').on('submit', function(event){
+      event.preventDefault();
+  });
+  $('#list_form').on('submit', function(event) {
+      event.preventDefault();
+  });
+  $("#id_searchinput").on("keyup", function(){
     getProfiles();
-  }
-});
-$("#id_sortby").change(function() {
-  getProfiles();
-});
-$("#id_datatype").change(function() {
-  getProfiles();
-});
-$("#list_select").change(function() {
-  activateFilterset($(this).val()); // Change the active filters
-});
-$("#tools_btn").on("click", function() {
-  $('#tool_container').toggle();
-});
-$("#filterset_create").on("click", function() {
-  createFilterset(); // Create a list
-});
-$("#add_data_btn").on("click", function() {
-  addDataSelectHTML(); // Add a select element
-  deleteDataBtn(false); // Add the delete data btn
-});
-$("#export_excel_btn").on("click", function() {
-  exportToExcel();
-})
+  });
+  $("#filter_by").change(function() {
+    filter_input = '';
+    getFilterInputField($(this).val()); // Add an input field
+    if ($(this).val() == '') {
+      getProfiles();
+    }
+  });
+  $("#id_sortby").change(function() {
+    getProfiles();
+  });
+  $("#id_datatype").change(function() {
+    getProfiles();
+  });
+  $("#list_select").change(function() {
+    activateFilterset($(this).val(), 
+      $("#list_select").find('option:selected').attr('data-pk'));
+  });
+  $("#tools_btn").on("click", function() {
+    $('#tool_container').toggle();
+  });
+  $("#filterset_create").on("click", function() {
+    createFilterset(); // Create a list
+  });
+  $("#add_data_btn").on("click", function() {
+    addDataSelectHTML(); // Add a select element
+    deleteDataBtn(false); // Add the delete data btn
+  });
+  $("#export_excel_btn").on("click", function() {
+    exportToExcel();
+  })
+}
