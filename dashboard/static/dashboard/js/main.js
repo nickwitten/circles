@@ -604,8 +604,7 @@ class ObjectSelect extends Dropdown {
             .addClass('object-container');
         var object = $('<a/>')
             .text(object_info[0])
-            .addClass('object blacklink')
-            .attr('target', '_blank');
+            .addClass('object blacklink');
         var url = this.get_object_url(object_info)
         object.attr("href", url);
         object_container.append(object);
@@ -727,8 +726,7 @@ class MultiLevelObjectSelect extends MultiLevelDropdown {
             .addClass('object-container');
         var object = $('<a/>')
             .text(object_info[0])
-            .addClass('object blacklink')
-            .attr('target', '_blank');
+            .addClass('object blacklink');
         var url = this.get_object_url(object_info);
         object.attr("href", url);
         object_container.append(object);
@@ -1076,7 +1074,6 @@ class FileInput extends JqueryElement {
         var link = $('<a/>')
             .addClass("blacklink")
             .attr("href", item[2])
-            .attr("target", "_blank")
             .text(item[0]);
         var delete_btn = $('<i/>')
             .addClass('delete fas fa-times blacklink')
@@ -1177,7 +1174,6 @@ class LinkInput extends JqueryElement {
         var link = $('<a/>')
             .addClass("blacklink")
             .attr("href", item[1])
-            .attr("target", "_blank")
             .text(item[0]);
         var delete_btn = $('<i/>')
             .addClass('delete fas fa-times blacklink');
