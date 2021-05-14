@@ -272,7 +272,8 @@ def create_excel(tools_form, sorted_profiles):
     if fields[0]:
         # Fill first row with field description
         for i, field in enumerate(fields):
-            worksheet.write(row, i+1, form_choices_text[field], bold)
+            print(field_names[field][1])
+            worksheet.write(row, i+1, field_names[field][1], bold)
 
         row += 1 # move down a row
 

@@ -123,7 +123,6 @@ class FacilitatorInput extends AutocompleteInput {
             var profile = $('<a/>')
                 .attr("href", url_profile_detail.slice(0,-2) + info['pk'])
                 .attr("value", info["pk"])
-                .attr("target", '_blank')
                 .text(info['name']);
         }
         var delete_btn = $('<i/>')
@@ -369,7 +368,7 @@ class InfoPopup extends JqueryElement{
         url += '?sites[]=' + this.parent.parent.site_select.value[0].toString();
         url += '&new_meeting=' + moment().format('YYYY-MM-DD');
         url += '&' + this.parent.type + '=' + this.parent.base_info.pk.toString();
-        window.open(url, '_blank');
+        window.location.href = url;
     }
 
     get_members_completed(data) {
@@ -560,7 +559,6 @@ class InfoPopup extends JqueryElement{
             var date_container = $('<td/>').addClass('date');
             var name = $('<a/>').text(members[i]['name'])
                 .attr('href', url_profile_detail.slice(0,-2) + members[i]['pk'])
-                .attr('target', '_blank')
                 .attr('value', members[i]['pk'])
                 .addClass('blacklink');
             var date = $('<p/>').text(members[i]['end_date']);
@@ -598,7 +596,6 @@ class InfoPopup extends JqueryElement{
             url += '&meeting=' + meetings[i]['pk'].toString();
             var name = $('<a/>').text(meetings[i]['type'])
                 .attr('href', url)
-                .attr('target', '_blank')
                 .addClass('blacklink');
             var date = $('<p/>').text(meetings[i]['date']);
             name_container.append(name);
@@ -1345,7 +1342,9 @@ class LearningList extends JqueryElement {
     }
 
     update_site_select_cookie() {
-        document.cookie = 'viewing_sites=' + JSON.stringify(this.site_select.value) +
+        var val = this.site_select.value;
+        val = (Array.isArray(val)) ? val : [val];
+        document.cookie = 'viewing_sites=' + JSON.stringify(val) +
             '; path=/';
     }
         

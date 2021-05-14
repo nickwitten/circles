@@ -37,7 +37,6 @@ function addProfileHTML(profile) {
   $(left).append(
     $('<a/>')
       .attr("href","profile/" + profile['pk'].toString())
-      .attr("target", '_blank')
       .text(profile['first name'] + ' ' + profile['last name'])
   );
   // Add each data that was requested
@@ -205,19 +204,24 @@ function addDataDeleteBtnHTML() {
 var filters = [];
 // Form that contains user inputs to filter out and display profile data
 var toolinputform;
-// Values in tools that may be set before they are available
-var active_list;
-var filter_input;
 
 
 // Initialize page
 $(document).ready(function(){
   var existing_inputs = initialize_tools();
-  getProfiles();
   if (!existing_inputs) {
     // document.getElementById('profile_search_content').scrollTop = 12;
     $('#tool_container').hide();
   }
+
+  // Filterinput must be set manually because it's field won't be ready
+  // before getting profiles
+  use_cookies = [];
+  if (getCookie('filterinput')) {
+    use_cookies.push('filterinput');
+  }
+  getProfiles(use_cookies);
+
   listeners();
 });
 
@@ -234,35 +238,22 @@ function update_tools_cookies() {
   var active_list_pk = $("#list_select").find('option:selected').attr('data-pk');
   active_list_pk = (active_list_pk) ? active_list_pk : '';
   document.cookie = "active_list_pk=" + active_list_pk;
-
-  filters_str = getCookie('filters');
-  filters = (filters_str.length) ? JSON.parse(filters_str) : [];
-  var search_input = getCookie('searchinput');
-  var filter_by = getCookie('filterby')
-  getFilterInputField(filter_by);
-  filter_input = getCookie('filterinput');  // set global variable
-  var sort_by = getCookie('sortby');
-  var data_displayed = getCookie('datadisplayed');
-  active_list = getCookie('active_list');  // set global variable
-  active_list_pk = getCookie('active_list_pk');
-  console.log({'filters': filters,
-  'search_input': search_input,
-  'filter_by': filter_by,
-  'filter_input': filter_input,
-  'sort_by': sort_by,
-  'data_displayed': data_displayed,
-  'active_list': active_list,
-  'active_list_pk': active_list_pk});
 }
 
 
 function initialize_tools() {
+  // Activate list must be first (resets unsaved filters)
+  var active_list = getCookie('active_list');  // set global variable
+  var active_list_pk = getCookie('active_list_pk');
+  getUserFilterSets(active_list);
+  if (active_list.length) {
+    activateFilterset(active_list, active_list_pk);
+  }
+
   filters_str = getCookie('filters');
   filters = (filters_str.length) ? JSON.parse(filters_str) : [];
-  for (var i = 0; i < filters.length; i++)
-  {
-    addFilterHTML(filters[i], i);
-  }
+  getFilters();
+
   var search_input = getCookie('searchinput');
   $('#id_searchinput').val(search_input);
   var filter_by = getCookie('filterby')
@@ -276,11 +267,6 @@ function initialize_tools() {
   var data_displayed = getCookie('datadisplayed');
   $('#data_displayed_container select').val(data_displayed);
 
-  active_list = getCookie('active_list');  // set global variable
-  active_list_pk = getCookie('active_list_pk');
-  getUserFilterSets();
-  activateFilterset(active_list, active_list_pk);
-
   var existing_inputs = filters.length || search_input.length || filter_input.length ||
     sort_by.length || data_displayed.length;
   return existing_inputs;
@@ -290,9 +276,8 @@ function initialize_tools() {
 
 // Get the profiles based on current filters and search input and add them
 // to the page
-function getProfiles() {
-  $('#result-list').empty(); // Clear the result list
-  toolinputform = collectPageData();
+function getProfiles(use_cookies=[]) {
+  toolinputform = collectPageData(use_cookies);
   // Ajax call to the backend (GetProfiles)
   $.ajax({
     url: '/members/profile/get-profiles',
@@ -308,6 +293,7 @@ function getProfiles() {
       // Returned:
       // group object containing a list of profile objects
       // Profile objects contain first name, last name, pk, and data
+      $('#result-list').empty(); // Clear the result list
       var groups = data.groups;
       // Loop throught the groups
       var i = 0;
@@ -337,8 +323,9 @@ function getProfiles() {
 }
 
 // Collect the shear input, sort by, data displayed, and filters
-function collectPageData() {
-
+// use cookies contains fields to use cookie data instead (only
+// filterinput implemented)
+function collectPageData(use_cookies=[]) {
   // Add each data type to a list
   var data_types = [];
   $('#data_displayed_container').children().each(function() {
@@ -347,9 +334,12 @@ function collectPageData() {
   // Add unsaved filter to the list of filters
   var filters_cpy = filters.slice() // Create a copy of the array
   if ($('#filter_by').val()) {
-    var unsaved_filter = {"filterby": $('#filter_by').val(),
-                          "filterinput": $('#filter_input').val(),
-                         };
+    var unsaved_filter = {"filterby": $('#filter_by').val()};
+    if (use_cookies.includes('filterinput')) {
+      unsaved_filter['filterinput'] = getCookie('filterinput');
+    } else {
+      unsaved_filter['filterinput'] = ($('#filter_input').length) ? $('#filter_input').val() : '';
+    }
     filters_cpy.push(unsaved_filter); // Add the unsaved filter
   }
   // Stringify the two lists to be sent to backend
@@ -428,6 +418,7 @@ function addFilter() {
   $('#filter_submit_btn_container').empty();
   // Add the create filterset button
   //addCreateFiltersetBtnHTML();
+  update_tools_cookies();
 }
 
 
@@ -449,7 +440,7 @@ function removeFilter(button) {
 
 
 // Get the users filtersets and fill out the list drop down
-function getUserFilterSets() {
+function getUserFilterSets(val=null) {
   var filterset_select_element = $("#list_select")
   filterset_select_element.empty(); // Clear the drop down
   // Retrieve the user's filtersets
@@ -465,7 +456,7 @@ function getUserFilterSets() {
       // Data contains list of filterset objects which contain
       // a title and a list of filter objects
       addFilterSetsHTML(data.filtersets); // Add the html elements
-      $('#list_select').val(active_list);
+      $('#list_select').val(val);
     },
     error: function() {
         addAlertHTML("Unable to Fetch User Lists", 'danger');
@@ -491,6 +482,7 @@ function getFilterInputField(filter_by) {
     },
     success: function (data) {
         $('#filter_input_container').empty();
+        $('#filter_submit_btn_container').empty();
         addFilterInputHTML(data.options); // Add the correct input type to the container
         addFilterSubmitHTML();
         $('#filter_input').val(filter_input);

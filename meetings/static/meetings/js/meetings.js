@@ -77,8 +77,7 @@ class AttendanceSelect extends JqueryElement {
         item.append(
             $('<a/>')
                 .text(member_data[0])
-                .attr('href', url_profile_detail.slice(0,-2) + member_data[1])
-                .attr('target', '_blank')
+                .attr('href', url_profile_detail.slice(0, -2) + member_data[1])
         );
         this.element.append(item);
         return item;
@@ -799,7 +798,7 @@ class Calendar extends JqueryElement {
         this.menu = new CalendarMenu('menu', 'menu_btn');
         this.meeting_info = new MeetingInfo('meeting_info_container', this);
         this.site_select = this.menu.site_select;
-	this.initialize_site_select();
+    	this.initialize_site_select();
         this.reload_month();
         this.listeners();
     }
