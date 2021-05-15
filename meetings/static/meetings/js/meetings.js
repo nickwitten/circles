@@ -775,7 +775,7 @@ class MeetingInfo extends JqueryElement {
         var meeting_info = this
         this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
         // this.element.find('.back').click({func: this.parent.update_url, object: this.parent}, this.dispatch);
-        this.element.find('#attendance_btn').click({func: this.parent.update_url, object: this}, this.dispatch);
+        this.element.find('#attendance_btn').click({func: this.parent.update_url, object: this.parent}, this.dispatch);
         this.element.find('#meeting_submit_btn').click({func: this.submit_form, object: this}, this.dispatch);
         this.element.find('#meeting_delete_btn').click({func: this.delete_meeting_modal, object: this}, this.dispatch);
         this.form.element.on(':change', function() {meeting_info.changes_saved = false});
@@ -1148,7 +1148,11 @@ function update_page() {
         }
     }
     if (query.meeting) {
-        calendar.meeting_info.show(query.meeting);
+        // If the meeting isn't alread shown
+        if (calendar.meeting_info.pk != query.meeting ||
+            !calendar.meeting_info.element.hasClass('show')) {
+            calendar.meeting_info.show(query.meeting);
+        }
     }
     if (query.attendance) {
         calendar.meeting_info.attendance.show();
