@@ -757,6 +757,12 @@ class MeetingInfo extends JqueryElement {
             list_select.data.push([$(this).text(), $(this).val()]);
         });
         list_select.initialize();
+        var create_list_container = $('<div\>').addClass('option j-center');
+        create_list_container.append(
+            $('<a\>').text('Create lists').attr('href', '/members/').addClass('text-xsmall')
+        );
+        list_select.element.find('.options-wrapper').prepend(create_list_container);
+        list_select.styles();
     }
 
     get_site_select_data() {
@@ -979,9 +985,10 @@ class Calendar extends JqueryElement {
             var day = $(change).siblings('.monthnum').text().padStart(2, '0');
             var date = [year, month, day].join('-');
             query['new_meeting'] = date;
-        } else if (old_query.hasOwnProperty('meeting') && !$(change).hasClass('back')) {
-            query['meeting'] = old_query['meeting'];
-            console.log(query['meeting']);
+        } else if (old_query.hasOwnProperty('meeting') &&  // Meeting was being viewed
+            !$(change).hasClass('back') &&   // Hide meeting button
+            !$(change).hasClass('action')) {  // Confirm discard changes
+            query['meeting'] = old_query['meeting'];  // Keep meeting in query
         }
 
         if ($(change).attr('id') == 'attendance_btn' && !old_query.hasOwnProperty('attendance')) {

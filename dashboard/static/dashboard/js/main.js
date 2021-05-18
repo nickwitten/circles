@@ -1074,6 +1074,7 @@ class FileInput extends JqueryElement {
         var link = $('<a/>')
             .addClass("blacklink")
             .attr("href", item[2])
+            .attr("target", "_blank")
             .text(item[0]);
         var delete_btn = $('<i/>')
             .addClass('delete fas fa-times blacklink')
@@ -1174,6 +1175,7 @@ class LinkInput extends JqueryElement {
         var link = $('<a/>')
             .addClass("blacklink")
             .attr("href", item[1])
+            .attr("target", "_blank")
             .text(item[0]);
         var delete_btn = $('<i/>')
             .addClass('delete fas fa-times blacklink');
