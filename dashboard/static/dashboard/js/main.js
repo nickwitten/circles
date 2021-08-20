@@ -1055,6 +1055,7 @@ class FileInput extends JqueryElement {
             this.build_item([files[i].name, 0, '#']);
             this.form_data.append(files[i].name, files[i]);
         }
+	this.element.trigger(':change');
     }
 
     delete_file(delete_btn) {

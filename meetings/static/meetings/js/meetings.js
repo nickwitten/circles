@@ -348,6 +348,15 @@ class EndTime extends StartTime {
         this.element.trigger(":change");
     }
 
+    set_value(value) {
+        this.value = value
+        this.listeners_off();
+        this.date_select.set_value([value.slice(0, 10)]);
+        this.time_select.set_value(value.slice(11, 19), false, true);
+        this.listeners();
+        this.update_value();
+    }
+
     listeners_off() {
         this.date_select.element.off(":change.endtime");
         this.time_select.element.off(":change.endtime");
@@ -376,6 +385,7 @@ class TypeSelect extends JqueryElement {
         this.value = value;
         this.input.val(value);
         expandTitle('Type');
+	this.element.trigger(':change');
     }
 
     show() {
@@ -410,6 +420,7 @@ class TypeSelect extends JqueryElement {
             this.input.val(value);
         }
         expandTitle('Type');
+	this.element.trigger(':change');
     }
 
     update_value() {
