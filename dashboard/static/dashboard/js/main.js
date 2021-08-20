@@ -676,7 +676,8 @@ class MultiLevelObjectSelect extends MultiLevelDropdown {
         var text = '';
         this.element.find('.option').each(function() {
             var all_checked = true;
-            $(this).find('.sub-options').find('input').each(function() {
+            var sub_options = $(this).find('.sub-options').find('input');
+            sub_options.each(function() {
                 if (select.value.includes(parseInt($(this).val())) || select.value.includes($(this).val())) {
                     $(this).prop('checked', true);
                     text = $(this).siblings('p').text();
@@ -686,7 +687,7 @@ class MultiLevelObjectSelect extends MultiLevelDropdown {
                     $(this).prop('checked', false);
                 }
             });
-            if (all_checked) {
+            if (all_checked && sub_options.length) {
                 $(this).find('input').first().prop('checked', true);
             }
         });
@@ -709,6 +710,10 @@ class MultiLevelObjectSelect extends MultiLevelDropdown {
     }
 
     select(option, e) {
+        if ($(option).hasClass('option')) {
+            $(option).find('input').prop('checked', false);
+            return
+        }
         super.select(option, e);
         this.update_display();
     }
