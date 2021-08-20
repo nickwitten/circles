@@ -469,6 +469,7 @@ class MeetingInfo extends JqueryElement {
         super(id, parent);
         this.pk = 0;
         this.changes_saved = true;
+        this.container = this.element.parent();
         this.site_select = new Dropdown('meeting_site_select', [], {type: 'radio'});
         this.type_select = new TypeSelect('type_select');
         this.color_select = new ColorPicker('meeting_color');
@@ -524,7 +525,7 @@ class MeetingInfo extends JqueryElement {
         }
 
 
-        this.element.addClass('show');
+        this.container.addClass('show');
         this.attendance.element.addClass('modal-shadow');
     }
 
@@ -535,9 +536,8 @@ class MeetingInfo extends JqueryElement {
             return
         }
         this.attendance.hide();
-        this.element.removeClass('show');
+        this.container.removeClass('show');
         this.attendance.element.removeClass('modal-shadow');
-        console.log(element);
         this.parent.update_url(element);
     }
 
@@ -780,6 +780,7 @@ class MeetingInfo extends JqueryElement {
     listeners() {
         var meeting_info = this
         this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
+        this.container.find('.spacer').click({func: this.hide, object: this}, this.dispatch);
         // this.element.find('.back').click({func: this.parent.update_url, object: this.parent}, this.dispatch);
         this.element.find('#attendance_btn').click({func: this.parent.update_url, object: this.parent}, this.dispatch);
         this.element.find('#meeting_submit_btn').click({func: this.submit_form, object: this}, this.dispatch);
@@ -986,7 +987,8 @@ class Calendar extends JqueryElement {
             var date = [year, month, day].join('-');
             query['new_meeting'] = date;
         } else if (old_query.hasOwnProperty('meeting') &&  // Meeting was being viewed
-            !$(change).hasClass('back') &&   // Hide meeting button
+            !$(change).hasClass('back') &&  // Hide meeting button
+            !$(change).hasClass('spacer') &&  // Outside of slide
             !$(change).hasClass('action')) {  // Confirm discard changes
             query['meeting'] = old_query['meeting'];  // Keep meeting in query
         }
@@ -1157,7 +1159,7 @@ function update_page() {
     if (query.meeting) {
         // If the meeting isn't alread shown
         if (calendar.meeting_info.pk != query.meeting ||
-            !calendar.meeting_info.element.hasClass('show')) {
+            !calendar.meeting_info.container.hasClass('show')) {
             calendar.meeting_info.show(query.meeting);
         }
     }
