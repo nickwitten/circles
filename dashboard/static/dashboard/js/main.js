@@ -604,8 +604,7 @@ class ObjectSelect extends Dropdown {
             .addClass('object-container');
         var object = $('<a/>')
             .text(object_info[0])
-            .addClass('object blacklink')
-            .attr('target', '_blank');
+            .addClass('object blacklink');
         var url = this.get_object_url(object_info)
         object.attr("href", url);
         object_container.append(object);
@@ -727,8 +726,7 @@ class MultiLevelObjectSelect extends MultiLevelDropdown {
             .addClass('object-container');
         var object = $('<a/>')
             .text(object_info[0])
-            .addClass('object blacklink')
-            .attr('target', '_blank');
+            .addClass('object blacklink');
         var url = this.get_object_url(object_info);
         object.attr("href", url);
         object_container.append(object);

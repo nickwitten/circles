@@ -9,8 +9,11 @@
 
 {% block content %}
 <div id="content_container">
-  {% include 'meetings/meeting_info.html' with form=form.0 %}
-  {% include 'meetings/attendance_info.html' %}
+  <div id="meeting_container">
+    {% include 'meetings/meeting_info.html' with form=form.0 %}
+    {% include 'meetings/attendance_info.html' %}
+    <div class="spacer"></div>
+  </div>
   <div id="calendar_content" class="content-section shadow p-0 mb-4">
     <i id="menu_btn" class="fas fa-bars blacklink"></i>
     <div id="menu">

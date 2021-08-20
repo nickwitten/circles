@@ -30,8 +30,12 @@ class AttendanceSelect extends JqueryElement {
     }
 
     select(option, e) {
+        // Check if link was clicked
+        if ($(e.target).is('a')) {
+            return;
+        }
         var input = $(option).find('input');
-        if (!$(e.target).is('input') && !$(e.target).is('a')) {
+        if (!$(e.target).is('input')) {
             input.prop('checked', !input.prop('checked'));
         }
         var value = parseInt($(input).val());
@@ -77,8 +81,7 @@ class AttendanceSelect extends JqueryElement {
         item.append(
             $('<a/>')
                 .text(member_data[0])
-                .attr('href', url_profile_detail.slice(0,-2) + member_data[1])
-                .attr('target', '_blank')
+                .attr('href', url_profile_detail.slice(0, -2) + member_data[1])
         );
         this.element.append(item);
         return item;
@@ -117,12 +120,10 @@ class AttendanceSlide extends JqueryElement {
 
     show() {
         this.element.addClass('show');
-        closeFunctions[this.close_selector] = this;
     }
 
     hide() {
         this.element.removeClass('show');
-        delete closeFunctions['#' + this.id + ', #attendance_btn'];
     }
 
     toggle() {
@@ -295,7 +296,6 @@ class AttendanceSlide extends JqueryElement {
     }
 
     listeners() {
-        this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
         this.parent.training_select.element.on(':change', {func: this.update_module_info, object: this}, this.dispatch);
         this.parent.training_select.element.on(':update', {func: this.update_module_info, object: this}, this.dispatch);
     }
@@ -469,6 +469,7 @@ class MeetingInfo extends JqueryElement {
         super(id, parent);
         this.pk = 0;
         this.changes_saved = true;
+        this.container = this.element.parent();
         this.site_select = new Dropdown('meeting_site_select', [], {type: 'radio'});
         this.type_select = new TypeSelect('type_select');
         this.color_select = new ColorPicker('meeting_color');
@@ -524,7 +525,7 @@ class MeetingInfo extends JqueryElement {
         }
 
 
-        this.element.addClass('show');
+        this.container.addClass('show');
         this.attendance.element.addClass('modal-shadow');
     }
 
@@ -535,9 +536,9 @@ class MeetingInfo extends JqueryElement {
             return
         }
         this.attendance.hide();
-        this.element.removeClass('show');
+        this.container.removeClass('show');
         this.attendance.element.removeClass('modal-shadow');
-        this.parent.update_url();
+        this.parent.update_url(element);
     }
 
     discard_changes_modal() {
@@ -756,6 +757,12 @@ class MeetingInfo extends JqueryElement {
             list_select.data.push([$(this).text(), $(this).val()]);
         });
         list_select.initialize();
+        var create_list_container = $('<div\>').addClass('option j-center');
+        create_list_container.append(
+            $('<a\>').text('Create lists').attr('href', '/members/').addClass('text-xsmall')
+        );
+        list_select.element.find('.options-wrapper').prepend(create_list_container);
+        list_select.styles();
     }
 
     get_site_select_data() {
@@ -773,13 +780,14 @@ class MeetingInfo extends JqueryElement {
     listeners() {
         var meeting_info = this
         this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
+        this.container.find('.spacer').click({func: this.hide, object: this}, this.dispatch);
         // this.element.find('.back').click({func: this.parent.update_url, object: this.parent}, this.dispatch);
-        this.element.find('#attendance_btn').click({func: this.attendance.toggle, object: this.attendance}, this.dispatch);
+        this.element.find('#attendance_btn').click({func: this.parent.update_url, object: this.parent}, this.dispatch);
         this.element.find('#meeting_submit_btn').click({func: this.submit_form, object: this}, this.dispatch);
         this.element.find('#meeting_delete_btn').click({func: this.delete_meeting_modal, object: this}, this.dispatch);
         this.form.element.on(':change', function() {meeting_info.changes_saved = false});
         this.attendance.list_select.element.on(':change', function() {meeting_info.attendance.get_members(meeting_info.pk)});
-        this.site_select.element.on(':change', {func: this.get_learning_data, object: this}, this.dispatch);
+        this.site_select.element.on(':change', { func: this.get_learning_data, object: this }, this.dispatch);
     }
 }
 
@@ -799,7 +807,7 @@ class Calendar extends JqueryElement {
         this.menu = new CalendarMenu('menu', 'menu_btn');
         this.meeting_info = new MeetingInfo('meeting_info_container', this);
         this.site_select = this.menu.site_select;
-	this.initialize_site_select();
+    	this.initialize_site_select();
         this.reload_month();
         this.listeners();
     }
@@ -965,28 +973,74 @@ class Calendar extends JqueryElement {
     }
 
     update_url(change) {
-        var sites = this.site_select.value
-        var url = '?';
-        for (let i=0; i<sites.length; i++) {
-            url += i ? '&' : '';
-            url += 'sites[]=' + sites[i].toString();
-        }
-        if (!sites.length) {
-            url += '&sites[]=';
-        }
+        var old_query = parseQuery(window.location.search);
+        var query = {};
+
+        query['sites'] = this.site_select.value;
+
         if ($(change).hasClass('calendar-meeting')) {
-            url += '&meeting=' + $(change).attr('data-pk');
-        }
-        if ($(change).hasClass('add-meeting-btn')) {
+            query['meeting'] = $(change).attr('data-pk');
+        } else if ($(change).hasClass('add-meeting-btn')) {
             var year = this.year.text();
             var month = this.month.attr('data-number');
             var day = $(change).siblings('.monthnum').text().padStart(2, '0');
             var date = [year, month, day].join('-');
-            url += '&new_meeting=' + date;
+            query['new_meeting'] = date;
+        } else if (old_query.hasOwnProperty('meeting') &&  // Meeting was being viewed
+            !$(change).hasClass('back') &&  // Hide meeting button
+            !$(change).hasClass('spacer') &&  // Outside of slide
+            !$(change).hasClass('action')) {  // Confirm discard changes
+            query['meeting'] = old_query['meeting'];  // Keep meeting in query
+        }
+
+        if ($(change).attr('id') == 'attendance_btn' && !old_query.hasOwnProperty('attendance')) {
+            query['attendance'] = 'true';
+        }
+
+        var url = '?';
+        var ii = 0;
+        for (const key in query) {
+            url += (ii) ? '&' : '';
+            if (Array.isArray(query[key])) {
+                for (let i = 0; i < query[key].length; i++) {
+                    url += (i) ? '&' : '';
+                    url += key + '[]=' + query[key][i].toString();
+                }
+                if (!query[key].length) {
+                    url += key + '[]=';
+                }
+            } else {
+                url += key + '=' + query[key].toString();
+            }
+            ii++;
         }
         history.pushState({}, '', url);
         $(window).trigger('popstate');
     }
+
+//    update_url(change) {
+//        var sites = this.site_select.value
+//        var url = '?';
+//        for (let i=0; i<sites.length; i++) {
+//            url += i ? '&' : '';
+//            url += 'sites[]=' + sites[i].toString();
+//        }
+//        if (!sites.length) {
+//            url += '&sites[]=';
+//        }
+//        if ($(change).hasClass('calendar-meeting')) {
+//            url += '&meeting=' + $(change).attr('data-pk');
+//        }
+//        if ($(change).hasClass('add-meeting-btn')) {
+//            var year = this.year.text();
+//            var month = this.month.attr('data-number');
+//            var day = $(change).siblings('.monthnum').text().padStart(2, '0');
+//            var date = [year, month, day].join('-');
+//            url += '&new_meeting=' + date;
+//        }
+//        history.pushState({}, '', url);
+//        $(window).trigger('popstate');
+//    }
 
     build_week(days, include_site) {
         ///// Calendar Week HTML ////////
@@ -1085,6 +1139,13 @@ function getDatetime(date_select, time_select) {
 
 
 
+// Checks if there are unsaved changes before leaving
+function discard_changes() {
+    if (!calendar.meeting_info.changes_saved) {
+        return 'You have unsaved changes';
+    }
+}
+
 
 function update_page() {
     var query = parseQuery(window.location.search);
@@ -1096,7 +1157,16 @@ function update_page() {
         }
     }
     if (query.meeting) {
-        calendar.meeting_info.show(query.meeting);
+        // If the meeting isn't alread shown
+        if (calendar.meeting_info.pk != query.meeting ||
+            !calendar.meeting_info.container.hasClass('show')) {
+            calendar.meeting_info.show(query.meeting);
+        }
+    }
+    if (query.attendance) {
+        calendar.meeting_info.attendance.show();
+    } else {
+        calendar.meeting_info.attendance.hide();
     }
     if (query.new_meeting) {
         calendar.meeting_info.show(0, query.new_meeting);
@@ -1112,6 +1182,7 @@ function update_page() {
 var calendar;
 $(document).ready(function() {
     calendar = new Calendar('calendar');
+    $(window).bind('beforeunload', discard_changes);
     $(window).on('popstate', update_page);
     $(window).trigger('popstate');
 });

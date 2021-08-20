@@ -360,6 +360,9 @@ header a{
     overflow-x: hidden;
     overflow-y: auto;
 }
+.text-xsmall {
+  font-size: x-small;
+}
 .text-small{
   font-size:small;
 }

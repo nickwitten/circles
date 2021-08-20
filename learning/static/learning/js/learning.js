@@ -123,7 +123,6 @@ class FacilitatorInput extends AutocompleteInput {
             var profile = $('<a/>')
                 .attr("href", url_profile_detail.slice(0,-2) + info['pk'])
                 .attr("value", info["pk"])
-                .attr("target", '_blank')
                 .text(info['name']);
         }
         var delete_btn = $('<i/>')
@@ -369,7 +368,7 @@ class InfoPopup extends JqueryElement{
         url += '?sites[]=' + this.parent.parent.site_select.value[0].toString();
         url += '&new_meeting=' + moment().format('YYYY-MM-DD');
         url += '&' + this.parent.type + '=' + this.parent.base_info.pk.toString();
-        window.open(url, '_blank');
+        window.location.href = url;
     }
 
     get_members_completed(data) {
@@ -560,7 +559,6 @@ class InfoPopup extends JqueryElement{
             var date_container = $('<td/>').addClass('date');
             var name = $('<a/>').text(members[i]['name'])
                 .attr('href', url_profile_detail.slice(0,-2) + members[i]['pk'])
-                .attr('target', '_blank')
                 .attr('value', members[i]['pk'])
                 .addClass('blacklink');
             var date = $('<p/>').text(members[i]['end_date']);
@@ -598,7 +596,6 @@ class InfoPopup extends JqueryElement{
             url += '&meeting=' + meetings[i]['pk'].toString();
             var name = $('<a/>').text(meetings[i]['type'])
                 .attr('href', url)
-                .attr('target', '_blank')
                 .addClass('blacklink');
             var date = $('<p/>').text(meetings[i]['date']);
             name_container.append(name);
@@ -641,6 +638,7 @@ class InfoSlide extends JqueryElement {
         this.parent = parent;
         this.type = type;
         this.model_infos = [];
+        this.changes_saved = true;
         this.site_select = new MultiLevelDropdown(type + '_site_select', this.get_site_select_data());
         this.title_input = new ModelTitleAutocomplete(type + '_title_input', type);
         this.theme_select = null; // Will be created on module show
@@ -747,6 +745,7 @@ class InfoSlide extends JqueryElement {
         this.update_form.set_data(data);
         this.site_select.set_value(data.site);
         this.item_listeners(); // Item specific listeners
+        this.changes_saved = true;
     }
 
     delayed_loader_hide(self, timeup) {
@@ -763,10 +762,36 @@ class InfoSlide extends JqueryElement {
         this.delayed_loader_hide();
     }
 
-    hide() {
+    hide(element, e, data) {
+        var force = (data && data.hasOwnProperty('force')) ? data.force : false;
+        if (!this.changes_saved && !force) {
+            this.discard_changes_modal();
+            return false;
+        }
+        this.parent.active_slide = null;
         this.info_update_listeners_off();
         this.element.removeClass('show');
         this.delayed_erase_data(this, "timeup");
+        return true;
+    }
+
+    discard_changes_modal() {
+        var type = this.element.find('.title-text').text();
+        var site = this.site_select.element.find('p.value').text();
+        var build_func = function() {
+            this.element.find('.header-text').text('Discard Changes?');
+            this.element.find('.action.btn').attr('class', 'btn action btn-danger');
+            var text = $('<p/>').text([site, type].join(' - ')).addClass('text-medium');
+            var content = this.element.find('.content-container');
+            content.empty();
+            content.append(text);
+        }
+        var action_data = {func: this.hide, object: this, extra_data: {'force': true}};
+        new Modal('modal', {
+            build_func: build_func,
+            action_func: this.dispatch,
+            action_data: action_data,
+        });
     }
 
     reset_url() {
@@ -999,6 +1024,7 @@ class InfoSlide extends JqueryElement {
     }
 
     submit_success(data) {
+        this.changes_saved = true;
         this.loader_element.hide();
         // Update all model infos
         this.model_infos = data['infos'];
@@ -1133,6 +1159,7 @@ class InfoSlide extends JqueryElement {
     }
 
     listeners() {
+        var info_slide = this;
         this.element.find('.info.back').click({func: this.hide, object: this}, this.dispatch);
         this.element.find('.info.back').click({func: this.reset_url, object: this}, this.dispatch);
         this.element.find('.edit-btn').click({func: this.show_update_info, object: this}, this.dispatch);
@@ -1143,17 +1170,18 @@ class InfoSlide extends JqueryElement {
         this.info_popup.element.on(":addmemberscompleted", {func: this.add_members_completed, object: this}, this.dispatch);
         this.info_popup.element.on(":removememberscompleted", {func: this.remove_members_completed, object: this}, this.dispatch);
         $(window).resize({func: this.resize, object: this}, this.dispatch);
+        this.update_form.element.on(":change", function () { info_slide.changes_saved = false; });
     }
 
     item_listeners() {
         this.info_update_listeners_off(); // reset
         if (this.theme_select) {
-            this.theme_select.element.on(":change.update", {func: this.update_model_infos, object: this}, this.dispatch);
+            this.theme_select.element.on(":change.update", { func: this.update_model_infos, object: this }, this.dispatch);
             this.theme_select.element.off(":change.required");
-            this.theme_select.element.on(":change.required", {func: this.update_required_for, object: this}, this.dispatch);
+            this.theme_select.element.on(":change.required", { func: this.update_required_for, object: this }, this.dispatch);
         }
-        this.site_select.element.on(":change.update", {func: this.update_model_infos, object: this}, this.dispatch);
-        this.title_input.element.on(":change.update", {func: this.update_model_infos, object: this}, this.dispatch);
+        this.site_select.element.on(":change.update", { func: this.update_model_infos, object: this }, this.dispatch);
+        this.title_input.element.on(":change.update", { func: this.update_model_infos, object: this }, this.dispatch);
     }
 }
 
@@ -1169,7 +1197,7 @@ class LearningList extends JqueryElement {
         this.update_sites_object();
         this.menu = new LearningMenu('menu', 'menu_btn');
         this.site_select = this.menu.site_select;
-	this.initialize_site_select();
+    	this.initialize_site_select();
         var type_data = this.get_type_select_data();
         this.type_select = new LearningTypeDropdown('learning_type_select', type_data, {type: 'radio'});
         this.programming_slide = new InfoSlide('programming_info', 'programming', this);
@@ -1187,9 +1215,11 @@ class LearningList extends JqueryElement {
     }
 
     trigger_show_item_info(item) {
-        this.programming_slide.hide();
-        this.theme_slide.hide();
-        this.module_slide.hide();
+        // First check if there is an active slide with unsaved changes
+        if (this.active_slide && !this.active_slide.changes_saved) {
+            this.active_slide.hide();
+            return;  // User will have to click again
+        }
         var type = $(item).attr('data-type');
         var url = '?';
         url += 'site=' + this.site_select.value[0];
@@ -1345,7 +1375,9 @@ class LearningList extends JqueryElement {
     }
 
     update_site_select_cookie() {
-        document.cookie = 'viewing_sites=' + JSON.stringify(this.site_select.value) +
+        var val = this.site_select.value;
+        val = (Array.isArray(val)) ? val : [val];
+        document.cookie = 'viewing_sites=' + JSON.stringify(val) +
             '; path=/';
     }
         
@@ -1368,7 +1400,7 @@ class LearningList extends JqueryElement {
     hide_resize_slides() {
         this.site_select.hide();
         for (let i=0; i<this.slides.length; i++) {
-            this.slides[i].hide();
+            this.slides[i].hide(null, null, { force: true });
             this.slides[i].resize();
         }
     }
@@ -1443,6 +1475,15 @@ class LearningList extends JqueryElement {
 
 
 
+// Checks if there are unsaved changes before leaving
+function discard_changes() {
+    var active_slide = learning_list.active_slide;
+    if (active_slide && !active_slide.changes_saved) {
+        return 'You have unsaved changes';
+    }
+}
+
+
 function update_page() {
     var query = parseQuery(window.location.search);
     if (query.site) {
@@ -1461,6 +1502,7 @@ function update_page() {
 var learning_list;
 $(document).ready(function() {
     learning_list = new LearningList('items');
+    $(window).bind('beforeunload', discard_changes);
     $(window).on('popstate', update_page);
     $(window).trigger('popstate');
 });

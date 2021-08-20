@@ -1,5 +1,5 @@
 from django import forms
-from bootstrap_modal_forms.forms import BSModalForm
+from bootstrap_modal_forms.forms import BSModalModelForm
 from .models import Profile, Residence, Role, Child, ChildInfo, Site, FilterSet
 from django.contrib.auth.models import User
 from .data import form_choices_text
@@ -14,7 +14,7 @@ class FieldStyleMixin:
             visible.field.widget.attrs['class'] = "form-control"
 
 
-class RoleCreationForm(FieldStyleMixin, BSModalForm):
+class RoleCreationForm(FieldStyleMixin, BSModalModelForm):
     class Meta:
         model = Role
         exclude = ('profile',)
@@ -58,7 +58,7 @@ class ProfileUpdateForm(FieldStyleMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.field_styles()
 
-class ResidenceCreationForm(FieldStyleMixin, BSModalForm):
+class ResidenceCreationForm(FieldStyleMixin, BSModalModelForm):
     class Meta:
         model = Residence
         # fields = '__all__'
@@ -83,7 +83,7 @@ class ChildCreationForm(FieldStyleMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.field_styles()
 
-class ChildInfoCreationForm(FieldStyleMixin, BSModalForm):
+class ChildInfoCreationForm(FieldStyleMixin, BSModalModelForm):
     class Meta:
         model = ChildInfo
         # fields = '__all__'

@@ -222,14 +222,14 @@
                                     <div class="training-container">
                                         <a href=
                                         "{% url 'learning' %}?site={{site.site.pk}}&type=All&model_type=theme&id={{ theme.theme.pk }}"
-                                        target="_blank" class="subject theme blacklink">{{ theme.theme }}</a>
+                                        class="subject theme blacklink">{{ theme.theme }}</a>
                                         <p class="date">{{ theme.profile_theme.end_date|default_if_none:"" }}</p>
                                     </div>
                                     {% for profile_module in theme.profile_modules %}
                                         <div class="training-container">
                                             <a href=
                                             "{% url 'learning' %}?site={{site.site.pk}}&type=All&model_type=module&id={{ profile_module.module.pk }}"
-                                            target="_blank" class="subject module blacklink">{{ profile_module.module }}</a>
+                                            class="subject module blacklink">{{ profile_module.module }}</a>
                                             <p class="date">{{ profile_module.end_date|default_if_none:"" }}</p>
 <!--                                            {% if update %}-->
 <!--                                            <div class="edit-buttons">-->
@@ -254,7 +254,7 @@
                     {% endif %}
                 </div>
                 <!-- Add Training Button -->
-                <a href="{% url 'learning' %}" target="_blank" class="btn btn-outline-secondary mt-2">Training</a>
+                <a href="{% url 'learning' %}" class="btn btn-outline-secondary mt-2">Training</a>
 
             </div>
 
