@@ -234,8 +234,7 @@ function update_tools_cookies() {
   document.cookie = "filterinput=" + $('#filter_input').val();
   document.cookie = "sortby=" + $('#id_sortby').val();
   document.cookie = "datadisplayed=" + $('#data_displayed_container select').val();
-  var active_list = $('#list_select').val();
-  document.cookie = "active_list=" + (active_list) ? active_list : "";
+  document.cookie = "active_list=" + $('#list_select').val();
   var active_list_pk = $("#list_select").find('option:selected').attr('data-pk');
   active_list_pk = (active_list_pk) ? active_list_pk : '';
   document.cookie = "active_list_pk=" + active_list_pk;
