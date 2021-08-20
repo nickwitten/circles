@@ -423,11 +423,13 @@ function addFilter() {
   // Deactivate any active lists
   $('#list_title').empty();
   $("#delete_list_btn_container").empty();
-  $('#list_select').val(null);
+  active_list = '';
+  $('#list_select').val('');
   $('#filterset_create_btn_container').empty(); // Remove buttons
   $('#filter_submit_btn_container').empty();
   // Add the create filterset button
   //addCreateFiltersetBtnHTML();
+  update_tools_cookies();
 }
 
 
@@ -442,7 +444,8 @@ function removeFilter(button) {
   // Deactivate any active lists
   $('#list_title').empty();
   $('#delete_list_btn_container').empty();
-  $('#list_select').val(null);
+  active_list = '';
+  $('#list_select').val('');
 }
 
 
@@ -527,6 +530,7 @@ function createFilterset() {
       $('#lists_loading_container .loading').hide();
     },
     success: function (data) {
+      active_list = '';
       $("#list_title").empty(); // Clear the title
       addListTitleInputHTML(null); // Add the title input to the page
       $("#delete_list_btn_container").empty(); // Clear button
@@ -534,6 +538,7 @@ function createFilterset() {
       $("#title_input").focus(); // Place the cursor in the input
       $('#list_select').empty();
       addFilterSetsHTML(data.filtersets);
+      update_tools_cookies();
     },
     error: function() {
       addAlertHTML('Unable to Create List', 'danger');
@@ -568,6 +573,7 @@ function addFiltersetTitle(title, pk) {
         // select updated list
         $('#list_select option').each(function() {
             if ($(this).attr('data-pk') == data.pk) {
+                active_list = $(this).val();
                 $(this).attr("selected", "selected");
             }
         });
