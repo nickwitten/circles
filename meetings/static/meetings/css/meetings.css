@@ -15,7 +15,7 @@
     height: 80%;
 }
 #calendar_content .loading {
-    z-index: 1;
+    z-index: 0;
 }
 #calendar_content .add-meeting-btn {
     font-size: calc(50% + 0.3vw);

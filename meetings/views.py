@@ -116,6 +116,7 @@ def post_meeting_info(request, pk):
                 print(form.errors)
                 return JsonResponse({})
         data = base_meeting.to_dict() if base_meeting else created_meetings[0].to_dict()
+        print(data)
         return JsonResponse(data)
 
 @login_required

@@ -801,6 +801,12 @@ header a{
 .date-picker .date-select-btn {
     padding: 0.55rem 0.5rem 0.45rem 0.5rem;
 }
+.date-picker i.inactive {
+    opacity: 0;
+}
+.date-picker i.inactive:hover {
+    cursor: default;
+}
 .date-picker .value {
     margin: 0.25em;
 }
@@ -1038,6 +1044,12 @@ header a{
     visibility: hidden;
     color: #a7a8ab;
     font-size: small;
+}
+.time-select i.inactive {
+    opacity: 0;
+}
+.time-select i.inactive:hover {
+    cursor: default;
 }
 .time-select:hover i {
     visibility: visible;

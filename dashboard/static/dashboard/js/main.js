@@ -185,6 +185,7 @@ class Dropdown extends JqueryElement {
         this.value = default_value;
         this.val_to_text = {}; // Hash values to display text
         this.text = '';
+        this.detail = false;
         this.initialize();
     }
 
@@ -221,7 +222,9 @@ class Dropdown extends JqueryElement {
         var options_wrapper = dropdown.find('.options-wrapper');
         options_wrapper.removeClass('show');
         options_wrapper.css('top', '-' + options_wrapper.css('height'));
-        dropdown.find('.show-wrapper').show();
+        if (!this.detail) {
+            dropdown.find('.show-wrapper').show();
+        }
         // Stop checking for clicks outside
         delete closeFunctions['#' + this.id + ' .option'];
     }
@@ -287,6 +290,21 @@ class Dropdown extends JqueryElement {
         this.element.trigger(":change");
     }
 
+    set_detail() {
+        var temp_val = this.value;
+        this.detail = true;
+        this.build();
+        this.set_value(temp_val);
+        console.log(this);
+    }
+
+    set_update() {
+        var temp_val = this.value;
+        this.detail = false;
+        this.initialize();
+        this.set_value(temp_val);
+    }
+
     styles() {
         var dropdown = this.element;
         var options_wrapper = dropdown.find('.options-wrapper');
@@ -330,6 +348,11 @@ class Dropdown extends JqueryElement {
         this.element.append(pointer);
         this.element.append(show_wrapper);
         this.element.append(options);
+        if (this.detail) {
+            pointer.hide()
+            show_wrapper.hide()
+            options.hide()
+        }
         return [value, pointer, show_wrapper, options]
     }
 }
@@ -459,6 +482,7 @@ class MultiLevelDropdown extends Dropdown {
     }
 
     build() {
+        this.element.empty();
         var value = $('<p/>')
             .addClass('value')
             .text('Value');
@@ -512,6 +536,11 @@ class MultiLevelDropdown extends Dropdown {
         this.element.append(pointer);
         this.element.append(show_wrapper);
         this.element.append(options);
+        if (this.detail) {
+            pointer.hide();
+            show_wrapper.hide();
+            options.hide();
+        }
         return [value, pointer, show_wrapper, options]
     }
 }
@@ -710,8 +739,10 @@ class MultiLevelObjectSelect extends MultiLevelDropdown {
     }
 
     select(option, e) {
-        if ($(option).hasClass('option')) {
-            $(option).find('input').prop('checked', false);
+        var sub_options = $(option).find('.sub-option');
+        console.log(sub_options);
+        if ($(option).hasClass('option') && !sub_options.length) {
+             $(option).find('input').prop('checked', false);
             return
         }
         super.select(option, e);
@@ -1063,6 +1094,16 @@ class FileInput extends JqueryElement {
 	this.element.trigger(':change');
     }
 
+    set_detail() {
+        this.element.find('.file-upload').hide();
+        this.element.find('i').hide();
+    }
+
+    set_update() {
+        this.element.find('.file-upload').show();
+        this.element.find('i').show();
+    }
+
     delete_file(delete_btn) {
         this.delete_files.push($(delete_btn).attr("value"));
         $(delete_btn).closest('.file').remove();
@@ -1148,6 +1189,16 @@ class LinkInput extends JqueryElement {
         this.element.trigger(":change");
     }
 
+    set_detail() {
+        this.element.find('.link-upload').hide();
+        this.element.find('i').hide();
+    }
+
+    set_update() {
+        this.element.find('.link-upload').show();
+        this.element.find('i').show();
+    }
+
     modal() {
         this.modal_element.find('input').val(''); // reset values if modal has been used
         this.modal = new Modal(this.modal_id, {action_func:this.dispatch, action_data:{object: this, func: this.add_link}});
@@ -1228,6 +1279,16 @@ class DatePicker extends JqueryElement{
         this.update_value();
     }
 
+    set_detail() {
+        this.element.find('.date-select-btn').addClass('inactive');
+        this.element.find('.show-wrapper').hide();
+    }
+
+    set_update() {
+        this.element.find('.date-select-btn').removeClass('inactive');
+        this.element.find('.show-wrapper').show();
+    }
+
     update_value() {
         var year = this.value.slice(0,4);
         var month = this.value.slice(5,7);
@@ -1250,7 +1311,6 @@ class DatePicker extends JqueryElement{
         this.element.removeClass('shadow');
         this.element.find('.select-container').removeClass('visible');
         this.element.find('.date-select').removeClass('show');
-        this.element.find('.show-wrapper').show();
         delete closeFunctions['.date-select'];
     }
 
@@ -1476,6 +1536,14 @@ class TimePicker extends JqueryElement {
         this.element.trigger(":change");
     }
 
+    set_detail() {
+        this.element.find('i').addClass('inactive');
+    }
+
+    set_update() {
+        this.element.find('i').removeClass('inactive');
+    }
+
     listeners() {
         this.element.find('.fas.fa-angle-up').click({func: this.change_time, object: this}, this.dispatch);
         this.element.find('.fas.fa-angle-down').click({func: this.change_time, object: this}, this.dispatch);
@@ -1567,7 +1635,6 @@ class MenuSiteSelect extends JqueryElement {
             });
             if (all_sites) {
                 $(this).children('input').first().prop('checked', true);
-                console.log($(this).children('input').first());
             } else {
                 $(this).children('input').first().prop('checked', false);
                 all_chapters = false;
@@ -1701,6 +1768,14 @@ class ColorPicker extends JqueryElement {
         this.element.trigger(":change");
     }
 
+    set_detail() {
+        this.element.find('.show-wrapper').hide();
+    }
+
+    set_update() {
+        this.element.find('.show-wrapper').show();
+    }
+
     styles() {
         $('.color').each(function() {
             var color = $(this).attr('data-color');
@@ -1719,7 +1794,7 @@ class ColorPicker extends JqueryElement {
     }
 
     listeners() {
-        this.element.click({func: this.toggle, object: this}, this.dispatch);
+        this.element.find('.show-wrapper').click({func: this.toggle, object: this}, this.dispatch);
         this.element.find('.color').click({func: this.select, object: this}, this.dispatch);
     }
 }

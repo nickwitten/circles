@@ -94,11 +94,20 @@ class AttendanceSelect extends JqueryElement {
         if (this.value.includes(member_data[1])) {
             option.prop('selected', true);
         }
+        if (this.parent.parent.detail) {
+            option.attr('onclick', 'return false');
+        }
         this.form_field.append(option);
     }
 
     item_listeners() {
-        this.element.find('.attendance-item').click({func: this.select, object: this}, this.dispatch);
+        // No changes when in detail mode
+        if (this.parent.parent.detail) {
+            this.element.find('input').attr('onclick', 'return false');
+        } else {
+            this.element.find('.attendance-item').click({func: this.select, object: this}, this.dispatch);
+            this.element.find('input').attr('onclick', '');
+        }
     }
 }
 
@@ -292,7 +301,10 @@ class AttendanceSlide extends JqueryElement {
     }
 
     item_listeners() {
-        this.messages.find('a').click({func: this.module_modal, object: this}, this.dispatch);
+        // No changes on detail mode
+        if (!this.parent.detail) {
+            this.messages.find('a').click({func: this.module_modal, object: this}, this.dispatch);
+        }
     }
 
     listeners() {
@@ -324,6 +336,16 @@ class StartTime extends JqueryElement {
         this.time_select.set_value(value.slice(11, 19), true, false);
         this.listeners();
         this.update_value();
+    }
+
+    set_detail() {
+        this.date_select.set_detail();
+        this.time_select.set_detail();
+    }
+
+    set_update() {
+        this.date_select.set_update();
+        this.time_select.set_update();
     }
 
     listeners_off() {
@@ -385,7 +407,7 @@ class TypeSelect extends JqueryElement {
         this.value = value;
         this.input.val(value);
         expandTitle('Type');
-	this.element.trigger(':change');
+	    this.element.trigger(':change');
     }
 
     show() {
@@ -426,6 +448,14 @@ class TypeSelect extends JqueryElement {
     update_value() {
         this.value = this.input.val();
         this.element.trigger(':change');
+    }
+
+    set_detail() {
+        this.element.off('click');
+    }
+
+    set_update() {
+        this.element.click({func: this.toggle, object: this}, this.dispatch);
     }
 
     unfocus() {
@@ -480,6 +510,7 @@ class MeetingInfo extends JqueryElement {
         super(id, parent);
         this.pk = 0;
         this.changes_saved = true;
+        this.detail = false;
         this.container = this.element.parent();
         this.site_select = new Dropdown('meeting_site_select', [], {type: 'radio'});
         this.type_select = new TypeSelect('type_select');
@@ -514,9 +545,11 @@ class MeetingInfo extends JqueryElement {
         this.listeners();
     }
 
-    show(pk, date) {
+    show(pk, date, detail=false) {
         this.pk = null; // reset pk
         this.form.erase_data();
+
+        this.detail = detail;
 
         // Set site select options
         var sites = this.get_site_select_data();
@@ -533,6 +566,7 @@ class MeetingInfo extends JqueryElement {
             var first_site_value = this.site_select.element.find('.option').first().find('input').val();
             this.site_select.set_value(first_site_value);
             this.date_select.set_value([date]);
+            this.set_update();
         }
 
 
@@ -550,6 +584,38 @@ class MeetingInfo extends JqueryElement {
         this.container.removeClass('show');
         this.attendance.element.removeClass('modal-shadow');
         this.parent.update_url(element);
+    }
+
+    set_detail() {
+        this.detail = true;
+        this.element.find('.buttons.detail').show();
+        this.element.find('.buttons.update').hide();
+        var custom_fields = this.form.custom_fields;
+        for (const field in custom_fields) {
+            if (typeof custom_fields[field].set_detail == 'function') {
+                custom_fields[field].set_detail();
+            }
+        }
+        this.element.find('input, textarea').attr('readonly', true);
+        this.element.find('textarea').css('border', '0px');
+        this.element.find('#meeting_delete_btn').attr('style', 'display: none !important');
+        this.changes_saved = true;
+    }
+
+    set_update() {
+        this.detail = false;
+        this.element.find('.buttons.update').show();
+        this.element.find('.buttons.detail').hide();
+        var custom_fields = this.form.custom_fields;
+        for (const field in custom_fields) {
+            if (typeof custom_fields[field].set_update == 'function') {
+                custom_fields[field].set_update();
+            }
+        }
+        this.element.find('input, textarea').attr('readonly', false);
+        this.element.find('textarea').css('border', '');
+        this.element.find('#meeting_delete_btn').css('display', '');
+        this.changes_saved = true;
     }
 
     discard_changes_modal() {
@@ -595,6 +661,11 @@ class MeetingInfo extends JqueryElement {
     initialize_form(data) {
         this.form.set_data(data.meeting_data);
         this.changes_saved = true;
+        if (this.detail) {
+            this.set_detail();
+        } else {
+            this.set_update();
+        }
     }
 
     submit_form() {
@@ -647,6 +718,7 @@ class MeetingInfo extends JqueryElement {
         this.form.set_data(data);
         this.changes_saved = true;
         this.element.trigger(":reload");
+        this.set_detail();
     }
 
     delete_meeting_modal() {
@@ -793,7 +865,8 @@ class MeetingInfo extends JqueryElement {
         this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
         this.container.find('.spacer').click({func: this.hide, object: this}, this.dispatch);
         // this.element.find('.back').click({func: this.parent.update_url, object: this.parent}, this.dispatch);
-        this.element.find('#attendance_btn').click({func: this.parent.update_url, object: this.parent}, this.dispatch);
+        this.element.find('#update_btn').click({func: this.set_update, object: this}, this.dispatch);
+        this.element.find('.attendance-btn').click({func: this.parent.update_url, object: this.parent}, this.dispatch);
         this.element.find('#meeting_submit_btn').click({func: this.submit_form, object: this}, this.dispatch);
         this.element.find('#meeting_delete_btn').click({func: this.delete_meeting_modal, object: this}, this.dispatch);
         this.form.element.on(':change', function() {meeting_info.changes_saved = false});
@@ -1004,7 +1077,7 @@ class Calendar extends JqueryElement {
             query['meeting'] = old_query['meeting'];  // Keep meeting in query
         }
 
-        if ($(change).attr('id') == 'attendance_btn' && !old_query.hasOwnProperty('attendance')) {
+        if ($(change).hasClass('attendance-btn') && !old_query.hasOwnProperty('attendance')) {
             query['attendance'] = 'true';
         }
 
@@ -1171,7 +1244,7 @@ function update_page() {
         // If the meeting isn't alread shown
         if (calendar.meeting_info.pk != query.meeting ||
             !calendar.meeting_info.container.hasClass('show')) {
-            calendar.meeting_info.show(query.meeting);
+            calendar.meeting_info.show(query.meeting, null, detail=true);
         }
     }
     if (query.attendance) {
