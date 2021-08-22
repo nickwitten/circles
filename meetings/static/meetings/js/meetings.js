@@ -452,7 +452,6 @@ class TypeSelect extends JqueryElement {
 
     set_detail() {
         this.element.off()
-        console.log(this.element.find('*'));
     }
 
     set_update() {

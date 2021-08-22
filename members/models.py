@@ -63,7 +63,9 @@ class Profile(models.Model):  # ForeignKey field must have same name as related 
             img.save(self.image.path)
 
     def add_learning(self, learning, profile_learning_class, end_date):
-        assert learning.site in self.sites()
+        if learning.site not in self.sites():
+            print(str(self) + ' does not belong to site: ' + str(learning.site))
+            return False
         profile_learning = learning.profiles.filter(profile=self).first()
         if profile_learning and profile_learning.end_date:
             return False

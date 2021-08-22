@@ -875,6 +875,9 @@ header a{
     justify-content: space-between;
     padding: 1px;
 }
+.date-picker .day-label {
+    flex-grow: 1;
+}
 .date-picker .calendar-week {
     display: flex;
     height: 100%;

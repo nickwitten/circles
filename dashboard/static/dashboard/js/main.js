@@ -34,15 +34,16 @@ document.addEventListener("click", function(e) {
 
 function addAlertHTML(message, type) {
     $('.alert').remove();
-    alert = $('<div/>')
+    alert_elem = $('<div/>')
         .addClass('alert alert-' + type)
         .text(message);
     close_btn = $('<i/>')
         .addClass('close fas fa-times blacklink')
         .attr('data-dismiss', 'alert')
         .attr('aria-label','close');
-    alert.append(close_btn);
-    $('.alert-container').append(alert);
+    alert_elem.append(close_btn);
+    $('.alert-container').append(alert_elem);
+    alert_elem.delay(1500).fadeOut();
 }
 
 function makeQuery(queryDict) {
