@@ -106,6 +106,10 @@
 #meeting_form .field {
     width: 100%;
 }
+#meeting_form .field input,
+#meeting_form .field textarea {
+    padding: 0;
+}
 #meeting_form #id_attendees,
 #meeting_form #id_lists,
 #meeting_form #id_programming,

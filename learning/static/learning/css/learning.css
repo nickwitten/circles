@@ -208,6 +208,10 @@ h3 {
     outline: 0;
     font-size: calc(8px + 0.3vw);
     width: 100%;
+    padding: 0;
+}
+.fields-table textarea {
+    padding 0;
 }
 .fields-table .multi-level-dropdown,
 .fields-table .dropdown {
