@@ -89,6 +89,14 @@ class FacilitatorInput extends AutocompleteInput {
         this.update_value();
     }
 
+    set_detail() {
+        this.element.addClass('detail');
+    }
+
+    set_update() {
+        this.element.removeClass('detail');
+    }
+
     scroll_list() {
         this.list.animate({ scrollTop: this.list.prop("scrollHeight")}, 1000);
     }
@@ -637,6 +645,9 @@ class InfoSlide extends JqueryElement {
         super(id)
         this.parent = parent;
         this.type = type;
+        this.mode = 'create';
+        this.detail = false;
+        this.close_selectors = '.item-info, .modal-container, .alert'
         this.model_infos = [];
         this.changes_saved = true;
         this.site_select = new MultiLevelDropdown(type + '_site_select', this.get_site_select_data());
@@ -667,6 +678,48 @@ class InfoSlide extends JqueryElement {
         this.resize();
     }
 
+    set_detail() {
+        this.detail = true;
+        this.element.find('.btn-container.detail-btns').show();
+        this.element.find('.btn-container.update-btns').hide();
+        var custom_fields = this.update_form.custom_fields;
+        for (const field in custom_fields) {
+            if (typeof custom_fields[field].set_detail == 'function') {
+                custom_fields[field].set_detail();
+            }
+        }
+        this.site_select.set_detail();
+        if (this.theme_select) {
+            this.theme_select.set_detail();
+        }
+        this.element.find('input, textarea').attr('readonly', true);
+        this.element.find('input, textarea').css('border', '0px');
+        this.element.find('.delete-btn').attr('style', 'display: none !important');
+        this.changes_saved = true;
+    }
+
+    set_update() {
+        this.detail = false;
+        console.log(this.detail);
+        this.element.find('.btn-container.update-btns').show();
+        this.element.find('.btn-container.detail-btns').hide();
+        var custom_fields = this.update_form.custom_fields;
+        for (const field in custom_fields) {
+            if (typeof custom_fields[field].set_update == 'function') {
+                custom_fields[field].set_update();
+            }
+        }
+        this.site_select.set_update();
+        if (this.theme_select) {
+            this.theme_select.set_update();
+        }
+        this.element.find('input, textarea').attr('readonly', false);
+        this.element.find('input, textarea').css('border', '');
+        this.element.find('.delete-btn').css('display', '');
+        this.changes_saved = true;
+    }
+
+
     show_create(site, {theme_options=null, required_for=null} = {}) {
         this.info_update_listeners_off();
         this.mode = 'create';
@@ -683,8 +736,10 @@ class InfoSlide extends JqueryElement {
             this.required_select.set_value(JSON.stringify(required_for));
         }
         this.element.find('.title-text').first().text('Create New ' + this.type[0].toUpperCase() + this.type.slice(1));
+        this.set_update();
         this.element.addClass('show');
         this.item_listeners();
+        closeFunctions[this.close_selectors] = this
     }
 
     show_model(pk) {
@@ -705,6 +760,7 @@ class InfoSlide extends JqueryElement {
             success: this.model_info_success,
             error: this.model_info_error,
         });
+        closeFunctions[this.close_selectors] = this
     }
 
     model_info_success(data) {
@@ -744,6 +800,7 @@ class InfoSlide extends JqueryElement {
         this.loader_element.hide();
         this.update_form.set_data(data);
         this.site_select.set_value(data.site);
+        this.set_detail();
         this.item_listeners(); // Item specific listeners
         this.changes_saved = true;
     }
@@ -768,6 +825,7 @@ class InfoSlide extends JqueryElement {
             this.discard_changes_modal();
             return false;
         }
+        delete closeFunctions[this.close_selectors];
         this.parent.active_slide = null;
         this.info_update_listeners_off();
         this.element.removeClass('show');
@@ -1052,6 +1110,7 @@ class InfoSlide extends JqueryElement {
             title = this.base_info.theme + ' - ' + title;
         }
         this.mode = 'update';
+        this.set_detail();
         this.element.find('.title-text').first().text(title);
         this.element.trigger(":submit");
     }
@@ -1165,6 +1224,7 @@ class InfoSlide extends JqueryElement {
         this.element.find('.edit-btn').click({func: this.show_update_info, object: this}, this.dispatch);
         this.element.find('.delete-btn').click({func: this.delete_models, object: this}, this.dispatch);
         this.element.find('.save-btn').click({func: this.submit_form, object: this}, this.dispatch);
+        this.element.find('.update-btn').click({func: this.set_update, object: this}, this.dispatch);
         this.element.find('.more-info.btn').click({func: this.show_more_info, object: this}, this.dispatch);
         this.info_popup.element.on(":memberscompleted", {func: this.get_members_completed, object: this}, this.dispatch);
         this.info_popup.element.on(":addmemberscompleted", {func: this.add_members_completed, object: this}, this.dispatch);

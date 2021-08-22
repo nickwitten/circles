@@ -484,6 +484,10 @@ header a{
     padding: 4px 0;
     border-bottom: 1px solid #dee2e6;
 }
+.multi-level-dropdown.detail,
+.dropdown.detail {
+    border: 0px;
+}
 .multi-level-dropdown .value,
 .dropdown .value {
     min-height: calc(8px + 0.3vw);
@@ -578,7 +582,7 @@ header a{
     vertical-align: baseline;
 }
 .dropdown-label p {
-    margin-top: 4px;
+    margin: 4px 0;
 }
 
 
@@ -591,6 +595,10 @@ header a{
 .object-select .multi-level-dropdown {
     flex-grow: 1;
     width: 100%;
+}
+.object-select.detail .dropdown,
+.object-select.detail .multi-level-dropdown {
+    display: none;
 }
 .object-select .dropdown.half,
 .object-select .multi-level-dropdown.half {

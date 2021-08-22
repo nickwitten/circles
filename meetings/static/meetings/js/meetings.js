@@ -597,7 +597,7 @@ class MeetingInfo extends JqueryElement {
             }
         }
         this.element.find('input, textarea').attr('readonly', true);
-        this.element.find('textarea').css('border', '0px');
+        this.element.find('input, textarea').css('border', '0px');
         this.element.find('#meeting_delete_btn').attr('style', 'display: none !important');
         this.changes_saved = true;
     }
@@ -613,7 +613,7 @@ class MeetingInfo extends JqueryElement {
             }
         }
         this.element.find('input, textarea').attr('readonly', false);
-        this.element.find('textarea').css('border', '');
+        this.element.find('input, textarea').css('border', '');
         this.element.find('#meeting_delete_btn').css('display', '');
         this.changes_saved = true;
     }

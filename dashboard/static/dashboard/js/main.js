@@ -293,14 +293,15 @@ class Dropdown extends JqueryElement {
     set_detail() {
         var temp_val = this.value;
         this.detail = true;
+        this.element.addClass('detail');
         this.build();
         this.set_value(temp_val);
-        console.log(this);
     }
 
     set_update() {
         var temp_val = this.value;
         this.detail = false;
+        this.element.removeClass('detail');
         this.initialize();
         this.set_value(temp_val);
     }
