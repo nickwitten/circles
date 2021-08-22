@@ -1322,8 +1322,7 @@ class DatePicker extends JqueryElement{
         this.element.addClass('shadow');
         this.element.find('.select-container').addClass('visible');
         this.element.find('.date-select').addClass('show');
-        this.element.off();
-        this.element.find('*').off();
+        this.element.find('.show-wrapper').off();
         closeFunctions['.date-select'] = this;
     }
 
