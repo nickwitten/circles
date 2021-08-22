@@ -869,6 +869,12 @@ header a{
     font-size: calc(10px + 0.3vw);
     margin-bottom: 0.25rem;
 }
+.date-picker .day-labels {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 1px;
+}
 .date-picker .calendar-week {
     display: flex;
     height: 100%;

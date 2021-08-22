@@ -1322,8 +1322,8 @@ class DatePicker extends JqueryElement{
         this.element.addClass('shadow');
         this.element.find('.select-container').addClass('visible');
         this.element.find('.date-select').addClass('show');
-        this.element.find('.date-select-btn').off("click");
-        this.element.find('.show-wrapper').hide();
+        this.element.off();
+        this.element.find('*').off();
         closeFunctions['.date-select'] = this;
     }
 
@@ -1331,6 +1331,7 @@ class DatePicker extends JqueryElement{
         this.element.removeClass('shadow');
         this.element.find('.select-container').removeClass('visible');
         this.element.find('.date-select').removeClass('show');
+        this.listeners();
         delete closeFunctions['.date-select'];
     }
 
@@ -1428,6 +1429,8 @@ class DatePicker extends JqueryElement{
     }
 
     listeners() {
+        this.element.off()
+        this.element.find('*').off()
         this.element.find('.show-wrapper').click({func: this.show, object: this}, this.dispatch);
         this.element.find('.next').click({func: this.next_month, object: this}, this.dispatch);
         this.element.find('.previous').click({func: this.previous_month, object: this}, this.dispatch);
