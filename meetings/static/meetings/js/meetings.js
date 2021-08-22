@@ -451,11 +451,12 @@ class TypeSelect extends JqueryElement {
     }
 
     set_detail() {
-        this.element.off('click');
+        this.element.off()
+        console.log(this.element.find('*'));
     }
 
     set_update() {
-        this.element.click({func: this.toggle, object: this}, this.dispatch);
+        this.listeners();
     }
 
     unfocus() {
@@ -463,6 +464,8 @@ class TypeSelect extends JqueryElement {
     }
 
     listeners() {
+        this.element.off();
+        this.element.find('*').off();
         this.element.click({func: this.toggle, object: this}, this.dispatch);
         this.element.find('.type').click({func: this.select, object: this}, this.dispatch);
         this.input.on("blur", {func: this.unfocus, object: this}, this.dispatch);
@@ -612,7 +615,7 @@ class MeetingInfo extends JqueryElement {
                 custom_fields[field].set_update();
             }
         }
-        this.element.find('input, textarea').attr('readonly', false);
+        this.element.find('input:not(#id_type), textarea').attr('readonly', false);
         this.element.find('input, textarea').css('border', '');
         this.element.find('#meeting_delete_btn').css('display', '');
         this.changes_saved = true;
@@ -1062,42 +1065,28 @@ class Calendar extends JqueryElement {
 
         query['sites'] = this.site_select.value;
 
-        if ($(change).hasClass('calendar-meeting')) {
-            query['meeting'] = $(change).attr('data-pk');
-        } else if ($(change).hasClass('add-meeting-btn')) {
-            var year = this.year.text();
-            var month = this.month.attr('data-number');
-            var day = $(change).siblings('.monthnum').text().padStart(2, '0');
-            var date = [year, month, day].join('-');
-            query['new_meeting'] = date;
-        } else if (old_query.hasOwnProperty('meeting') &&  // Meeting was being viewed
-            !$(change).hasClass('back') &&  // Hide meeting button
-            !$(change).hasClass('spacer') &&  // Outside of slide
-            !$(change).hasClass('action')) {  // Confirm discard changes
-            query['meeting'] = old_query['meeting'];  // Keep meeting in query
-        }
-
-        if ($(change).hasClass('attendance-btn') && !old_query.hasOwnProperty('attendance')) {
-            query['attendance'] = 'true';
-        }
-
-        var url = '?';
-        var ii = 0;
-        for (const key in query) {
-            url += (ii) ? '&' : '';
-            if (Array.isArray(query[key])) {
-                for (let i = 0; i < query[key].length; i++) {
-                    url += (i) ? '&' : '';
-                    url += key + '[]=' + query[key][i].toString();
-                }
-                if (!query[key].length) {
-                    url += key + '[]=';
-                }
-            } else {
-                url += key + '=' + query[key].toString();
+        if (change != undefined) {
+            if ($(change).hasClass('calendar-meeting')) {
+                query['meeting'] = $(change).attr('data-pk');
+            } else if ($(change).hasClass('add-meeting-btn')) {
+                var year = this.year.text();
+                var month = this.month.attr('data-number');
+                var day = $(change).siblings('.monthnum').text().padStart(2, '0');
+                var date = [year, month, day].join('-');
+                query['new_meeting'] = date;
+            } else if (old_query.hasOwnProperty('meeting') &&  // Meeting was being viewed
+                !$(change).hasClass('back') &&  // Hide meeting button
+                !$(change).hasClass('spacer') &&  // Outside of slide
+                !$(change).hasClass('action')) {  // Confirm discard changes
+                query['meeting'] = old_query['meeting'];  // Keep meeting in query
             }
-            ii++;
+
+            if ($(change).hasClass('attendance-btn') && !old_query.hasOwnProperty('attendance')) {
+                query['attendance'] = 'true';
+            }
         }
+
+        var url = makeQuery(query);
         history.pushState({}, '', url);
         $(window).trigger('popstate');
     }

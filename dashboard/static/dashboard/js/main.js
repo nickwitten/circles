@@ -45,7 +45,26 @@ function addAlertHTML(message, type) {
     $('.alert-container').append(alert);
 }
 
-
+function makeQuery(queryDict) {
+    var url = '?';
+    var ii = 0;
+    for (const key in queryDict) {
+        url += (ii) ? '&' : '';
+        if (Array.isArray(queryDict[key])) {
+            for (let i = 0; i < queryDict[key].length; i++) {
+                url += (i) ? '&' : '';
+                url += key + '[]=' + queryDict[key][i].toString();
+            }
+            if (!queryDict[key].length) {
+                url += key + '[]=';
+            }
+        } else {
+            url += key + '=' + queryDict[key].toString();
+        }
+        ii++;
+    }
+    return url
+}
 
 function parseQuery(queryString) {
     var query = {};
