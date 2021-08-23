@@ -488,6 +488,10 @@ header a{
 .dropdown.detail {
     border: 0px;
 }
+.multi-level-dropdown.detail i,
+.dropdown.detail i {
+    display: none;
+}
 .multi-level-dropdown .value,
 .dropdown .value {
     min-height: calc(8px + 0.3vw);
@@ -500,6 +504,13 @@ header a{
     transition: all 0.2s ease-in-out;
 }
 .multi-level-dropdown .pointer.rotate,
+.dropdown .pointer.rotate {
+    transform: rotate(-90deg);
+}
+.multi-level-dropdown.detail .show-wrapper,
+.dropdown.detail .show-wrapper {
+    display: none !important;
+}
 .dropdown .pointer.rotate {
     transform: rotate(-90deg);
 }

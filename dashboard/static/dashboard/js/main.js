@@ -311,19 +311,14 @@ class Dropdown extends JqueryElement {
     }
 
     set_detail() {
-        var temp_val = this.value;
         this.detail = true;
         this.element.addClass('detail');
-        this.build();
-        this.set_value(temp_val);
     }
 
     set_update() {
-        var temp_val = this.value;
         this.detail = false;
         this.element.removeClass('detail');
-        this.initialize();
-        this.set_value(temp_val);
+        this.styles();
     }
 
     styles() {
@@ -369,11 +364,6 @@ class Dropdown extends JqueryElement {
         this.element.append(pointer);
         this.element.append(show_wrapper);
         this.element.append(options);
-        if (this.detail) {
-            pointer.hide()
-            show_wrapper.hide()
-            options.hide()
-        }
         return [value, pointer, show_wrapper, options]
     }
 }
@@ -557,11 +547,6 @@ class MultiLevelDropdown extends Dropdown {
         this.element.append(pointer);
         this.element.append(show_wrapper);
         this.element.append(options);
-        if (this.detail) {
-            pointer.hide();
-            show_wrapper.hide();
-            options.hide();
-        }
         return [value, pointer, show_wrapper, options]
     }
 }
@@ -1323,7 +1308,7 @@ class DatePicker extends JqueryElement{
         this.element.addClass('shadow');
         this.element.find('.select-container').addClass('visible');
         this.element.find('.date-select').addClass('show');
-        this.element.find('.show-wrapper').off();
+        this.element.find('.show-wrapper').off('click');
         closeFunctions['.date-select'] = this;
     }
 
@@ -1429,8 +1414,9 @@ class DatePicker extends JqueryElement{
     }
 
     listeners() {
-        this.element.off()
-        this.element.find('*').off()
+        var events = 'click';
+        this.element.off(events);
+        this.element.find('*').off(events);
         this.element.find('.show-wrapper').click({func: this.show, object: this}, this.dispatch);
         this.element.find('.next').click({func: this.next_month, object: this}, this.dispatch);
         this.element.find('.previous').click({func: this.previous_month, object: this}, this.dispatch);

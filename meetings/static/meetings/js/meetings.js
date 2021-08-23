@@ -12,6 +12,7 @@ class AttendanceSelect extends JqueryElement {
         super(id, parent);
         this.default_value = [];
         this.value = this.default_value;
+        this.detail = false;
         this.data = [];
         this.val_to_text = {};
         this.form_field = $('#' + field_id);
@@ -26,7 +27,9 @@ class AttendanceSelect extends JqueryElement {
             this.build_form_option(this.data[i]);
         }
         this.update_display();
-        this.item_listeners();
+        if (!this.detail) {
+            this.item_listeners();
+        }
     }
 
     select(option, e) {
@@ -70,14 +73,28 @@ class AttendanceSelect extends JqueryElement {
         this.element.trigger(':change');
     }
 
+    set_update() {
+        this.detail = false;
+        this.element.find('input').attr('onclick', '');
+        this.item_listeners();
+    }
+
+    set_detail() {
+        this.detail = true;
+        this.listeners_off();
+        this.element.find('input').attr('onclick', 'return false');
+    }
+
     build_member(member_data) {
         var item = $('<div/>')
             .addClass('attendance-item')
-        item.append(
-            $('<input/>')
-                .attr('type', 'checkbox')
-                .val(member_data[1])
-        );
+        var input = $('<input/>')
+            .attr('type', 'checkbox')
+            .val(member_data[1])
+        if (this.detail) {
+            input.attr('onclick', 'return false');
+        }
+        item.append(input);
         item.append(
             $('<a/>')
                 .text(member_data[0])
@@ -100,14 +117,15 @@ class AttendanceSelect extends JqueryElement {
         this.form_field.append(option);
     }
 
+    listeners_off() {
+        var events = 'click';
+        this.element.off(events);
+        this.element.find('*').off(events);
+    }
+
     item_listeners() {
-        // No changes when in detail mode
-        if (this.parent.parent.detail) {
-            this.element.find('input').attr('onclick', 'return false');
-        } else {
-            this.element.find('.attendance-item').click({func: this.select, object: this}, this.dispatch);
-            this.element.find('input').attr('onclick', '');
-        }
+        this.listeners_off();
+        this.element.find('.attendance-item').click({func: this.select, object: this}, this.dispatch);
     }
 }
 
@@ -176,6 +194,20 @@ class AttendanceSlide extends JqueryElement {
         this.element.trigger(':change');
     }
 
+    set_update() {
+        this.detail = false;
+        this.attendance_select.set_update();
+        this.list_select.set_update();
+        this.update_module_info();
+    }
+
+    set_detail() {
+        this.detail = true;
+        this.attendance_select.set_detail();
+        this.list_select.set_detail();
+        this.update_module_info();
+    }
+
     modal_select(option, e) {
         // this is modal
         var modal = this
@@ -186,13 +218,13 @@ class AttendanceSlide extends JqueryElement {
         if (input.val() == 'all') {
             this.element.find('input').prop('checked', input.prop('checked'));
         }
-        var all_checked = true;
-        this.element.find('input').not('.all').each(function() {
-            if (!$(this).prop('checked')) {
-                all_checked = false;
-            }
-        });
-        this.element.find('input.all').prop('checked', all_checked);
+//         var all_checked = true;
+//         this.element.find('input').not('.all').each(function() {
+//             if (!$(this).prop('checked')) {
+//                 all_checked = false;
+//             }
+//         });
+//         this.element.find('input.all').prop('checked', all_checked);
     }
 
     module_modal(elem) {
@@ -286,8 +318,13 @@ class AttendanceSlide extends JqueryElement {
         var attendees = JSON.parse(this.value)[id];
         var title = this.parent.training_select.val_to_text[id];
         var container = $('<div/>');
-        var modal_text = $('<a/>').attr('href', '#')
-                         .attr('data-pk', id).attr('data-title', title);
+        var modal_text;
+        if (this.detail) {
+            modal_text = $('<p/>').attr('data-pk', id).attr('data-title', title);
+        } else {
+            modal_text = $('<a/>').attr('href', '#')
+                             .attr('data-pk', id).attr('data-title', title);
+        }
         if (attendees == 'all') {
             modal_text.text('All');
         } else {
@@ -301,10 +338,7 @@ class AttendanceSlide extends JqueryElement {
     }
 
     item_listeners() {
-        // No changes on detail mode
-        if (!this.parent.detail) {
-            this.messages.find('a').click({func: this.module_modal, object: this}, this.dispatch);
-        }
+        this.messages.find('a').click({func: this.module_modal, object: this}, this.dispatch);
     }
 
     listeners() {
@@ -451,7 +485,7 @@ class TypeSelect extends JqueryElement {
     }
 
     set_detail() {
-        this.element.off()
+        this.listeners_off();
     }
 
     set_update() {
@@ -462,9 +496,14 @@ class TypeSelect extends JqueryElement {
         this.input.attr("readonly", "readonly");
     }
 
+    listeners_off() {
+        var events = 'click blur change';
+        this.element.off(events);
+        this.element.find('*').off(events);
+    }
+
     listeners() {
-        this.element.off();
-        this.element.find('*').off();
+        this.listeners_off();
         this.element.click({func: this.toggle, object: this}, this.dispatch);
         this.element.find('.type').click({func: this.select, object: this}, this.dispatch);
         this.input.on("blur", {func: this.unfocus, object: this}, this.dispatch);
@@ -582,6 +621,7 @@ class MeetingInfo extends JqueryElement {
             this.discard_changes_modal();
             return
         }
+        this.changes_saved = true;
         this.attendance.hide();
         this.container.removeClass('show');
         this.attendance.element.removeClass('modal-shadow');
@@ -601,7 +641,7 @@ class MeetingInfo extends JqueryElement {
         this.element.find('input, textarea').attr('readonly', true);
         this.element.find('input, textarea').css('border', '0px');
         this.element.find('#meeting_delete_btn').attr('style', 'display: none !important');
-        this.changes_saved = true;
+        //this.changes_saved = true;
     }
 
     set_update() {
@@ -617,7 +657,7 @@ class MeetingInfo extends JqueryElement {
         this.element.find('input:not(#id_type), textarea').attr('readonly', false);
         this.element.find('input, textarea').css('border', '');
         this.element.find('#meeting_delete_btn').css('display', '');
-        this.changes_saved = true;
+        //this.changes_saved = true;
     }
 
     discard_changes_modal() {
