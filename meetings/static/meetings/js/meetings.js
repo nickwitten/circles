@@ -218,13 +218,15 @@ class AttendanceSlide extends JqueryElement {
         if (input.val() == 'all') {
             this.element.find('input').prop('checked', input.prop('checked'));
         }
-//         var all_checked = true;
-//         this.element.find('input').not('.all').each(function() {
-//             if (!$(this).prop('checked')) {
-//                 all_checked = false;
-//             }
-//         });
-//         this.element.find('input.all').prop('checked', all_checked);
+        var all_checked = true;
+        this.element.find('input').not('.all').each(function() {
+            if (!$(this).prop('checked')) {
+                all_checked = false;
+            }
+        });
+        if (!all_checked) {
+            this.element.find('input.all').prop('checked', false);
+        }
     }
 
     module_modal(elem) {
