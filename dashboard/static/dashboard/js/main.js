@@ -34,18 +34,38 @@ document.addEventListener("click", function(e) {
 
 function addAlertHTML(message, type) {
     $('.alert').remove();
-    alert = $('<div/>')
+    alert_elem = $('<div/>')
         .addClass('alert alert-' + type)
         .text(message);
     close_btn = $('<i/>')
         .addClass('close fas fa-times blacklink')
         .attr('data-dismiss', 'alert')
         .attr('aria-label','close');
-    alert.append(close_btn);
-    $('.alert-container').append(alert);
+    alert_elem.append(close_btn);
+    $('.alert-container').append(alert_elem);
+    alert_elem.delay(1500).fadeOut();
 }
 
-
+function makeQuery(queryDict) {
+    var url = '?';
+    var ii = 0;
+    for (const key in queryDict) {
+        url += (ii) ? '&' : '';
+        if (Array.isArray(queryDict[key])) {
+            for (let i = 0; i < queryDict[key].length; i++) {
+                url += (i) ? '&' : '';
+                url += key + '[]=' + queryDict[key][i].toString();
+            }
+            if (!queryDict[key].length) {
+                url += key + '[]=';
+            }
+        } else {
+            url += key + '=' + queryDict[key].toString();
+        }
+        ii++;
+    }
+    return url
+}
 
 function parseQuery(queryString) {
     var query = {};
@@ -185,6 +205,7 @@ class Dropdown extends JqueryElement {
         this.value = default_value;
         this.val_to_text = {}; // Hash values to display text
         this.text = '';
+        this.detail = false;
         this.initialize();
     }
 
@@ -221,7 +242,9 @@ class Dropdown extends JqueryElement {
         var options_wrapper = dropdown.find('.options-wrapper');
         options_wrapper.removeClass('show');
         options_wrapper.css('top', '-' + options_wrapper.css('height'));
-        dropdown.find('.show-wrapper').show();
+        if (!this.detail) {
+            dropdown.find('.show-wrapper').show();
+        }
         // Stop checking for clicks outside
         delete closeFunctions['#' + this.id + ' .option'];
     }
@@ -285,6 +308,17 @@ class Dropdown extends JqueryElement {
         }
         value_element.text(this.text);
         this.element.trigger(":change");
+    }
+
+    set_detail() {
+        this.detail = true;
+        this.element.addClass('detail');
+    }
+
+    set_update() {
+        this.detail = false;
+        this.element.removeClass('detail');
+        this.styles();
     }
 
     styles() {
@@ -459,6 +493,7 @@ class MultiLevelDropdown extends Dropdown {
     }
 
     build() {
+        this.element.empty();
         var value = $('<p/>')
             .addClass('value')
             .text('Value');
@@ -676,7 +711,8 @@ class MultiLevelObjectSelect extends MultiLevelDropdown {
         var text = '';
         this.element.find('.option').each(function() {
             var all_checked = true;
-            $(this).find('.sub-options').find('input').each(function() {
+            var sub_options = $(this).find('.sub-options').find('input');
+            sub_options.each(function() {
                 if (select.value.includes(parseInt($(this).val())) || select.value.includes($(this).val())) {
                     $(this).prop('checked', true);
                     text = $(this).siblings('p').text();
@@ -686,7 +722,7 @@ class MultiLevelObjectSelect extends MultiLevelDropdown {
                     $(this).prop('checked', false);
                 }
             });
-            if (all_checked) {
+            if (all_checked && sub_options.length) {
                 $(this).find('input').first().prop('checked', true);
             }
         });
@@ -709,6 +745,12 @@ class MultiLevelObjectSelect extends MultiLevelDropdown {
     }
 
     select(option, e) {
+        var sub_options = $(option).find('.sub-option');
+        console.log(sub_options);
+        if ($(option).hasClass('option') && !sub_options.length) {
+             $(option).find('input').prop('checked', false);
+            return
+        }
         super.select(option, e);
         this.update_display();
     }
@@ -1058,6 +1100,16 @@ class FileInput extends JqueryElement {
 	this.element.trigger(':change');
     }
 
+    set_detail() {
+        this.element.find('.file-upload').hide();
+        this.element.find('i').hide();
+    }
+
+    set_update() {
+        this.element.find('.file-upload').show();
+        this.element.find('i').show();
+    }
+
     delete_file(delete_btn) {
         this.delete_files.push($(delete_btn).attr("value"));
         $(delete_btn).closest('.file').remove();
@@ -1143,6 +1195,16 @@ class LinkInput extends JqueryElement {
         this.element.trigger(":change");
     }
 
+    set_detail() {
+        this.element.find('.link-upload').hide();
+        this.element.find('i').hide();
+    }
+
+    set_update() {
+        this.element.find('.link-upload').show();
+        this.element.find('i').show();
+    }
+
     modal() {
         this.modal_element.find('input').val(''); // reset values if modal has been used
         this.modal = new Modal(this.modal_id, {action_func:this.dispatch, action_data:{object: this, func: this.add_link}});
@@ -1223,6 +1285,16 @@ class DatePicker extends JqueryElement{
         this.update_value();
     }
 
+    set_detail() {
+        this.element.find('.date-select-btn').addClass('inactive');
+        this.element.find('.show-wrapper').hide();
+    }
+
+    set_update() {
+        this.element.find('.date-select-btn').removeClass('inactive');
+        this.element.find('.show-wrapper').show();
+    }
+
     update_value() {
         var year = this.value.slice(0,4);
         var month = this.value.slice(5,7);
@@ -1236,8 +1308,7 @@ class DatePicker extends JqueryElement{
         this.element.addClass('shadow');
         this.element.find('.select-container').addClass('visible');
         this.element.find('.date-select').addClass('show');
-        this.element.find('.date-select-btn').off("click");
-        this.element.find('.show-wrapper').hide();
+        this.element.find('.show-wrapper').off('click');
         closeFunctions['.date-select'] = this;
     }
 
@@ -1245,7 +1316,7 @@ class DatePicker extends JqueryElement{
         this.element.removeClass('shadow');
         this.element.find('.select-container').removeClass('visible');
         this.element.find('.date-select').removeClass('show');
-        this.element.find('.show-wrapper').show();
+        this.listeners();
         delete closeFunctions['.date-select'];
     }
 
@@ -1343,6 +1414,9 @@ class DatePicker extends JqueryElement{
     }
 
     listeners() {
+        var events = 'click';
+        this.element.off(events);
+        this.element.find('*').off(events);
         this.element.find('.show-wrapper').click({func: this.show, object: this}, this.dispatch);
         this.element.find('.next').click({func: this.next_month, object: this}, this.dispatch);
         this.element.find('.previous').click({func: this.previous_month, object: this}, this.dispatch);
@@ -1471,6 +1545,14 @@ class TimePicker extends JqueryElement {
         this.element.trigger(":change");
     }
 
+    set_detail() {
+        this.element.find('i').addClass('inactive');
+    }
+
+    set_update() {
+        this.element.find('i').removeClass('inactive');
+    }
+
     listeners() {
         this.element.find('.fas.fa-angle-up').click({func: this.change_time, object: this}, this.dispatch);
         this.element.find('.fas.fa-angle-down').click({func: this.change_time, object: this}, this.dispatch);
@@ -1562,7 +1644,6 @@ class MenuSiteSelect extends JqueryElement {
             });
             if (all_sites) {
                 $(this).children('input').first().prop('checked', true);
-                console.log($(this).children('input').first());
             } else {
                 $(this).children('input').first().prop('checked', false);
                 all_chapters = false;
@@ -1696,6 +1777,14 @@ class ColorPicker extends JqueryElement {
         this.element.trigger(":change");
     }
 
+    set_detail() {
+        this.element.find('.show-wrapper').hide();
+    }
+
+    set_update() {
+        this.element.find('.show-wrapper').show();
+    }
+
     styles() {
         $('.color').each(function() {
             var color = $(this).attr('data-color');
@@ -1714,7 +1803,7 @@ class ColorPicker extends JqueryElement {
     }
 
     listeners() {
-        this.element.click({func: this.toggle, object: this}, this.dispatch);
+        this.element.find('.show-wrapper').click({func: this.toggle, object: this}, this.dispatch);
         this.element.find('.color').click({func: this.select, object: this}, this.dispatch);
     }
 }

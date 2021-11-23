@@ -12,6 +12,7 @@ class AttendanceSelect extends JqueryElement {
         super(id, parent);
         this.default_value = [];
         this.value = this.default_value;
+        this.detail = false;
         this.data = [];
         this.val_to_text = {};
         this.form_field = $('#' + field_id);
@@ -26,7 +27,9 @@ class AttendanceSelect extends JqueryElement {
             this.build_form_option(this.data[i]);
         }
         this.update_display();
-        this.item_listeners();
+        if (!this.detail) {
+            this.item_listeners();
+        }
     }
 
     select(option, e) {
@@ -70,14 +73,28 @@ class AttendanceSelect extends JqueryElement {
         this.element.trigger(':change');
     }
 
+    set_update() {
+        this.detail = false;
+        this.element.find('input').attr('onclick', '');
+        this.item_listeners();
+    }
+
+    set_detail() {
+        this.detail = true;
+        this.listeners_off();
+        this.element.find('input').attr('onclick', 'return false');
+    }
+
     build_member(member_data) {
         var item = $('<div/>')
             .addClass('attendance-item')
-        item.append(
-            $('<input/>')
-                .attr('type', 'checkbox')
-                .val(member_data[1])
-        );
+        var input = $('<input/>')
+            .attr('type', 'checkbox')
+            .val(member_data[1])
+        if (this.detail) {
+            input.attr('onclick', 'return false');
+        }
+        item.append(input);
         item.append(
             $('<a/>')
                 .text(member_data[0])
@@ -94,10 +111,20 @@ class AttendanceSelect extends JqueryElement {
         if (this.value.includes(member_data[1])) {
             option.prop('selected', true);
         }
+        if (this.parent.parent.detail) {
+            option.attr('onclick', 'return false');
+        }
         this.form_field.append(option);
     }
 
+    listeners_off() {
+        var events = 'click';
+        this.element.off(events);
+        this.element.find('*').off(events);
+    }
+
     item_listeners() {
+        this.listeners_off();
         this.element.find('.attendance-item').click({func: this.select, object: this}, this.dispatch);
     }
 }
@@ -167,6 +194,20 @@ class AttendanceSlide extends JqueryElement {
         this.element.trigger(':change');
     }
 
+    set_update() {
+        this.detail = false;
+        this.attendance_select.set_update();
+        this.list_select.set_update();
+        this.update_module_info();
+    }
+
+    set_detail() {
+        this.detail = true;
+        this.attendance_select.set_detail();
+        this.list_select.set_detail();
+        this.update_module_info();
+    }
+
     modal_select(option, e) {
         // this is modal
         var modal = this
@@ -183,7 +224,9 @@ class AttendanceSlide extends JqueryElement {
                 all_checked = false;
             }
         });
-        this.element.find('input.all').prop('checked', all_checked);
+        if (!all_checked) {
+            this.element.find('input.all').prop('checked', false);
+        }
     }
 
     module_modal(elem) {
@@ -277,8 +320,13 @@ class AttendanceSlide extends JqueryElement {
         var attendees = JSON.parse(this.value)[id];
         var title = this.parent.training_select.val_to_text[id];
         var container = $('<div/>');
-        var modal_text = $('<a/>').attr('href', '#')
-                         .attr('data-pk', id).attr('data-title', title);
+        var modal_text;
+        if (this.detail) {
+            modal_text = $('<p/>').attr('data-pk', id).attr('data-title', title);
+        } else {
+            modal_text = $('<a/>').attr('href', '#')
+                             .attr('data-pk', id).attr('data-title', title);
+        }
         if (attendees == 'all') {
             modal_text.text('All');
         } else {
@@ -324,6 +372,16 @@ class StartTime extends JqueryElement {
         this.time_select.set_value(value.slice(11, 19), true, false);
         this.listeners();
         this.update_value();
+    }
+
+    set_detail() {
+        this.date_select.set_detail();
+        this.time_select.set_detail();
+    }
+
+    set_update() {
+        this.date_select.set_update();
+        this.time_select.set_update();
     }
 
     listeners_off() {
@@ -385,7 +443,7 @@ class TypeSelect extends JqueryElement {
         this.value = value;
         this.input.val(value);
         expandTitle('Type');
-	this.element.trigger(':change');
+	    this.element.trigger(':change');
     }
 
     show() {
@@ -428,11 +486,26 @@ class TypeSelect extends JqueryElement {
         this.element.trigger(':change');
     }
 
+    set_detail() {
+        this.listeners_off();
+    }
+
+    set_update() {
+        this.listeners();
+    }
+
     unfocus() {
         this.input.attr("readonly", "readonly");
     }
 
+    listeners_off() {
+        var events = 'click blur change';
+        this.element.off(events);
+        this.element.find('*').off(events);
+    }
+
     listeners() {
+        this.listeners_off();
         this.element.click({func: this.toggle, object: this}, this.dispatch);
         this.element.find('.type').click({func: this.select, object: this}, this.dispatch);
         this.input.on("blur", {func: this.unfocus, object: this}, this.dispatch);
@@ -480,6 +553,7 @@ class MeetingInfo extends JqueryElement {
         super(id, parent);
         this.pk = 0;
         this.changes_saved = true;
+        this.detail = false;
         this.container = this.element.parent();
         this.site_select = new Dropdown('meeting_site_select', [], {type: 'radio'});
         this.type_select = new TypeSelect('type_select');
@@ -514,9 +588,11 @@ class MeetingInfo extends JqueryElement {
         this.listeners();
     }
 
-    show(pk, date) {
+    show(pk, date, detail=false) {
         this.pk = null; // reset pk
         this.form.erase_data();
+
+        this.detail = detail;
 
         // Set site select options
         var sites = this.get_site_select_data();
@@ -533,6 +609,7 @@ class MeetingInfo extends JqueryElement {
             var first_site_value = this.site_select.element.find('.option').first().find('input').val();
             this.site_select.set_value(first_site_value);
             this.date_select.set_value([date]);
+            this.set_update();
         }
 
 
@@ -546,10 +623,43 @@ class MeetingInfo extends JqueryElement {
             this.discard_changes_modal();
             return
         }
+        this.changes_saved = true;
         this.attendance.hide();
         this.container.removeClass('show');
         this.attendance.element.removeClass('modal-shadow');
         this.parent.update_url(element);
+    }
+
+    set_detail() {
+        this.detail = true;
+        this.element.find('.buttons.detail').show();
+        this.element.find('.buttons.update').hide();
+        var custom_fields = this.form.custom_fields;
+        for (const field in custom_fields) {
+            if (typeof custom_fields[field].set_detail == 'function') {
+                custom_fields[field].set_detail();
+            }
+        }
+        this.element.find('input, textarea').attr('readonly', true);
+        this.element.find('input, textarea').css('border', '0px');
+        this.element.find('#meeting_delete_btn').attr('style', 'display: none !important');
+        //this.changes_saved = true;
+    }
+
+    set_update() {
+        this.detail = false;
+        this.element.find('.buttons.update').show();
+        this.element.find('.buttons.detail').hide();
+        var custom_fields = this.form.custom_fields;
+        for (const field in custom_fields) {
+            if (typeof custom_fields[field].set_update == 'function') {
+                custom_fields[field].set_update();
+            }
+        }
+        this.element.find('input:not(#id_type), textarea').attr('readonly', false);
+        this.element.find('input, textarea').css('border', '');
+        this.element.find('#meeting_delete_btn').css('display', '');
+        //this.changes_saved = true;
     }
 
     discard_changes_modal() {
@@ -595,6 +705,11 @@ class MeetingInfo extends JqueryElement {
     initialize_form(data) {
         this.form.set_data(data.meeting_data);
         this.changes_saved = true;
+        if (this.detail) {
+            this.set_detail();
+        } else {
+            this.set_update();
+        }
     }
 
     submit_form() {
@@ -647,6 +762,7 @@ class MeetingInfo extends JqueryElement {
         this.form.set_data(data);
         this.changes_saved = true;
         this.element.trigger(":reload");
+        this.set_detail();
     }
 
     delete_meeting_modal() {
@@ -793,7 +909,8 @@ class MeetingInfo extends JqueryElement {
         this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
         this.container.find('.spacer').click({func: this.hide, object: this}, this.dispatch);
         // this.element.find('.back').click({func: this.parent.update_url, object: this.parent}, this.dispatch);
-        this.element.find('#attendance_btn').click({func: this.parent.update_url, object: this.parent}, this.dispatch);
+        this.element.find('#update_btn').click({func: this.set_update, object: this}, this.dispatch);
+        this.element.find('.attendance-btn').click({func: this.parent.update_url, object: this.parent}, this.dispatch);
         this.element.find('#meeting_submit_btn').click({func: this.submit_form, object: this}, this.dispatch);
         this.element.find('#meeting_delete_btn').click({func: this.delete_meeting_modal, object: this}, this.dispatch);
         this.form.element.on(':change', function() {meeting_info.changes_saved = false});
@@ -989,42 +1106,28 @@ class Calendar extends JqueryElement {
 
         query['sites'] = this.site_select.value;
 
-        if ($(change).hasClass('calendar-meeting')) {
-            query['meeting'] = $(change).attr('data-pk');
-        } else if ($(change).hasClass('add-meeting-btn')) {
-            var year = this.year.text();
-            var month = this.month.attr('data-number');
-            var day = $(change).siblings('.monthnum').text().padStart(2, '0');
-            var date = [year, month, day].join('-');
-            query['new_meeting'] = date;
-        } else if (old_query.hasOwnProperty('meeting') &&  // Meeting was being viewed
-            !$(change).hasClass('back') &&  // Hide meeting button
-            !$(change).hasClass('spacer') &&  // Outside of slide
-            !$(change).hasClass('action')) {  // Confirm discard changes
-            query['meeting'] = old_query['meeting'];  // Keep meeting in query
-        }
-
-        if ($(change).attr('id') == 'attendance_btn' && !old_query.hasOwnProperty('attendance')) {
-            query['attendance'] = 'true';
-        }
-
-        var url = '?';
-        var ii = 0;
-        for (const key in query) {
-            url += (ii) ? '&' : '';
-            if (Array.isArray(query[key])) {
-                for (let i = 0; i < query[key].length; i++) {
-                    url += (i) ? '&' : '';
-                    url += key + '[]=' + query[key][i].toString();
-                }
-                if (!query[key].length) {
-                    url += key + '[]=';
-                }
-            } else {
-                url += key + '=' + query[key].toString();
+        if (change != undefined) {
+            if ($(change).hasClass('calendar-meeting')) {
+                query['meeting'] = $(change).attr('data-pk');
+            } else if ($(change).hasClass('add-meeting-btn')) {
+                var year = this.year.text();
+                var month = this.month.attr('data-number');
+                var day = $(change).siblings('.monthnum').text().padStart(2, '0');
+                var date = [year, month, day].join('-');
+                query['new_meeting'] = date;
+            } else if (old_query.hasOwnProperty('meeting') &&  // Meeting was being viewed
+                !$(change).hasClass('back') &&  // Hide meeting button
+                !$(change).hasClass('spacer') &&  // Outside of slide
+                !$(change).hasClass('action')) {  // Confirm discard changes
+                query['meeting'] = old_query['meeting'];  // Keep meeting in query
             }
-            ii++;
+
+            if ($(change).hasClass('attendance-btn') && !old_query.hasOwnProperty('attendance')) {
+                query['attendance'] = 'true';
+            }
         }
+
+        var url = makeQuery(query);
         history.pushState({}, '', url);
         $(window).trigger('popstate');
     }
@@ -1171,7 +1274,7 @@ function update_page() {
         // If the meeting isn't alread shown
         if (calendar.meeting_info.pk != query.meeting ||
             !calendar.meeting_info.container.hasClass('show')) {
-            calendar.meeting_info.show(query.meeting);
+            calendar.meeting_info.show(query.meeting, null, detail=true);
         }
     }
     if (query.attendance) {

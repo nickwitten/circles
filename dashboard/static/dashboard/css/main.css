@@ -484,6 +484,14 @@ header a{
     padding: 4px 0;
     border-bottom: 1px solid #dee2e6;
 }
+.multi-level-dropdown.detail,
+.dropdown.detail {
+    border: 0px;
+}
+.multi-level-dropdown.detail i,
+.dropdown.detail i {
+    display: none;
+}
 .multi-level-dropdown .value,
 .dropdown .value {
     min-height: calc(8px + 0.3vw);
@@ -496,6 +504,13 @@ header a{
     transition: all 0.2s ease-in-out;
 }
 .multi-level-dropdown .pointer.rotate,
+.dropdown .pointer.rotate {
+    transform: rotate(-90deg);
+}
+.multi-level-dropdown.detail .show-wrapper,
+.dropdown.detail .show-wrapper {
+    display: none !important;
+}
 .dropdown .pointer.rotate {
     transform: rotate(-90deg);
 }
@@ -578,7 +593,7 @@ header a{
     vertical-align: baseline;
 }
 .dropdown-label p {
-    margin-top: 4px;
+    margin: 4px 0;
 }
 
 
@@ -591,6 +606,10 @@ header a{
 .object-select .multi-level-dropdown {
     flex-grow: 1;
     width: 100%;
+}
+.object-select.detail .dropdown,
+.object-select.detail .multi-level-dropdown {
+    display: none;
 }
 .object-select .dropdown.half,
 .object-select .multi-level-dropdown.half {
@@ -801,6 +820,12 @@ header a{
 .date-picker .date-select-btn {
     padding: 0.55rem 0.5rem 0.45rem 0.5rem;
 }
+.date-picker i.inactive {
+    opacity: 0;
+}
+.date-picker i.inactive:hover {
+    cursor: default;
+}
 .date-picker .value {
     margin: 0.25em;
 }
@@ -854,6 +879,15 @@ header a{
 .date-picker .year {
     font-size: calc(10px + 0.3vw);
     margin-bottom: 0.25rem;
+}
+.date-picker .day-labels {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 1px;
+}
+.date-picker .day-label {
+    flex-grow: 1;
 }
 .date-picker .calendar-week {
     display: flex;
@@ -1038,6 +1072,12 @@ header a{
     visibility: hidden;
     color: #a7a8ab;
     font-size: small;
+}
+.time-select i.inactive {
+    opacity: 0;
+}
+.time-select i.inactive:hover {
+    cursor: default;
 }
 .time-select:hover i {
     visibility: visible;

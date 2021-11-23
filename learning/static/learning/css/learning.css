@@ -208,6 +208,10 @@ h3 {
     outline: 0;
     font-size: calc(8px + 0.3vw);
     width: 100%;
+    padding: 0;
+}
+.fields-table textarea {
+    padding 0;
 }
 .fields-table .multi-level-dropdown,
 .fields-table .dropdown {
@@ -218,6 +222,7 @@ h3 {
     border: 1px solid #dee2e6;
     width: 100%;
     font-size: calc(8px + 0.3vw);
+    margin-top: 0.15rem;
 }
 
 .facilitators .add-facilitator-btn {
@@ -227,8 +232,14 @@ h3 {
     padding-top: 6px;
     font-size: calc(9px + 0.1vw);
 }
+.facilitators.detail i {
+    display: none;
+}
 .facilitators input {
     padding-right: 2rem;
+}
+.facilitators.detail input {
+    display: none;
 }
 .facilitators .autocomplete .instruction {
     display: flex;
@@ -244,6 +255,9 @@ h3 {
     margin-top: 0.5rem;
     max-height: 30px;
     overflow-y: auto;
+}
+.facilitators.detail .facilitator-list {
+    margin: 0;
 }
 .facilitators .facilitator-list .profile {
     display: flex;

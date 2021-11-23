@@ -89,6 +89,7 @@ def post_meeting_info(request, pk):
             meeting = models.Meeting.objects.get(pk=pk)
             form = forms.MeetingCreationForm(data=form_dict, user=request.user, instance=meeting)
             if form.is_valid():
+                print(form.cleaned_data)
                 base_meeting = form.save(commit=False)
                 base_meeting.save(files=files)
                 form.save_m2m()
@@ -116,6 +117,7 @@ def post_meeting_info(request, pk):
                 print(form.errors)
                 return JsonResponse({})
         data = base_meeting.to_dict() if base_meeting else created_meetings[0].to_dict()
+        print(data)
         return JsonResponse(data)
 
 @login_required

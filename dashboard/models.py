@@ -35,7 +35,8 @@ class JsonM2MFieldModelMixin:
             except Exception as e:
                 return model
             items = [item for item in field_value if 'pk' in item]
-            attached_models = self.get_attached_models(field[1], items)
+            pks = [item['pk'] for item in items]
+            attached_models = self.get_attached_models(field[1], pks)
             self.remove_invalid_items(field, field_value, attached_models, items)
             self.set_attached_models(field, attached_models)
         return super().save()

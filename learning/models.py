@@ -28,8 +28,7 @@ class Programming(FileFieldMixin, JsonM2MFieldModelMixin, DictMixin, models.Mode
     def __str__(self):
         return f'{self.title}'
 
-    def get_attached_models(self, klass, items):
-        pks = [item['pk'] for item in items]
+    def get_attached_models(self, klass, pks):
         if klass == members_models.Profile:
             # Check that profile is in same site as model when adding
             profiles = klass.objects.filter(pk__in=pks)

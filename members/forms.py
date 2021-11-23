@@ -3,8 +3,6 @@ from bootstrap_modal_forms.forms import BSModalModelForm
 from .models import Profile, Residence, Role, Child, ChildInfo, Site, FilterSet
 from django.contrib.auth.models import User
 from .data import form_choices_text
-from phonenumber_field.formfields import PhoneNumberField
-from phonenumber_field.widgets import PhoneNumberPrefixWidget
 
 
 class FieldStyleMixin:
@@ -35,7 +33,6 @@ class RoleCreationForm(FieldStyleMixin, BSModalModelForm):
 class ProfileCreationForm(FieldStyleMixin, forms.ModelForm):
     site = forms.ModelChoiceField(None)
     position = forms.ChoiceField(choices=[('', '---------')] + Role.position_choices)
-    cell_phone = PhoneNumberField(widget=PhoneNumberPrefixWidget(initial='US'))
 
     class Meta:
         model = Profile

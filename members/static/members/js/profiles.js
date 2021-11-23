@@ -234,7 +234,9 @@ function update_tools_cookies() {
   document.cookie = "filterinput=" + $('#filter_input').val();
   document.cookie = "sortby=" + $('#id_sortby').val();
   document.cookie = "datadisplayed=" + $('#data_displayed_container select').val();
-  document.cookie = "active_list=" + $('#list_select').val();
+  var active_list = $('#list_select').val();
+  active_list = (active_list) ? active_list : '';
+  document.cookie = "active_list=" + active_list;
   var active_list_pk = $("#list_select").find('option:selected').attr('data-pk');
   active_list_pk = (active_list_pk) ? active_list_pk : '';
   document.cookie = "active_list_pk=" + active_list_pk;
@@ -625,7 +627,7 @@ function getFiltersetForm() {
 // Add a filterset's filters to active filters
 function activateFilterset(option_val, pk) {
   // Get the filterset from the option value
-  if (option_val) {
+  if (option_val && option_val != 'null') {
     var value = JSON.parse(option_val);
   } else {
     var value = {"title":null,"filters":[]};
@@ -635,7 +637,7 @@ function activateFilterset(option_val, pk) {
   // Add the title
   $("#list_title").empty(); // Clear the title
   $("#delete_list_btn_container").empty(); // Clear button
-  if (option_val) { // If deselecting a list add no title
+  if (option_val && option_val != 'null') { // If deselecting a list add no title
     addListTitleInputHTML(title); // Add the title input to the page
     addListDeleteBtnHTML(pk); // Add the delete button
   }
