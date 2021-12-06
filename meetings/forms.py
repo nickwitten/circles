@@ -6,7 +6,7 @@ from . import models
 
 
 class MeetingCreationForm(CustomFormMixin, forms.ModelForm):
-    type_choices = ['Big View', 'Test', 'Custom Type']
+    type_choices = ['Weekly', 'Big View', 'Trianing', 'Custom Type']
 
     class Meta:
         model = models.Meeting

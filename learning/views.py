@@ -95,10 +95,11 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
             raise PermissionDenied()
         temp_site = {
             'site': (str(site), site.pk),
-            'programming': [(str(programming), programming.pk) for programming in site.programming.all()],
+            'programming': [(str(programming), programming.pk) for programming in \
+                            site.programming.all().order_by('title')],
             'themes': [],
         }
-        themes = site.themes.all()
+        themes = site.themes.all().order_by('title')
         for theme in themes:
             try:
                 required_for = json.loads(theme.required_for)
@@ -108,7 +109,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
                 'theme': (str(theme), theme.pk, required_for),
                 'modules': []
             }
-            for module in theme.modules.all():
+            for module in theme.modules.all().order_by('title'):
                 try:
                     required_for = json.loads(module.required_for)
                 except:
