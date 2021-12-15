@@ -1,0 +1,341 @@
+#content_container {
+    position: relative;
+    overflow: hidden;
+}
+
+#calendar_content {
+    position: relative;
+    padding: 0 2rem 0 0;
+    height: 95%;
+    overflow: hidden;
+}
+
+#calendar_content .load-container {
+    position: relative;
+    height: 80%;
+}
+#calendar_content .loading {
+    z-index: 0;
+}
+#calendar_content .add-meeting-btn {
+    font-size: calc(50% + 0.3vw);
+    padding: calc(0.25vh + 0.25vw);
+    float: left;
+    visibility: hidden;
+}
+#calendar_content .calendar-day:hover .add-meeting-btn {
+    visibility: visible;
+}
+#calendar_content .meetings-container {
+    position: absolute;
+    padding-bottom: 0.5vh;
+    bottom: 0;
+    width: 100%;
+    max-height: 100%;
+    overflow: auto;
+}
+#calendar_content .calendar-meeting {
+    width: calc(30% + 7.5vw);
+    padding: 0.3vh;
+    margin: 0.2vh 0.2vw;
+    border-radius: 2px;
+}
+#calendar_content .calendar-meeting:hover {
+  -webkit-box-shadow: 3px 3px 3px 3px #ccc;  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+  -moz-box-shadow:   3px 3px 3px 3px #ccc;  /* Firefox 3.5 - 3.6 */
+  box-shadow:        3px 3px 3px 3px #ccc;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
+}
+#calendar_content .spacer {
+    visibility: hidden;
+}
+#menu_btn {
+    position: absolute;
+    top: 6px;
+    left: 10px;
+}
+
+
+
+
+#meeting_container {
+    display: flex;
+    flex-flow: row;
+    position: absolute;
+    width: 100vw;
+    height: 100%;
+    z-index: 1;
+    opacity: 0;
+    left: -100%;
+    transition: all 0.3s ease-in-out;
+}
+#meeting_container.show {
+    opacity: 1;
+    left: 0;
+}
+#meeting_container .spacer {
+    flex-grow: 1;
+}
+#meeting_info_container {
+    position: absolute;
+    height: 100%;
+    width: 50%;
+    min-width: 180px;
+    background-color: white;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+    z-index: 3;
+}
+#meeting_info_container .loading {
+    border-radius: 5px;
+}
+#meeting_form {
+    display: flex;
+    align-items: center;
+    flex-flow: column;
+    height: 100%;
+}
+#meeting_form #meeting_header {
+    position: relative;
+    padding-right: 40px;
+    max-width: 100%;
+}
+#meeting_form .label {
+    padding-right: 1rem;
+    white-space: nowrap;
+}
+#meeting_form .field {
+    width: 100%;
+}
+#meeting_form .field input,
+#meeting_form .field textarea {
+    padding: 0;
+}
+#meeting_form #id_attendees,
+#meeting_form #id_lists,
+#meeting_form #id_programming,
+#meeting_form #id_modules {
+    display: none;
+}
+
+
+
+
+#type_select .input-container {
+    max-width: 100%;
+    overflow-x: auto;
+}
+#type_select .input-wrapper {
+    position: relative;
+    width: fit-content;
+}
+
+
+
+#type_select .options {
+    position: absolute;
+    visibility: hidden;
+    z-index: 1;
+    top: 100%;
+    left: 50%;
+    right: 50%;
+    transform: translate(-50%, 0);
+    width: 100%;
+    min-width: 125px;
+    height: fit-content;
+    overflow: hidden;
+}
+#type_select .options-wrapper {
+    position: relative;
+    bottom: 200px;
+    display: flex;
+    flex-flow: column nowrap;
+    background-color: white;
+    transition: all 0.2s ease-in-out;
+}
+#type_select .show {
+    bottom: 0;
+}
+#type_select .type {
+    border: 1px solid #dee2e6;
+    text-align: center;
+    padding: 0.5em;
+}
+
+
+
+#meeting_delete_btn {
+    position: absolute;
+    right: 0px;
+    bottom: 10px;
+}
+.confirm-delete,
+.modal {
+    position: absolute;
+    display: flex;
+    flex-flow: row wrap;
+    z-index: 4;
+    background-color: white;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 20%;
+    width: 25%;
+    min-width: 220px;
+    -webkit-box-shadow: 3px 5px 12px 0px #585454;
+    -moz-box-shadow: 3px 5px 12px 0px #585454;
+    box-shadow: 3px 5px 12px 0px #585454;
+}
+.confirm-delete h5 {
+    text-align: center;
+    width: 100%;
+    padding: 1em 0.5em;
+}
+.confirm-delete .delete-btn {
+    position: absolute;
+    bottom: 0.5em;
+    right: 3em;
+    margin: 0.5em auto;
+}
+.confirm-delete .cancel-btn {
+    position: absolute;
+    bottom: 0.5em;
+    left: 3em;
+    margin: 0.5em auto;
+}
+
+
+
+
+.color-select {
+    position: absolute;
+    right: 20px;
+}
+
+
+
+#datetime_container {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: center;
+    margin: 0.25em 0;
+    width: 100%;
+}
+#meeting_date {
+    width: calc(85px + 10vw);
+    justify-content: center;
+    border: none;
+}
+#meeting_date .select-container {
+    z-index: 1;
+}
+#meeting_date .value,
+#meeting_time p {
+    font-size: calc(12px + 0.3vw);
+    margin: 0;
+}
+
+
+
+#meeting_content {
+    width: 90%;
+    display: flex;
+    flex-flow: column;
+    flex-grow:1;
+}
+#meeting_content > * {
+    margin-bottom: 0.25rem;
+}
+#meeting_content p {
+    font-size: calc(8px + 0.3vw);
+}
+#meeting_content input {
+    font-size: calc(8px + 0.3vw);
+    border: none;
+    outline: none;
+    border-bottom: 1px solid #dee2e6;
+    width: 100%;
+}
+#meeting_content .option input {
+    width: fit-content;
+}
+#meeting_content textarea {
+    border: 1px solid #dee2e6;
+    outline: none;
+    width: 100%;
+}
+#meeting_content .buttons {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+}
+#meeting_content #id_notes {
+    flex-grow: 1;
+    resize: none;
+}
+#meeting_content #file_input input {
+    position: absolute;
+    visibility: hidden;
+}
+#meeting_content .load-container {
+    position: relative;
+}
+#meeting_content .spinner {
+    height: 10px;
+    width: 10px;
+}
+
+
+
+
+
+#attendance_container {
+    position: absolute;
+    display: flex;
+    flex-flow: column;
+    background-color: white;
+    height: 100%;
+    width: 25%;
+    min-width: 187px;
+    left: -100%;
+    z-index: 2;
+    padding: 2rem 1rem;
+    transition: all 0.2s ease-in-out;
+}
+#attendance_container.show {
+    left: 50%;
+}
+#attendance_container.modal-shadow {
+    -webkit-box-shadow: 0 0 0 999em rgba(0, 0, 0, 0.4);  /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+    -moz-box-shadow:   0 0 0 999em rgba(0, 0, 0, 0.4);  /* Firefox 3.5 - 3.6 */
+    box-shadow:        0 0 0 999em rgba(0, 0, 0, 0.4);  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
+}
+#attendance_container,
+#attendance_container .loading {
+    border-radius: 5px;
+}
+#attendance_container #list_select {
+    justify-content: center;
+}
+.attendance-select {
+    display: flex;
+    flex-flow: row wrap;
+    align-content: flex-start;
+    flex-grow: 1;
+    margin: 1rem 0;
+    overflow-y: auto;
+}
+.attendance-select .attendance-item {
+    display: flex;
+    width: 100%;
+    padding: 0.5em;
+    border: 1px solid #dee2e6;
+}
+.attendance-select a {
+    margin: 0 0.5em;
+}
+#attendance_container .messages a,
+#attendance_container .messages p {
+    font-size: calc(8px + 0.3vw);
+    display: inline;
+}

@@ -1,0 +1,368 @@
+label, select, input, .form-control {
+  font-size: calc(8px + 0.3vw);
+  padding: 3px 5px;
+}
+h6 {
+  font-size: calc(12px + 0.3vw);
+}
+
+                    /* Profile View Styles */
+
+#profile_content {
+  margin-top: 20px;
+  min-height: 430px;
+  min-width: 350px;
+  position: relative;
+}
+#profile_content .left {
+  position: static;
+}
+#profile_content .row {
+  margin-left: 0;
+  margin-right: 0;
+}
+@media screen and (max-width: 770px) {
+    #profile_content .half {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+.profile-container{
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: white;
+}
+.other-container {
+  overflow: auto;
+  max-height: 15rem;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-between;
+    flex-flow: row-reverse;
+    padding: 15px;
+    width: 100%;
+}
+
+#create_profile_modal {
+    display: flex;
+    flex-flow: column;
+    z-index: 5;
+    background-color: white;
+    border-radius: 5px;
+    padding: 1rem 0;
+}
+#create_profile_modal div {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+}
+#create_profile_modal label {
+    font-size: calc(12px + 0.3vw);
+    margin: auto 0;
+    margin-right: 20px;
+    white-space: nowrap;
+}
+#create_profile_modal input,
+#create_profile_modal select {
+    width: calc(100px + 15vw);
+}
+
+#main_container .main-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#id_image {
+    position: absolute;
+    left: 999px;
+}
+.img-wrapper {
+    display: inline-flex;
+    position: relative;
+    border-radius: 50%;
+    width: 30%;
+    overflow: hidden;
+}
+#edit_pic {
+    position: absolute;
+    background-color: black;
+    opacity: 0.5;
+    margin: 0;
+    top: 65%;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+#edit_pic i {
+    font-size: 15px;
+}
+
+.field-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 35px;
+    padding: 5px 2px;
+}
+.field-value {
+    min-width: 50%;
+}
+.field-label {
+    white-space: nowrap;
+    margin-right: 5px;
+}
+.field-container select,
+.field-container input,
+.field-container select.form-control:not([size]):not([multiple])  {
+    height: fit-content;
+}
+.field-half,
+.field-third {
+    display: inline-flex;
+    margin: 0;
+    padding-right: 3px;
+}
+.field-half {
+    width: 50%;
+}
+.field-half .field-value {
+    min-width: 32%;
+}
+.field-third {
+    width: 32%;
+}
+.field-third .field-value {
+    min-width: 45%;
+}
+
+#housing_container,
+#roles_container {
+    display: flex;
+    flex-flow: column nowrap;
+}
+#housing_container .residence_container,
+#roles_container .role-container {
+    display: flex;
+}
+#housing_container .residence-left,
+#roles_container .role-left {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: space-between;
+    align-items: center;
+    width: 40%;
+}
+#housing_container .create-residence,
+#roles_container .create-role {
+    width: fit-content;
+    align-self: flex-end;
+}
+#roles_container .field-container p {
+    margin: 15px
+}
+
+#children_container,
+#trainings_container {
+    display: flex;
+    flex-flow: column nowrap;
+}
+#children_container .child-container {
+    display: flex;
+    justify-content: space-between;
+}
+#children_container .name {
+    margin: 15px;
+}
+#children_container .age{
+    margin: 15px;
+    min-width: 50%;
+}
+#children_container .btn,
+#trainings_container .btn {
+    align-self: flex-end
+}
+#trainings_container .training-container {
+    display: flex;
+}
+#trainings_container .subject,
+#trainings_container .date {
+    width: 38%;
+}
+#trainings_container .subject,
+#trainings_container .date,
+#trainings_container .training-container .modal-trigger {
+    margin: 5px 0;
+    padding-left: 15px;
+}
+#trainings_container .module {
+    padding-left: 30px;
+}
+#trainings_container h6.subject,
+#trainings_container h6.date {
+    margin: 5px 0;
+}
+#trainings_container .edit-buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 40px;
+}
+
+.error{
+  color:red;
+  display:inline;
+}
+
+.no-info {
+  margin: auto;
+  padding: calc(20px + 2vw);
+  font-size: calc(15px + 0.3vw);
+  width: fit-content;
+}
+
+#childInfoSlide {
+  position: absolute;
+  z-index: 2;
+  transition: all .3s ease-out;
+  margin: 2rem 0;
+  top: -100%;
+  opacity: 0;
+  transform: translate(-50%);
+  border-radius: 5px;
+  min-width: 372px;
+}
+#childInfoSlide.show {
+  top: 0;
+  opacity: 1;
+}
+.children-container {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  background-color: white;
+}
+.icon-btn {
+  border:none;
+  background:none;
+  outline: none;
+}
+button:focus {
+  outline:0;
+}
+
+            /*Profile Search Styles*/
+
+#profile_search_content {
+  display: flex;
+  flex-flow: column;
+  overflow-y: scroll;
+  height: 88vh;
+  min-width: 350px;
+  min-height: 430px;
+  padding: 10px 20px;
+  margin: 10px auto;
+}
+#top_search_container input,
+#tools_btn,
+#list_select {
+  font-size: 14px;
+}
+#filter_by {
+}
+#filter_input {
+}
+#list_select {
+  width : 50%;
+  border: 1px solid #6c757d;
+}
+#result-list {
+}
+#profiles_loading_container {
+  position: relative;
+  flex-grow: 1;
+}
+#filter_submit {
+  margin-left: 10px;
+}
+#list_select {
+  width: 100%;
+}
+
+#tool_container {
+  padding: 5px 0;
+}
+#tool_container .inputs {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+@media screen and (max-width: 850px) {
+    #tool_container .inputs {
+        flex-flow: column nowrap;
+    }
+}
+#tool_container .inputs p {
+    width: calc(45px + 3vw);
+    margin: 8px;
+}
+#tool_container .inputs .input {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+}
+#tool_container .inputs select,
+#tool_container .inputs input {
+  height: fit-content;
+  width: calc(45px + 5vw);
+  font-size: calc(8px + 0.3vw);
+}
+#data_container p {
+  align-self: flex-start;
+}
+#add_data_btn,
+#data_delete_btn_container {
+ align-self: flex-start;
+ margin: 8px;
+}
+#tool_container .btn-container {
+  margin-left: auto;
+  margin-right: calc(5px + 1vw);
+  margin-top: 5px;
+}
+#tool_container button {
+  font-size: calc(8px + 0.3vw);
+  justify-self: flex-end;
+  margin: 1px;
+}
+#filter_list {
+    margin-top: 10px;
+    display: flex;
+    flex-flow: row wrap;
+}
+#filter_list .filter-remove {
+    color: #848484;
+    padding: 3px 3px 3px 5px;
+}
+
+#list_title {
+  position:relative;
+  display:inline-block;
+}
+
+#create_profile {
+    width: 100%;
+}
+#profile_container {
+    margin: 0;
+}
+#profile_container .col-6 {
+    padding-left: 0;
+}
+#profile_container a,
+#create_profile a {
+    font-size: calc(12px + 0.3vw);
+    padding-left: calc(5px + 2vw);
+}
