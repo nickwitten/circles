@@ -117,3 +117,8 @@ GitHub.sublime-settings
 
 # Powershell Scripts #
 *.ps1
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

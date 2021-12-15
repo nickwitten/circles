@@ -25,7 +25,7 @@ SECRET_KEY = 'j96da(gg2-eev8lo0q$oi89om!$5&_yfg&6ke9=$xhog2lbr6g'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['circles-env.eba-nzmkvdv4.us-east-1.elasticbeanstalk.com']
 
 STATICFILES_DIRS = [
     BASE_DIR + '/users/static',
