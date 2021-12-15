@@ -29,6 +29,8 @@ if not DEBUG:
     ALLOWED_HOSTS = ['circles-env.eba-nzmkvdv4.us-east-1.elasticbeanstalk.com']
 else:
     ALLOWED_HOSTS = []
+# REMOVE
+ALLOWED_HOSTS = ['circles-env.eba-nzmkvdv4.us-east-1.elasticbeanstalk.com', 'localhost', '127.0.0.1']
 
 STATICFILES_DIRS = [
     BASE_DIR + '/users/static',
