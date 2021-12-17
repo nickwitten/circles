@@ -11,12 +11,12 @@ function addGroupHeaderHTML(group) {
 }
 
 // Adds profile and data to the result list
-function addProfileHTML(profile) {
+function profileHTML(profile) {
   // Create a row
   var container =
   $('<div/>')
     .attr('id','profile_container')
-    .addClass('border pt-2 pb-2 row');
+    .addClass('pt-2 pb-2 row');
   // Create halves of the row
   var left =
   $('<div/>')
@@ -24,10 +24,6 @@ function addProfileHTML(profile) {
   var right =
   $('<div/>')
     .addClass('col-6');
-  // Add the row to the result list
-  $('#result-list').append(
-    container
-  );
   // Add the halves to the row
   $(container).append(
     left,
@@ -46,6 +42,7 @@ function addProfileHTML(profile) {
         .text(profile['data'][i])
     );
   }
+  return container;
 }
 
 // Add the filter and delete button into the list of active filters
@@ -204,6 +201,8 @@ function addDataDeleteBtnHTML() {
 var filters = [];
 // Form that contains user inputs to filter out and display profile data
 var toolinputform;
+// profiles search result item
+var profileResultList = new DataList("result-list", [])
 
 
 // Initialize page
@@ -295,7 +294,8 @@ function getProfiles(use_cookies=[]) {
       // Returned:
       // group object containing a list of profile objects
       // Profile objects contain first name, last name, pk, and data
-      $('#result-list').empty(); // Clear the result list
+      $('#result-list .profiles').empty(); // Clear the result list
+      $('#result-list .extra-rows').empty(); // Clear the result list
       var groups = data.groups;
       // Loop throught the groups
       var i = 0;
@@ -309,13 +309,16 @@ function getProfiles(use_cookies=[]) {
           // Add a group header
           addGroupHeaderHTML(group);
         };
-        // Loop through each profile and add element under the group header
+        // Loop through each profile and generate it's item html
+        var profile_items_html = [];
         var k = 0;
         var l = group['profiles'].length
         for (k = 0; k < l; k++) {
-          addProfileHTML(group['profiles'][k]);
+          profile_items_html.push(profileHTML(group['profiles'][k]));
         };
       };
+      profileResultList.items = profile_items_html;
+      profileResultList.reset();
       update_tools_cookies();
     },
     error: function() {
@@ -724,6 +727,7 @@ function listeners() {
   });
   $("#tools_btn").on("click", function() {
     $('#tool_container').toggle();
+    profileResultList.reset();
   });
   $("#filterset_create").on("click", function() {
     createFilterset(); // Create a list
@@ -735,4 +739,5 @@ function listeners() {
   $("#export_excel_btn").on("click", function() {
     exportToExcel();
   })
+  $(window).resize({func: profileResultList.reset, object: profileResultList}, profileResultList.dispatch);
 }
