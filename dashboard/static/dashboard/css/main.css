@@ -1124,3 +1124,9 @@ header a{
     height: 10px
 }
 
+
+.data-list .shaded {
+  background-color: #cccccc4f;
+}
+
+

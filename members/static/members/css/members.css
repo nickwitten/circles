@@ -278,8 +278,11 @@ button:focus {
   border: 1px solid #6c757d;
 }
 #result-list {
+  flex-grow: 1;
 }
 #profiles_loading_container {
+  display: flex;
+  flex-flow: column;
   position: relative;
   flex-grow: 1;
 }
@@ -353,6 +356,8 @@ button:focus {
 }
 
 #create_profile {
+    display: flex;
+    justify-content: right;
     width: 100%;
 }
 #profile_container {
