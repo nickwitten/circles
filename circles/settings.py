@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'j96da(gg2-eev8lo0q$oi89om!$5&_yfg&6ke9=$xhog2lbr6g'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 if not DEBUG:
     ALLOWED_HOSTS = ['circles-env.eba-nzmkvdv4.us-east-1.elasticbeanstalk.com']
