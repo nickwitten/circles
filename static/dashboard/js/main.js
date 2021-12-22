@@ -1,3 +1,4 @@
+
 function getCookie(cname) {
     var name = cname + "=";
     var decodedCookie = decodeURIComponent(document.cookie);
@@ -194,6 +195,56 @@ class JqueryElement {
         event.data.func.call(event.data.object, event_this, event, extra_data);
     }
 }
+
+class DataList extends JqueryElement {
+    constructor(id, items) {
+        super(id, parent);
+        this.element.addClass('data-list');
+        this.items = items;
+    }
+
+    reset() {
+        this.empty();
+        this.build();
+        this.alternatingStyle();
+    }
+
+    alternatingStyle() {
+        var children = this.element.children();
+        for (var i=0; i<children.length; i++) {
+            if (i % 2) {
+                $(children[i]).addClass('shaded')
+            }
+        }
+    }
+
+    empty() {
+        this.element.empty();
+    }
+
+    build() {
+        this.items[0].height('auto');
+        this.element.append(this.items[0]);
+        var item_min_height = this.element.children().first().outerHeight(true);
+        console.log(item_min_height);
+        var items_on_screen = Math.floor(this.element.outerHeight(true)/item_min_height);
+        var item_size = (this.element.outerHeight(true)-2) / items_on_screen;
+        for (var i=1; i<this.items.length; i++) {
+            this.element.append(this.items[i])
+        }
+        var item_ct = this.element.children().length;
+        if (item_ct < items_on_screen) {
+            for (var i=0; i<(items_on_screen-item_ct); i++) {
+                this.element.append($('<div/>'));
+            }
+        }
+        this.element.children().each(function() {
+            var mpHeight = $(this).outerHeight(true)-$(this).height();  // margin/padding
+            $(this).height(item_size-mpHeight);
+        });
+    }
+}
+
 
 class Dropdown extends JqueryElement {
     constructor(id, data, {type='checkbox', placeholder='', default_value=[], parent=null} = {}) {
@@ -746,7 +797,6 @@ class MultiLevelObjectSelect extends MultiLevelDropdown {
 
     select(option, e) {
         var sub_options = $(option).find('.sub-option');
-        console.log(sub_options);
         if ($(option).hasClass('option') && !sub_options.length) {
              $(option).find('input').prop('checked', false);
             return
