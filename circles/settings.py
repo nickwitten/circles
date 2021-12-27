@@ -11,6 +11,12 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import importlib.util
+spec = importlib.util.spec_from_file_location("env", "/etc/pki/tls/certs/env.py")
+env = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(env)
+
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -19,8 +25,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'j96da(gg2-eev8lo0q$oi89om!$5&_yfg&6ke9=$xhog2lbr6g'
+# SECURITY W 
+SECRET_KEY = env.DJANGO_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
