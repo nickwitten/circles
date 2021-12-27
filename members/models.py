@@ -3,6 +3,8 @@ import json
 from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.core.files import File
+from io import BytesIO
 from phonenumber_field.modelfields import PhoneNumberField
 from PIL import Image
 from datetime import date
@@ -52,15 +54,17 @@ class Profile(models.Model):  # ForeignKey field must have same name as related 
         return reverse('profile-detail',kwargs={'pk':self.pk})
 
     def save(self, *args, **kwargs):
+        self.image = self.crop_image(self.image)
         super().save(*args, **kwargs)
-        self.crop_image()
 
-    def crop_image(self):
-        img = Image.open(self.image.path)
+    def crop_image(self, image):
+        img = Image.open(image)
         if img.height > 300 or img.width > 300:
             output_size = (300, 300)
             img.thumbnail(output_size)
-            img.save(self.image.path)
+        img_io = BytesIO()
+        img.save(img_io, 'JPEG', quality=95)
+        return File(img_io, name=image.name)
 
     def add_learning(self, learning, profile_learning_class, end_date):
         if learning.site not in self.sites():
