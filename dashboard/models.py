@@ -69,6 +69,17 @@ class JsonM2MFieldModelMixin:
 
 
 class FileFieldMixin:
+    """ Mixin to manage a "files" field for
+        a model.  Operations are to create, 
+        delete, and set (copy) files.
+        
+        FileModelClass:  The model for each
+            file object, must contain attributes:
+                "model" - ForeignKey for parent model
+                "file" - FileField for the file
+                "title" - Char title for the file
+
+    """
     FileModelClass = None
 
     def to_dict(self, *args, **kwargs):
@@ -82,6 +93,23 @@ class FileFieldMixin:
         return model_info
 
     def save(self, *args, **kwargs):
+        """ Overrides the model's save to handle
+            files key word.  Files is a dictionary:
+
+            files = {
+                "$(FileTitle)": $(FileObject),
+                "delete_files": [$(file_pk), ],
+                "set_files": [$(target_model_pk), ],
+            }
+
+            Where each file title is a key, and the object
+            is a value.  To delete a file pass it's pk under the
+            key "delete_files".  To set all of this model's
+            files as equal to another model's files, pass
+            the target model's pk under the key set_files.
+            These are lists, but will only act on the first
+            pk passed. (Change this).
+        """
         files = kwargs.pop('files', None)
         super().save(*args, **kwargs)
         if files:
@@ -107,6 +135,10 @@ class FileFieldMixin:
         super().delete(**kwargs)
 
     def _create_delete_files(self, files, delete_files):
+        """ Create and delete files
+            files: {title: file, }
+            delete_files: [pk, ]
+        """
         for title, file in files.items():
             file_info = {'title': title, 'file': file, 'model': self}
             file_model = self.FileModelClass(**file_info)
@@ -118,6 +150,7 @@ class FileFieldMixin:
                 file.delete()
 
     def _set_files(self, set_files):
+        """ Copy all files from target model to this model """
         target_model = self.__class__.objects.filter(pk=int(set_files or 0)).first()
         if target_model:
             for file in self.files.all():
