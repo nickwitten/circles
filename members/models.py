@@ -62,9 +62,11 @@ class Profile(models.Model):  # ForeignKey field must have same name as related 
         if img.height > 300 or img.width > 300:
             output_size = (300, 300)
             img.thumbnail(output_size)
-        img_io = BytesIO()
-        img.save(img_io, 'JPEG', quality=95)
-        return File(img_io, name=image.name)
+            img_io = BytesIO()
+            img.save(img_io, 'JPEG', quality=95)
+            return File(img_io, name=image.name)
+        else:
+            return self.image
 
     def add_learning(self, learning, profile_learning_class, end_date):
         if learning.site not in self.sites():
