@@ -35,7 +35,7 @@ class Profile(models.Model):  # ForeignKey field must have same name as related 
     email_address = models.EmailField(blank=True,null=True)
     cell_phone = PhoneNumberField(blank=True,null=True)
     other_phone = PhoneNumberField(blank=True,null=True)
-    image = models.ImageField(blank=True, null=True, default='profile_pics/default.jpg',upload_to='profile_pics')
+    image = models.ImageField(blank=True, null=True, default='/profile_pics/default.jpg',upload_to='profile_pics')
     e_relationship = models.CharField(blank=True,null=True,max_length=10,choices=[('Spouse', 'Spouse'), ('Friend','Friend'),('Parent','Parent'),('Sibling','Sibling')])
     e_first_name = models.CharField(blank=True,null=True,max_length=32)
     e_last_name = models.CharField(blank=True,null=True,max_length=32)
