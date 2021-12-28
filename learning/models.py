@@ -40,7 +40,7 @@ class Programming(FileFieldMixin, JsonM2MFieldModelMixin, DictMixin, models.Mode
 
 class ProgrammingFile(models.Model):
     model = models.ForeignKey(Programming, on_delete=models.CASCADE, related_name='files')
-    file = models.FileField(upload_to='learning_files/')
+    file = models.FileField(upload_to='program_files/')
     title = models.CharField(max_length=128)
 
 class Theme(DictMixin, models.Model):
@@ -177,6 +177,6 @@ class ProfileModule(models.Model):
 
 class ModuleFile(models.Model):
     model = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='files')
-    file = models.FileField(upload_to='learning_files/')
+    file = models.FileField(upload_to='training_files/')
     title = models.CharField(max_length=128)
 
