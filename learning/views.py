@@ -87,6 +87,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
         if model.site not in self.request.user.userinfo.user_site_access():
             raise PermissionDenied()
         self.data = model.to_dict()
+        print(f'\nRequest data {self.data}\n')
 
     def get_site_models(self):
         site_pk = self.kwargs.get('site', None)
@@ -227,16 +228,14 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
             model = get_object_or_404(model_type[0], pk=pk)
             if model.site not in self.request.user.userinfo.user_site_access():
                 raise PermissionDenied()
-            if hasattr(model, 'files'):
-                for file in model.files.all():
-                    file.delete_file()
             model.delete()
 
     def create_or_update_models(self):
-        """ Takes {site, (theme), (pk)} objects for each
+        """ Takes {site, [theme], [pk]} objects for each
             model that needs to be updated or created.  Theme
             required if model is module.  Pk required if model
-            already exists.                                     """
+            already exists.
+        """
         model_type, form_data, model_infos, files = self._get_args()
         models = []
         self.data['infos'] = []
@@ -261,7 +260,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
             if hasattr(model, 'theme'):
                 info['theme'] = str(model.theme)
             if hasattr(model, 'files'):
-                info['files'] = json.dumps([(file.title, file.pk, settings.MEDIA_URL + file.file.name)
+                info['files'] = json.dumps([(file.title, file.pk, file.file.url)
                                             for file in model.files.all()])
             self.data['infos'] += [info]
 
@@ -366,6 +365,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
                         for related in getattr(replace, field).all():
                             setattr(related, self.kwargs.get('model_type'), model)
                             related.save()
+                    # Text field reserved for the jsonm2m field
                     elif field_type == 'TextField':
                         # try:
                         replace_objs = json.loads(getattr(replace, field))
@@ -377,9 +377,6 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
                         # except Exception as e:
                         #     print(e)
                         #     pass
-                if hasattr(replace, 'files'):
-                    for file in replace.files.all():
-                        file.delete_file()
             replace.delete()
             return model
         return False
@@ -438,7 +435,6 @@ class LearningFiles(LoginRequiredMixin, AjaxMixin, View):
         learning_file = get_object_or_404(model_type[1], pk=pk)
         if learning_file.model.site not in self.request.user.userinfo.user_site_access():
             raise PermissionDenied()
-        learning_file.delete_file()
         learning_file.delete()
 
 

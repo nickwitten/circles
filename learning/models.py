@@ -43,13 +43,6 @@ class ProgrammingFile(models.Model):
     file = models.FileField(upload_to='learning_files/')
     title = models.CharField(max_length=128)
 
-    def delete_file(self):
-        try:
-            os.remove('/'.join([settings.MEDIA_ROOT, self.file.name]))
-        except:
-            print('file not deleted at', '/'.join([settings.MEDIA_ROOT, self.file.name]))
-
-
 class Theme(DictMixin, models.Model):
     site = models.ForeignKey(members_models.Site, on_delete=models.CASCADE, related_name='themes')
     title = models.CharField(max_length=128)
@@ -187,8 +180,3 @@ class ModuleFile(models.Model):
     file = models.FileField(upload_to='learning_files/')
     title = models.CharField(max_length=128)
 
-    def delete_file(self):
-        try:
-            os.remove('/'.join([settings.MEDIA_ROOT, self.file.name]))
-        except:
-            print('file not deleted at', '/'.join([settings.MEDIA_ROOT, self.file.name]))
