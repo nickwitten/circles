@@ -33,7 +33,7 @@ DEFAULT_FILE_STORAGE = 'circles.storage_backends.MediaStorage'
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 if not DEBUG:
     ALLOWED_HOSTS = ['circles-env.eba-nzmkvdv4.us-east-1.elasticbeanstalk.com']
