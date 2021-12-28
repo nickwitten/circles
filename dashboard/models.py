@@ -87,7 +87,7 @@ class FileFieldMixin:
             model_info = super().to_dict()
         else:
             model_info = model_to_dict(self)
-        files_info = [(file.title, file.pk, settings.MEDIA_URL + file.file.name)
+        files_info = [(file.title, file.pk, file.file.url)
                       for file in self.files.all()]
         model_info['files'] = files_info
         return model_info
@@ -110,34 +110,29 @@ class FileFieldMixin:
             These are lists, but will only act on the first
             pk passed. (Change this).
         """
-        files = kwargs.pop('files', None)
+        files_with_options = kwargs.pop('files', None)
         super().save(*args, **kwargs)
-        if files:
-            delete_files = files.pop('delete_files', None)
-            if delete_files:
-                delete_files = delete_files[0]
-            set_files = files.pop('set_files', None)
-            if set_files:
-                set_files = set_files[0]
-            if set_files:
-                if self.pk == int(set_files or 0):
-                    self._create_delete_files(files, delete_files)
-                else:
-                    self._set_files(set_files)
+        if files_with_options:
+            delete_files = files_with_options.pop('delete_files', None)
+            set_files = files_with_options.pop('set_files', None)
+            files = files_with_options
+            if delete_files is not None:
+                # Not sure why this is a nested list, but unpack
+                [delete_files] = delete_files
+            if set_files is not None:
+                # Same for set files
+                [set_files] = set_files
+            if set_files is not None and self.pk != int(set_files):
+                self._set_files(set_files)
             else:
                 self._create_delete_files(files, delete_files)
-            files['delete_files'] = delete_files
-            files['set_files'] = set_files
-
-    def delete(self, **kwargs):
-        for file in self.files.all():
-            file.delete_file()
-        super().delete(**kwargs)
+            # files_with_options['delete_files'] = delete_files
+            # files_with_options['set_files'] = set_files
 
     def _create_delete_files(self, files, delete_files):
         """ Create and delete files
-            files: {title: file, }
-            delete_files: [pk, ]
+            files: {$(title): $(file), }
+            delete_files: [$(pk), ]
         """
         for title, file in files.items():
             file_info = {'title': title, 'file': file, 'model': self}
@@ -146,7 +141,6 @@ class FileFieldMixin:
         for pk in delete_files or []:
             file = self.FileModelClass.objects.filter(pk=pk).first()
             if file:
-                file.delete_file()
                 file.delete()
 
     def _set_files(self, set_files):
@@ -154,7 +148,6 @@ class FileFieldMixin:
         target_model = self.__class__.objects.filter(pk=int(set_files or 0)).first()
         if target_model:
             for file in self.files.all():
-                file.delete_file()
                 file.delete()
             for target_file in target_model.files.all():
                 title = target_file.title
@@ -170,3 +163,4 @@ class DashboardContent(models.Model):
     content = models.TextField()
     date_posted = models.DateTimeField(default=timezone.now)
     author = models.ForeignKey(User,on_delete=models.CASCADE)
+
