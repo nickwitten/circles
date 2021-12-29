@@ -1,5 +1,5 @@
 import json
-
+import os
 from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -8,6 +8,7 @@ from io import BytesIO
 from phonenumber_field.modelfields import PhoneNumberField
 from PIL import Image
 from datetime import date
+from circles import settings
 
 class Chapter(models.Model):
     chapter = models.CharField(max_length=64)
@@ -35,7 +36,7 @@ class Profile(models.Model):  # ForeignKey field must have same name as related 
     email_address = models.EmailField(blank=True,null=True)
     cell_phone = PhoneNumberField(blank=True,null=True)
     other_phone = PhoneNumberField(blank=True,null=True)
-    image = models.ImageField(blank=True, null=True, default='/profile_pics/default.jpg',upload_to='profile_pics')
+    image = models.ImageField(blank=True, null=True, default=os.path.join(settings.MEDIA_ROOT, 'profile_pics/default.jpg'), upload_to='profile_pics')
     e_relationship = models.CharField(blank=True,null=True,max_length=10,choices=[('Spouse', 'Spouse'), ('Friend','Friend'),('Parent','Parent'),('Sibling','Sibling')])
     e_first_name = models.CharField(blank=True,null=True,max_length=32)
     e_last_name = models.CharField(blank=True,null=True,max_length=32)
@@ -62,8 +63,9 @@ class Profile(models.Model):  # ForeignKey field must have same name as related 
         if img.height > 300 or img.width > 300:
             output_size = (300, 300)
             img.thumbnail(output_size)
+            img.convert('RGBA')
             img_io = BytesIO()
-            img.save(img_io, 'JPEG', quality=95)
+            img.save(img_io, 'PNG', quality=95)
             return File(img_io, name=image.name)
         else:
             return self.image
