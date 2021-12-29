@@ -21,6 +21,7 @@ class Meeting(FileFieldMixin, DictMixin, models.Model):
     start_time = models.DateTimeField(verbose_name="Start Time", )
     end_time = models.DateTimeField(verbose_name="End Time")
     lists = models.ManyToManyField(FilterSet, blank=True)
+    attendance_required = models.BooleanField(default=False)
     attendees = models.ManyToManyField(Profile, blank=True, related_name='attended_meetings')
     non_attendees = models.ManyToManyField(Profile, blank=True, related_name='unattended_meetings')
     color = models.CharField(max_length=32)
