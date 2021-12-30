@@ -300,6 +300,8 @@ function getProfiles(use_cookies=[]) {
       // Loop throught the groups
       var i = 0;
       var j = groups.length;
+      // Loop through each profile and generate it's item html
+      var profile_items_html = [];
       for (i = 0; i < j; i++) {
         var group = groups[i];
         if (group['group name'] == 'no groups'){
@@ -309,8 +311,6 @@ function getProfiles(use_cookies=[]) {
           // Add a group header
           addGroupHeaderHTML(group);
         };
-        // Loop through each profile and generate it's item html
-        var profile_items_html = [];
         var k = 0;
         var l = group['profiles'].length
         for (k = 0; k < l; k++) {
