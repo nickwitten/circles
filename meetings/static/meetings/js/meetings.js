@@ -71,6 +71,18 @@ class AttendanceSelect extends JqueryElement {
 
     set_value(value) {
         this.value = value;
+        this.element.empty();
+        // Update the selects as
+        // well but don't trigger
+        // :update.
+        this.form_field.empty();
+        for (let i=0; i<this.data.length; i++) {
+            this.build_member(this.data[i]);
+            this.build_form_option(this.data[i]);
+        }
+        if (!this.detail) {
+            this.item_listeners();
+        }
         this.update_display();
         this.element.trigger(':change');
     }
@@ -417,7 +429,6 @@ class NonAttendeesField extends JqueryElement {
 
     listeners() {
         this.parent.list_select.element.on(":change", {func: this.update_value, object: this}, this.dispatch);
-        console.log(this.parent);
         this.parent.attendance_select.element.on(":change", {func: this.update_value, object: this}, this.dispatch);
         this.parent.attendance_select.element.on(":update", {func: this.update_value, object: this}, this.dispatch);
         this.parent.required_message.element.on(":change", {func: this.update_value, object: this}, this.dispatch);
@@ -780,6 +791,7 @@ class MeetingInfo extends JqueryElement {
             return
         }
         this.changes_saved = true;
+        this.attendance.attendance_select.data = [];  // reset fetched members
         this.attendance.hide();
         this.container.removeClass('show');
         this.attendance.element.removeClass('modal-shadow');
