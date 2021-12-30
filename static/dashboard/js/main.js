@@ -200,7 +200,7 @@ class DataList extends JqueryElement {
     constructor(id, items) {
         super(id, parent);
         this.element.addClass('data-list');
-        this.items = items;
+        this.items = (items) ? items : [];
     }
 
     reset() {
@@ -223,10 +223,15 @@ class DataList extends JqueryElement {
     }
 
     build() {
-        this.items[0].height('auto');
-        this.element.append(this.items[0]);
-        var item_min_height = this.element.children().first().outerHeight(true);
-        console.log(item_min_height);
+        var item_min_height;
+        if (this.items.length) {
+            this.items[0].height('auto');
+            this.element.append(this.items[0]);
+            item_min_height = this.element.children().first().outerHeight(true);
+        } else  {
+            var default_item_ct = 15;
+            item_min_height = this.element.height() / default_item_ct;
+        }
         var items_on_screen = Math.floor(this.element.outerHeight(true)/item_min_height);
         var item_size = (this.element.outerHeight(true)-2) / items_on_screen;
         for (var i=1; i<this.items.length; i++) {

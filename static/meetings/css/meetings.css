@@ -111,6 +111,7 @@
     padding: 0;
 }
 #meeting_form #id_attendees,
+#meeting_form #id_non_attendees,
 #meeting_form #id_lists,
 #meeting_form #id_programming,
 #meeting_form #id_modules {
@@ -338,4 +339,7 @@
 #attendance_container .messages p {
     font-size: calc(8px + 0.3vw);
     display: inline;
+}
+#attendance_container .message {
+    padding: 0.5em 0;
 }

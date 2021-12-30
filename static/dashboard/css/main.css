@@ -437,6 +437,9 @@ header a{
 .relative {
     position: relative;
 }
+.invalid {
+    color: red;
+}
 .loading {
     position: absolute;
     top: 0;
