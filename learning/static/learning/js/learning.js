@@ -735,7 +735,7 @@ class InfoSlide extends JqueryElement {
         if (required_for) {
             this.required_select.set_value(JSON.stringify(required_for));
         }
-        this.element.find('.title-text').first().text('Create New ' + this.type[0].toUpperCase() + this.type.slice(1));
+        this.element.find('.title-text').first().text('Create New ' + this.type[0].toUpperCase() + this.type.slice(1).replace("ming", ""))  // poor hack to change the name to program
         this.set_update();
         this.element.addClass('show');
         this.item_listeners();

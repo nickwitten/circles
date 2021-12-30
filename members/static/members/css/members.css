@@ -1,4 +1,4 @@
-label, select, input, .form-control {
+label, select, input, .form-control, .invalid {
   font-size: calc(8px + 0.3vw);
   padding: 3px 5px;
 }

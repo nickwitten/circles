@@ -23,7 +23,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
 # AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.us-east-1.amazonaws.com'
-if "RUN_LOCAL" not in os.environ:
+if "RUN_LOCAL" in os.environ:
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    MEDIA_URL = '/media/'
+else:
     AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
     AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
     AWS_S3_OBJECT_PARAMETERS = {
@@ -31,6 +34,8 @@ if "RUN_LOCAL" not in os.environ:
     }
     AWS_STORAGE_BUCKET_NAME = "circles-mediastorage"
     DEFAULT_FILE_STORAGE = 'circles.storage_backends.MediaStorage'
+    MEDIA_ROOT = '/'
+    MEDIA_URL = 'http://s3.amazonaws.com/circles-mediastorage/'
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -162,9 +167,6 @@ USE_TZ = True
 
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGIN_URL = 'login'
-
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = '/media/'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
