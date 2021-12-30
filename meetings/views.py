@@ -109,6 +109,8 @@ def post_meeting_info(request, pk):
                 meeting.end_time = meeting.end_time.replace(month=month, day=day, year=year)
                 meeting.save(files=files)
                 form.save_m2m()
+                meeting.attendees.clear()
+                meeting.non_attendees.clear()
                 meeting.train_members()
                 created_meetings += [meeting]
             else:

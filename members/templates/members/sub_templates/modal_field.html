@@ -1,9 +1,11 @@
 <div class="row mb-2">
+  {% for error in field.errors %}
+  <div class="col-12 invalid">
+  	<strong>{{ error }}</strong>
+  </div>
+  {% endfor %}
   <div class="col-4">
     <div class="inline-field">
-      {% if field.errors %}
-        <p class="error">*</p>
-      {% endif %}
       {% if field.field.required %}<span class="required">*</span>{% endif %}
       {{ field.label_tag }}
     </div>

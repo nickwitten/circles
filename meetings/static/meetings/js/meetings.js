@@ -7,6 +7,7 @@ class CalendarMenu extends Menu {
 
 
 
+
 class AttendanceSelect extends JqueryElement {
     constructor(id, field_id, parent) {
         super(id, parent);
@@ -30,6 +31,7 @@ class AttendanceSelect extends JqueryElement {
         if (!this.detail) {
             this.item_listeners();
         }
+        this.element.trigger(":update")
     }
 
     select(option, e) {
@@ -69,6 +71,18 @@ class AttendanceSelect extends JqueryElement {
 
     set_value(value) {
         this.value = value;
+        this.element.empty();
+        // Update the selects as
+        // well but don't trigger
+        // :update.
+        this.form_field.empty();
+        for (let i=0; i<this.data.length; i++) {
+            this.build_member(this.data[i]);
+            this.build_form_option(this.data[i]);
+        }
+        if (!this.detail) {
+            this.item_listeners();
+        }
         this.update_display();
         this.element.trigger(':change');
     }
@@ -132,17 +146,309 @@ class AttendanceSelect extends JqueryElement {
 
 
 
+class ModuleMessages extends JqueryElement {
+    constructor(id, parent) {
+        super(id, parent);
+        this.default_value = '{}'; // module_pk hash to profiles to add to or 'all'
+        this.value = this.default_value; // module_pk hash to profiles to add to or 'all'
+        // this.module_messages = this.element.find('.module-messages');
+        this.listeners();
+        this.detail = true;
+    }
+
+    set_value(val) {
+        this.value = val;
+        this.element.trigger(':change');
+    }
+
+    set_update() {
+        this.detail = false;
+        this.update_module_info();
+    }
+
+    set_detail() {
+        this.detail = true;
+        this.update_module_info();
+    }
+
+    modal_select(option, e) {
+        // this is modal
+        var modal = this
+        var input = $(option).find('input');
+        if (!$(e.target).is('input') && !$(e.target).is('a')) {
+            input.prop('checked', !input.prop('checked'));
+        }
+        if (input.val() == 'all') {
+            this.element.find('input').prop('checked', input.prop('checked'));
+        }
+        var all_checked = true;
+        this.element.find('input').not('.all').each(function() {
+            if (!$(this).prop('checked')) {
+                all_checked = false;
+            }
+        });
+        if (!all_checked) {
+            this.element.find('input.all').prop('checked', false);
+        }
+    }
+
+    module_modal(elem) {
+        var module_id = parseInt($(elem).attr('data-pk'));
+        var title = $(elem).attr('data-title');
+        var module_messages = this;
+        var build_func = function() {
+            var modal = this;
+            var select = module_messages.parent.attendance_select;
+            this.id = module_id;
+            var module_value = JSON.parse(module_messages.value)[module_id];
+
+            this.element.find('.content-container').empty()
+            this.element.find('.header-text').text('Attendees Receiving - ' + title + ' - Training');
+            this.element.find('.action.btn').attr('class', 'btn action btn-primary');
+
+            this.element = this.element.find('.content-container');
+            this.element.addClass('attendance-select');
+            var attendees = select.value;
+            var all_option = select.build_member.call(this, ['All', 'all']).find('input');
+            all_option.addClass('all');
+            if (module_value == 'all') {
+                all_option.prop('checked', true);
+            }
+            for (let i=0; i<attendees.length; i++) {
+                var id = attendees[i];
+                var item = select.build_member.call(this, [select.val_to_text[id], id]);
+                if (module_value == 'all' || module_value.includes(id)) {
+                    item.find('input').prop('checked', true);
+                }
+            }
+            this.element.find('.attendance-item').click({object: this, func: module_messages.modal_select}, this.dispatch)
+
+            this.element = this.element.closest('.modal');
+            this.element.on(':hide', function() {
+               setTimeout(function() {modal.element.find('.attendance-select').removeClass('attendance-select');}, 500);
+            });
+        }
+        this.modal = new Modal('modal', {
+            build_func: build_func,
+            action_func: this.dispatch,
+            action_data: {object: this, func: this.modal_submit}
+        });
+    }
+
+    modal_submit() {
+        var module_messages = this;
+        var all_checked = module_messages.modal.element.find('input.all').prop('checked');
+        var value = JSON.parse(module_messages.value);
+        if (all_checked) {
+            value[this.modal.id] = 'all';
+        } else {
+            value[this.modal.id] = [];
+            module_messages.modal.element.find('input').not('.all').each(function() {
+                if ($(this).prop('checked')) {
+                    value[module_messages.modal.id].push(parseInt($(this).val()));
+                }
+            });
+        }
+        module_messages.value = JSON.stringify(value);
+        module_messages.element.trigger(':change');
+        module_messages.update_module_info();
+    }
+
+    update_module_info() {
+        this.element.empty();
+        var modules = this.parent.parent.training_select.value;
+        var value = JSON.parse(this.value);
+        // Add newly selected modules
+        for (let i=0; i<modules.length; i++) {
+            var id = modules[i];
+            this.build_module_message(id);
+            if (!value.hasOwnProperty(id)) {
+                value[id] = [];
+            }
+        }
+        // Get rid of unselected trainings
+        for (const module_id in value) {
+            if (!modules.includes(parseInt(module_id)) && !modules.includes(module_id.toString())) {
+                delete value[module_id];
+            }
+        }
+        var old_value = this.value;
+        this.value = JSON.stringify(value);
+        if (this.value != old_value) {
+            this.element.trigger(':change');
+        }
+    }
+
+    build_module_message(id) {
+        var attendees = JSON.parse(this.value)[id];
+        var title = this.parent.parent.training_select.val_to_text[id];
+        var container = $('<div/>');
+        container.addClass("message");
+        var modal_text;
+        if (this.parent.parent.detail) {
+            modal_text = $('<p/>').attr('data-pk', id).attr('data-title', title);
+        } else {
+            modal_text = $('<a/>').attr('href', '#')
+                             .attr('data-pk', id).attr('data-title', title);
+        }
+        if (attendees == 'all') {
+            modal_text.text('All');
+        } else {
+            modal_text.text('Selected');
+        }
+        var message = $('<p/>').text(' attendees will receive - ' + title + ' - training.');
+        container.append(modal_text);
+        container.append(message);
+        this.element.append(container);
+        this.item_listeners();
+    }
+
+    item_listeners() {
+        this.element.find('a').click({func: this.module_modal, object: this}, this.dispatch);
+    }
+
+    listeners() {
+        this.parent.parent.training_select.element.on(':change', {func: this.update_module_info, object: this}, this.dispatch);
+        this.parent.parent.training_select.element.on(':update', {func: this.update_module_info, object: this}, this.dispatch);
+    }
+}
+
+
+
+
+class RequiredMessage extends JqueryElement {
+    constructor(id, parent) {
+        super(id, parent);
+        this.default_value = false;
+        this.value = this.default_value;
+        this.detail = true;
+    }
+
+    set_value(val) {
+        this.value = val;
+        this.build_message();
+    }
+
+    toggle_val() {
+        this.value = (this.value) ? false : true;
+        this.build_message();
+        this.element.trigger(":change");
+    }
+
+    set_update() {
+        this.detail = false;
+        this.build_message();
+    }
+
+    set_detail() {
+        this.detail = true;
+        this.build_message();
+    }
+
+    build_message() {
+        this.element.empty();
+        var container = $('<div/>');
+        container.addClass("message");
+        var message1 = $('<p/>').text(
+            "This meeting "
+        );
+        if (this.detail) {
+            var modal_text = $('<p/>');
+        } else {
+            var modal_text = $('<a/>');
+            modal_text.attr("href", "#");
+        }
+        var message2 = $('<p/>');
+        if (this.value) {
+            modal_text.text("is ");
+            message2.text(
+                "required for the above members and " +
+                "will be reflected in their attendance " +
+                "history."
+            );
+        } else {
+            modal_text.text("is not ");
+            message2.text(
+                "required for the above members and will " +
+                "not affect their attendance history."
+            );
+        }
+        container.append(message1);
+        container.append(modal_text);
+        container.append(message2);
+        this.element.append(container);
+        this.item_listeners();
+    }
+
+    item_listeners() {
+        this.element.find('a').click({object: this, func: this.toggle_val}, this.dispatch);
+    }
+}
+
+
+
+
+class NonAttendeesField extends JqueryElement {
+    constructor(id, parent) {
+        super(id, parent);
+        this.default_value = [];
+        this.value = this.default_value;
+        this.listeners();
+    }
+
+    set_value(val) {
+        this.value = val;
+    }
+
+    update_value() {
+        this.value = []
+        this.element.empty(); // this is the real form field
+        if (this.parent.required_message.value) {
+            var membs = this.parent.attendance_select.data;
+            var selected_membs = this.parent.attendance_select.value;
+            for (var i=0; i<membs.length; i++) {
+                if (!selected_membs.includes(membs[i][1])) {
+                    this.value.push(membs[i][1]);
+                }
+            }
+            for (var i=0; i<membs.length; i++) {
+                this.build_form_option(membs[i]);
+            }
+        }
+    }
+
+    build_form_option(member_data) {
+        var option = $('<option/>')
+            .text(member_data[0])
+            .val(member_data[1]);
+        if (this.value.includes(member_data[1])) {
+            option.prop('selected', true);
+        }
+        this.element.append(option);
+    }
+
+    listeners() {
+        this.parent.list_select.element.on(":change", {func: this.update_value, object: this}, this.dispatch);
+        this.parent.attendance_select.element.on(":change", {func: this.update_value, object: this}, this.dispatch);
+        this.parent.attendance_select.element.on(":update", {func: this.update_value, object: this}, this.dispatch);
+        this.parent.required_message.element.on(":change", {func: this.update_value, object: this}, this.dispatch);
+    }
+}
+
+
+
+
 class AttendanceSlide extends JqueryElement {
     constructor(id, parent) {
         super(id, parent);
         this.list_select = new Dropdown('list_select', [], {placeholder: 'Lists'});
         this.attendance_select = new AttendanceSelect('attendance_select', 'id_attendees', this);
-        this.default_value = '{}'; // module_pk hash to profiles to add to or 'all'
-        this.value = this.default_value; // module_pk hash to profiles to add to or 'all'
-        this.messages = this.element.find('.messages');
+        this.module_messages = new ModuleMessages('module_messages', this);
+        this.required_message = new RequiredMessage('required_message', this);
+        this.non_attendees = new NonAttendeesField('id_non_attendees', this);
         this.loader = this.element.find('.loading');
+        this.loading = false;
         this.close_selector = '#' + this.id + ', #meeting_info_container, .modal-container';
-        this.listeners();
     }
 
     show() {
@@ -175,6 +481,7 @@ class AttendanceSlide extends JqueryElement {
             context: this,
             beforeSend: function() {
                 this.loader.show();
+                this.loading = true;
             },
             success: function(data) {
                 this.attendance_select.data = data['members'];
@@ -185,167 +492,25 @@ class AttendanceSlide extends JqueryElement {
             },
             complete: function() {
                 this.loader.hide();
+                this.loading = false;
             }
         });
-    }
-
-    set_value(val) {
-        this.value = val;
-        this.element.trigger(':change');
     }
 
     set_update() {
         this.detail = false;
         this.attendance_select.set_update();
         this.list_select.set_update();
-        this.update_module_info();
+        this.module_messages.set_update();
+        this.required_message.set_update();
     }
 
     set_detail() {
         this.detail = true;
         this.attendance_select.set_detail();
         this.list_select.set_detail();
-        this.update_module_info();
-    }
-
-    modal_select(option, e) {
-        // this is modal
-        var modal = this
-        var input = $(option).find('input');
-        if (!$(e.target).is('input') && !$(e.target).is('a')) {
-            input.prop('checked', !input.prop('checked'));
-        }
-        if (input.val() == 'all') {
-            this.element.find('input').prop('checked', input.prop('checked'));
-        }
-        var all_checked = true;
-        this.element.find('input').not('.all').each(function() {
-            if (!$(this).prop('checked')) {
-                all_checked = false;
-            }
-        });
-        if (!all_checked) {
-            this.element.find('input.all').prop('checked', false);
-        }
-    }
-
-    module_modal(elem) {
-        var module_id = parseInt($(elem).attr('data-pk'));
-        var title = $(elem).attr('data-title');
-        var attendance_slide = this;
-        var build_func = function() {
-            var modal = this;
-            var select = attendance_slide.attendance_select;
-            this.id = module_id;
-            var module_value = JSON.parse(attendance_slide.value)[module_id];
-
-            this.element.find('.content-container').empty()
-            this.element.find('.header-text').text('Attendees Receiving - ' + title + ' - Training');
-            this.element.find('.action.btn').attr('class', 'btn action btn-primary');
-
-            this.element = this.element.find('.content-container');
-            this.element.addClass('attendance-select');
-            var attendees = select.value;
-            var all_option = select.build_member.call(this, ['All', 'all']).find('input');
-            all_option.addClass('all');
-            if (module_value == 'all') {
-                all_option.prop('checked', true);
-            }
-            for (let i=0; i<attendees.length; i++) {
-                var id = attendees[i];
-                var item = select.build_member.call(this, [select.val_to_text[id], id]);
-                if (module_value == 'all' || module_value.includes(id)) {
-                    item.find('input').prop('checked', true);
-                }
-            }
-            this.element.find('.attendance-item').click({object: this, func: attendance_slide.modal_select}, this.dispatch)
-
-            this.element = this.element.closest('.modal');
-            this.element.on(':hide', function() {
-               setTimeout(function() {modal.element.find('.attendance-select').removeClass('attendance-select');}, 500);
-            });
-        }
-        this.modal = new Modal('modal', {
-            build_func: build_func,
-            action_func: this.dispatch,
-            action_data: {object: this, func: this.modal_submit}
-        });
-    }
-
-    modal_submit() {
-        var attendance_slide = this;
-        var all_checked = attendance_slide.modal.element.find('input.all').prop('checked');
-        var value = JSON.parse(attendance_slide.value);
-        if (all_checked) {
-            value[this.modal.id] = 'all';
-        } else {
-            value[this.modal.id] = [];
-            attendance_slide.modal.element.find('input').not('.all').each(function() {
-                if ($(this).prop('checked')) {
-                    value[attendance_slide.modal.id].push(parseInt($(this).val()));
-                }
-            });
-        }
-        attendance_slide.value = JSON.stringify(value);
-        attendance_slide.element.trigger(':change');
-        attendance_slide.update_module_info();
-    }
-
-    update_module_info() {
-        this.messages.empty();
-        var modules = this.parent.training_select.value;
-        var value = JSON.parse(this.value);
-        // Add newly selected modules
-        for (let i=0; i<modules.length; i++) {
-            var id = modules[i];
-            this.build_module_message(id);
-            if (!value.hasOwnProperty(id)) {
-                value[id] = [];
-            }
-        }
-        // Get rid of unselected trainings
-        for (const module_id in value) {
-            if (!modules.includes(parseInt(module_id)) && !modules.includes(module_id.toString())) {
-                delete value[module_id];
-            }
-        }
-        var old_value = this.value;
-        this.value = JSON.stringify(value);
-        if (this.value != old_value) {
-            this.element.trigger(':change');
-        }
-    }
-
-    build_module_message(id) {
-        var attendees = JSON.parse(this.value)[id];
-        var title = this.parent.training_select.val_to_text[id];
-        var container = $('<div/>');
-        var modal_text;
-        if (this.detail) {
-            modal_text = $('<p/>').attr('data-pk', id).attr('data-title', title);
-        } else {
-            modal_text = $('<a/>').attr('href', '#')
-                             .attr('data-pk', id).attr('data-title', title);
-        }
-        if (attendees == 'all') {
-            modal_text.text('All');
-        } else {
-            modal_text.text('Selected');
-        }
-        var message = $('<p/>').text(' attendees will receive - ' + title + ' - training.');
-        container.append(modal_text);
-        container.append(message);
-        this.messages.append(container);
-        this.item_listeners();
-    }
-
-    item_listeners() {
-        this.messages.find('a').click({func: this.module_modal, object: this}, this.dispatch);
-    }
-
-    listeners() {
-        this.parent.training_select.element.on(':change', {func: this.update_module_info, object: this}, this.dispatch);
-        this.parent.training_select.element.on(':update', {func: this.update_module_info, object: this}, this.dispatch);
+        this.module_messages.set_detail();
+        this.required_message.set_detail();
     }
 }
 
@@ -576,11 +741,13 @@ class MeetingInfo extends JqueryElement {
             'end_time': this.end_time,
             'programming': this.programming_select,
             'modules': this.training_select,
-            'modules_to_attendees': this.attendance,
+            'modules_to_attendees': this.attendance.module_messages,
             'links': this.link_input,
             'files': this.file_input,
             'lists': this.attendance.list_select,
+            'attendance_required': this.attendance.required_message,
             'attendees': this.attendance.attendance_select,
+            'non_attendees': this.attendance.non_attendees,
         }
         this.form = new CustomForm('meeting_form', custom_fields, form_fields, 'id_')
         this.get_user_lists();
@@ -624,6 +791,7 @@ class MeetingInfo extends JqueryElement {
             return
         }
         this.changes_saved = true;
+        this.attendance.attendance_select.data = [];  // reset fetched members
         this.attendance.hide();
         this.container.removeClass('show');
         this.attendance.element.removeClass('modal-shadow');
@@ -714,6 +882,9 @@ class MeetingInfo extends JqueryElement {
 
     submit_form() {
         if (!this.form_validation()) {
+            return
+        }
+        if (this.attendance.loading) {
             return
         }
         var data = this.file_input.form_data;
