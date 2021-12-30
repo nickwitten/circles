@@ -436,6 +436,7 @@ class AttendanceSlide extends JqueryElement {
         this.required_message = new RequiredMessage('required_message', this);
         this.non_attendees = new NonAttendeesField('id_non_attendees', this);
         this.loader = this.element.find('.loading');
+        this.loading = false;
         this.close_selector = '#' + this.id + ', #meeting_info_container, .modal-container';
     }
 
@@ -469,6 +470,7 @@ class AttendanceSlide extends JqueryElement {
             context: this,
             beforeSend: function() {
                 this.loader.show();
+                this.loading = true;
             },
             success: function(data) {
                 this.attendance_select.data = data['members'];
@@ -479,6 +481,7 @@ class AttendanceSlide extends JqueryElement {
             },
             complete: function() {
                 this.loader.hide();
+                this.loading = false;
             }
         });
     }
@@ -867,6 +870,9 @@ class MeetingInfo extends JqueryElement {
 
     submit_form() {
         if (!this.form_validation()) {
+            return
+        }
+        if (this.attendance.loading) {
             return
         }
         var data = this.file_input.form_data;
