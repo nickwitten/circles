@@ -248,7 +248,7 @@ class UpdateForm extends CustomForm {
         var build_modal = function() {
             var header_container = this.element.find('.header').first();
             header_container.empty();
-            header_container.append($('<h6/>').text('Edit Fields').addClass('ml-auto mr-auto'));
+            header_container.append($('<h6/>').text('Edit Fields').addClass('ml-auto mr-auto header-text'));
             this.element.find('.action.btn').attr('class', 'btn action');
             this.element.find('.action.btn').addClass('btn action btn-primary');
             this.element.find('.content-container').empty();
@@ -839,7 +839,11 @@ class InfoSlide extends JqueryElement {
         var type = this.element.find('.title-text').text();
         var site = this.site_select.element.find('p.value').text();
         var build_func = function() {
-            this.element.find('.header-text').text('Discard Changes?');
+            var header_cont = this.element.find('.header').first();
+            header_cont.empty();
+            header_cont.append($('<h6/>').addClass('ml-auto mr-auto header-text').text(
+                'Discard Changes?'
+            ));
             this.element.find('.action.btn').attr('class', 'btn action btn-danger');
             var text = $('<p/>').text([site, type].join(' - ')).addClass('text-medium');
             var content = this.element.find('.content-container');
