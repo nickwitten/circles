@@ -42,6 +42,20 @@ function profileHTML(profile) {
   return container;
 }
 
+function resultHTML(group) {
+    var items = [];
+    if (group['group name'] != 'no groups'){
+        items.push(GroupHeaderHTML(group));
+    };
+    var k = 0;
+    var l = group['profiles'].length
+    for (k = 0; k < l; k++) {
+        items.push(profileHTML(group['profiles'][k]));
+    };
+    return items
+}
+
+
 // Add the filter and delete button into the list of active filters
 function addFilterHTML(filter, filter_number) {
   filtertext = {};
@@ -294,6 +308,14 @@ function getProfiles(use_cookies=[]) {
       $('#result-list .profiles').empty(); // Clear the result list
       $('#result-list .extra-rows').empty(); // Clear the result list
       var groups = data.groups;
+      var not_avail_group = null
+      for (var i=0; i<data.groups.length; i++) {
+        if (data.groups[i]['group name'] == 'Not Available') {
+          not_avail_group = data.groups[i];
+          data.groups.splice(i, 1);
+        }
+        //var not_avail_group = data.groups
+      }
       // Loop throught the groups
       var i = 0;
       var j = groups.length;
@@ -301,16 +323,12 @@ function getProfiles(use_cookies=[]) {
       var profile_items_html = [];
       for (i = 0; i < j; i++) {
         var group = groups[i];
-        if (group['group name'] != 'no groups'){
-          profile_items_html.push(GroupHeaderHTML(group));
-        };
-        var k = 0;
-        var l = group['profiles'].length
-        for (k = 0; k < l; k++) {
-          profile_items_html.push(profileHTML(group['profiles'][k]));
-        };
+        profile_items_html.push(resultHTML(group));
       };
-      profileResultList.items = profile_items_html;
+      if (not_avail_group !== null) {
+        profile_items_html.push(resultHTML(not_avail_group));
+      }
+      profileResultList.items = profile_items_html.flat();
       profileResultList.reset();
       update_tools_cookies();
     },
