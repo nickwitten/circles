@@ -246,7 +246,9 @@ class UpdateForm extends CustomForm {
         var hidden_fields = this.hidden_fields;
         hidden_fields = ['all'].concat(hidden_fields);
         var build_modal = function() {
-            this.element.find('.header-text').text('Edit Fields');
+            var header_container = this.element.find('.header').first();
+            header_container.empty();
+            header_container.append($('<h6/>').text('Edit Fields').addClass('ml-auto mr-auto'));
             this.element.find('.action.btn').attr('class', 'btn action');
             this.element.find('.action.btn').addClass('btn action btn-primary');
             this.element.find('.content-container').empty();
@@ -980,11 +982,22 @@ class InfoSlide extends JqueryElement {
             }
         }
         var modal_build_func = function() {
-            var header = (action == 'delete') ? 'Would You Like to Delete the Following' :
-            'Would You Like to Overwrite the Following?';
             this.element.find('.action.btn').attr('class', 'btn action');
             this.element.find('.action.btn').addClass('btn action btn-danger');
-            this.element.find('.header-text').text(header);
+            var header_container = this.element.find('.header').first();
+            header_container.empty();
+            var header_text = (action == 'delete') ? 'Would You Like to Delete the Following?' :
+            'Would You Like to Overwrite the Following?';
+            header_container.append($('<h6>')
+                .addClass('ml-auto mr-auto header-text')
+                .text(header_text)
+            );
+            if (action == 'delete') {
+                header_container.append($('<p/>')
+                    .addClass('ml-auto mr-auto mt-2')
+                    .text("(WARNING: All members will lose the training)")
+                );
+            }
             this.modal_element.find('.content-container').empty();
             for (let i=0; i<overwrite_warnings.length; i++) {
                 var container = $('<div/>').addClass('m-2');
