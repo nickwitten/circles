@@ -57,7 +57,7 @@ field_names = {}
 for data in [profile_data, residence_data, role_data, module_data, theme_data, child_data]:
     field_names.update(data)
 
-form_choices_text = [[key, value[1]] for key, value in field_names.items()]
+form_choices_text = [[key, value[1]] for key, value in sorted(field_names.items(), key=lambda x: x[1][1])]
 form_choices_text.insert(0, ["",""])
 site_spec_fields = list(module_data.keys()) + list(theme_data.keys())
 
@@ -101,10 +101,10 @@ def search_profiles(profiles,search_input):
 
 
 def filter_profiles(profiles,filters):
-    for filter in filters:
-        filterby = filter["filterby"]
-        filterinput = filter["filterinput"]
-        if not filterinput: # If there is no input don't filter
+    for filter_ in filters:
+        filterby = filter_["filterby"]
+        filterinput = filter_["filterinput"]
+        if not filterinput: # If there is no input don't filter_
             continue
         # Get model that the field is in
         model = field_to_model(filterby)
@@ -272,7 +272,6 @@ def create_excel(tools_form, sorted_profiles):
     if fields[0]:
         # Fill first row with field description
         for i, field in enumerate(fields):
-            print(field_names[field][1])
             worksheet.write(row, i+1, field_names[field][1], bold)
 
         row += 1 # move down a row
@@ -314,16 +313,13 @@ def field_to_model(field):
 
 
 def data_to_string(value):
-    print(value.__class__)
     if isinstance(value,PhoneNumber):
         return value.as_e164
     elif isinstance(value,model_data):
-        print('isis')
         return value.__str__()
     elif isinstance(value,str):
         return value
     else:
-        print('not')
         return ''
 
 

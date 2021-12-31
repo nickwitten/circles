@@ -257,7 +257,6 @@ button:focus {
 #profile_search_content {
   display: flex;
   flex-flow: column;
-  overflow-y: scroll;
   height: 88vh;
   min-width: 350px;
   min-height: 430px;
@@ -279,12 +278,15 @@ button:focus {
 }
 #result-list {
   flex-grow: 1;
+  overflow-y: auto;
+  display: block;
 }
 #profiles_loading_container {
   display: flex;
   flex-flow: column;
   position: relative;
   flex-grow: 1;
+  overflow-y: auto;
 }
 #filter_submit {
   margin-left: 10px;
@@ -360,6 +362,7 @@ button:focus {
     justify-content: right;
     width: 100%;
 }
+
 .profile_container {
     margin: 0;
 }

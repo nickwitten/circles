@@ -63,12 +63,30 @@ class Theme(DictMixin, models.Model):
                 module_required_for = list(set(module_required_for + required_for))
                 module.required_for = json.dumps(module_required_for)
                 module.save(required_checked=True)
+        self.update_profile_connections()
+
+    def update_profile_connections(self):
+        required_positions = json.loads(self.required_for)
+        profiles = self.site.profiles().filter(roles__position__in=required_positions)
+        # Add to profiles with required position
+        for profile in profiles:
+            if not self.profiles.filter(profile=profile):
+                ProfileTheme.objects.create(theme=self, profile=profile)
+        # Remove from profiles without required position and not completed
+        for profile_theme in self.profiles.exclude(profile__in=profiles):
+            if not profile_theme.end_date:
+                profile_theme.delete()
 
     def order_open_modules(self, profile):
         modules = ProfileModule.objects.filter(profile=profile, module__theme=self).order_by('module__title')
         complete = modules.filter(end_date__isnull=False)
         incomplete = modules.filter(end_date__isnull=True)
         return complete | incomplete
+
+    def create_profile_connection(self, profile):
+        ProfileTheme.objects.create(theme=self, profile=profile)
+
+
 
 class ProfileTheme(models.Model):
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, related_name='profiles')
