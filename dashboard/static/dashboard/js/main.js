@@ -259,6 +259,7 @@ class Dropdown extends JqueryElement {
         this.placeholder = placeholder;
         this.default_value = default_value;
         this.value = default_value;
+        this.value_id = '.option input';
         this.val_to_text = {}; // Hash values to display text
         this.text = '';
         this.detail = false;
@@ -316,7 +317,7 @@ class Dropdown extends JqueryElement {
         for (let i=0; i<values.length; i++) {
             var value = values[i];
             var dropdown = this;
-            this.element.find('input').each(function() {
+            this.element.find(this.value_id).each(function() {
                 if (value.length == 2) {
                     var match = (value[0] == $(this).siblings('p').text() && value[1] == $(this).val());
                 } else {
@@ -448,6 +449,7 @@ class JsonDropdown extends Dropdown {
 class MultiLevelDropdown extends Dropdown {
     constructor(id, data, {type='checkbox', placeholder='', default_value=[], parent=null} = {}) {
         super(id, data, {type: type, placeholder: placeholder, default_value: default_value, parent:parent});
+        this.value_id = '.sub-option input';
     }
 
     select(option, e) {
