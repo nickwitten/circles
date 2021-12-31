@@ -213,8 +213,7 @@ h3 {
 .fields-table textarea {
     padding 0;
 }
-.fields-table .multi-level-dropdown,
-.fields-table .dropdown {
+.fields-table .multi-level-dropdown {
     width: 50%;
 }
 .fields-table textarea {
