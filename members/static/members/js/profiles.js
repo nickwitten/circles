@@ -2,12 +2,10 @@
 ///////////////// HTML Elements //////////////////////////////////////
 
 // Adds header above each group of profiles when using sort by
-function addGroupHeaderHTML(group) {
-  $('#result-list').append(
-    $('<h3/>')
-      .text(group['group name'])
-      .addClass("mt-2 mb-2")
-  );
+function GroupHeaderHTML(group) {
+  var container = $('<div/>').addClass("group-header");
+  container.append($('<p/>').text(group['group name']).addClass("mt-2 mb-2"));
+  return container
 }
 
 // Adds profile and data to the result list
@@ -15,8 +13,7 @@ function profileHTML(profile) {
   // Create a row
   var container =
   $('<div/>')
-    .attr('id','profile_container')
-    .addClass('pt-2 pb-2 row');
+    .addClass('pt-2 pb-2 row profile_container');
   // Create halves of the row
   var left =
   $('<div/>')
@@ -304,12 +301,8 @@ function getProfiles(use_cookies=[]) {
       var profile_items_html = [];
       for (i = 0; i < j; i++) {
         var group = groups[i];
-        if (group['group name'] == 'no groups'){
-          // No group header
-        }
-        else {
-          // Add a group header
-          addGroupHeaderHTML(group);
+        if (group['group name'] != 'no groups'){
+          profile_items_html.push(GroupHeaderHTML(group));
         };
         var k = 0;
         var l = group['profiles'].length

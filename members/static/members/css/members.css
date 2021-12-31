@@ -360,14 +360,18 @@ button:focus {
     justify-content: right;
     width: 100%;
 }
-#profile_container {
+.profile_container {
     margin: 0;
 }
-#profile_container .col-6 {
+.profile_container .col-6 {
     padding-left: 0;
 }
-#profile_container a,
+.profile_container a,
 #create_profile a {
     font-size: calc(12px + 0.3vw);
     padding-left: calc(5px + 2vw);
+}
+.group-header p {
+    font-size: calc(12px + 0.3vw);
+    padding-left: calc(2px + 1.5vw);
 }
