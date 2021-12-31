@@ -248,7 +248,7 @@ class UpdateForm extends CustomForm {
         var build_modal = function() {
             var header_container = this.element.find('.header').first();
             header_container.empty();
-            header_container.append($('<h6/>').text('Edit Fields').addClass('ml-auto mr-auto'));
+            header_container.append($('<h6/>').text('Edit Fields').addClass('ml-auto mr-auto header-text'));
             this.element.find('.action.btn').attr('class', 'btn action');
             this.element.find('.action.btn').addClass('btn action btn-primary');
             this.element.find('.content-container').empty();
