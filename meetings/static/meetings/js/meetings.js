@@ -358,24 +358,27 @@ class RequiredMessage extends JqueryElement {
             var modal_text = $('<a/>');
             modal_text.attr("href", "#");
         }
-        var message2 = $('<p/>');
         if (this.value) {
-            modal_text.text("is ");
-            message2.text(
-                "required for the above members and " +
-                "will be reflected in their attendance " +
-                "history."
-            );
+            container.append($('<p/>').text(
+                "This meeting "
+            ));
+            container.append(modal_text.text(
+                "will"
+            ));
+            container.append($('<p/>').text(
+                " be used to calculate attendance percentages."
+            ));
         } else {
-            modal_text.text("is not ");
-            message2.text(
-                "required for the above members and will " +
-                "not affect their attendance history."
-            );
+            container.append($('<p/>').text(
+                "This meeting is optional and "
+            ));
+            container.append(modal_text.text(
+                "will not"
+            ));
+            container.append($('<p/>').text(
+                " be used to calculate attendance percentages."
+            ));
         }
-        container.append(message1);
-        container.append(modal_text);
-        container.append(message2);
         this.element.append(container);
         this.item_listeners();
     }
