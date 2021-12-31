@@ -174,22 +174,24 @@ class Role(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.update_required_modules()
+        self.update_required_training()
 
     def delete(self, *args, **kwargs):
         super().delete(*args, **kwargs)
-        self.update_required_modules()
+        self.update_required_training()
 
-    def update_required_modules(self):
+    def update_required_training(self):
         modules = self.site.modules.all()
-        for module in modules:
-            profile_module = module.profiles.filter(profile=self.profile).first()
-            required_positions = json.loads(module.required_for)
-            if self.profile.roles.filter(position__in=required_positions):
-                if not profile_module:
-                    module.create_profile_connection(self.profile)
-            elif profile_module and not profile_module.end_date:
-                profile_module.delete()
+        themes = self.site.themes.all()
+        for learn_type in [modules, themes]:
+            for item in learn_type:
+                profile_connection = item.profiles.filter(profile=self.profile).first()
+                required_positions = json.loads(item.required_for)
+                if self.profile.roles.filter(position__in=required_positions):
+                    if not profile_connection:
+                        item.create_profile_connection(self.profile)
+                elif profile_connection and not profile_connection.end_date:
+                    profile_connection.delete()
 
 
     @staticmethod
