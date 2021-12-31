@@ -656,7 +656,7 @@ header a{
     z-index: 1000;
     display: flex;
     flex-flow: column;
-    width: calc(250px + 10vw);
+    width: calc(280px + 10vw);
     height: auto;
     top: 50%;
     left: 50%;
@@ -677,9 +677,13 @@ header a{
 }
 .modal-container .modal .header {
     display: flex;
+    flex-flow: column;
     justify-content: center;
     border-bottom: 1px solid #dee2e6;
     padding-bottom: 1rem;
+}
+.header p {
+    font-size: calc(10px + 0.3vw);
 }
 .modal-container .modal .content-container {
     display: flex;

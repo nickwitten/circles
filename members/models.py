@@ -31,8 +31,16 @@ class Profile(models.Model):  # ForeignKey field must have same name as related 
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
     DOB = models.DateField(blank=True,null=True)
-    gender = models.CharField(blank=True,null=True,max_length=16,choices=[('Male','Male'),('Female','Female'),('Other','Other')])
-    race = models.CharField(blank=True,null=True,max_length=16,choices=[('White','White',),('Black','Black'),('Other','Other')])
+    gender = models.CharField(blank=True,null=True,max_length=16,choices=[('Male','Male'),('Female','Female'),('Non-Binary','Non-Binary')])
+    race = models.CharField(blank=True,null=True,max_length=128,choices=[
+        ('Asian American/Pacific Islander/Asian','Asian American/Pacific Islander/Asian'),
+        ('Black/African American/African','Black/African American/African'),
+        ('Hispanic/Latinx/Chicanx','Hispanic/Latinx/Chicanx'),
+        ('Middle Eastern/Middle Eastern American', 'Middle Eastern/Middle Eastern American'),
+        ('Native American/American Indian/Indigenous', 'Native American/American Indian/Indigenous'),
+        ('Other', 'Other'),
+        ('White/Caucasian/European', 'White/Caucasian/European')
+    ])
     email_address = models.EmailField(blank=True,null=True)
     cell_phone = PhoneNumberField(blank=True,null=True)
     other_phone = PhoneNumberField(blank=True,null=True)
@@ -160,11 +168,12 @@ class Residence(models.Model):
 class Role(models.Model):
     profile = models.ForeignKey(Profile,on_delete=models.CASCADE,related_name='roles')
     site = models.ForeignKey(Site,on_delete=models.SET_NULL, null=True, related_name='roles')
-    position_choices = [('Circle Leader','Circle Leader'),('Ally','Ally'),('Volunteer','Volunteer'),('Resource Team','Resource Team'),('Donor','Donor'), ('Other','Other')]
+    position_choices = [('Ally','Ally'), ('Circle Leader','Circle Leader'), ('Donor','Donor'), ('Facilitator', 'Facilitator'), ('Resource Team','Resource Team'), ('Staff', 'Staff'), ('Volunteer','Volunteer'), ('Other','Other')]
     position = models.CharField(max_length=64,choices=position_choices)
     start_date = models.DateField(blank=True,null=True)
     end_date = models.DateField(blank=True,null=True)
-    cohort = models.CharField(blank=True,null=True,max_length=32, choices=[('CL','CL'),('Ally', 'Ally')])
+    # cohort = models.CharField(blank=True,null=True,max_length=32, choices=[('CL','CL'),('Ally', 'Ally')])
+    cohort = models.IntegerField(blank=True,null=True)
     resource_team_name = models.CharField(blank=True,null=True,max_length=32)
     resource_team_role = models.CharField(blank=True,null=True,max_length=32)
     display_fields = ['cohort', 'resource_team_name', 'resource_team_role', 'site',]
