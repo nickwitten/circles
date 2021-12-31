@@ -223,18 +223,23 @@ class DataList extends JqueryElement {
     }
 
     build() {
-        var item_min_height;
+        var item_min_height = 0;
         if (this.items.length) {
-            this.items[0].height('auto');
-            this.element.append(this.items[0]);
-            item_min_height = this.element.children().first().outerHeight(true);
+            for (var i=0; i<this.items.length; i++) {
+                var item = this.items[i].height('auto');
+                this.element.append(item);
+                var height = item.outerHeight(true);
+                item_min_height = (height>item_min_height) ? height : item_min_height;
+            }
+            this.empty();
         } else  {
             var default_item_ct = 15;
             item_min_height = this.element.height() / default_item_ct;
         }
+        this.element.empty();
         var items_on_screen = Math.floor(this.element.outerHeight(true)/item_min_height);
         var item_size = (this.element.outerHeight(true)-2) / items_on_screen;
-        for (var i=1; i<this.items.length; i++) {
+        for (var i=0; i<this.items.length; i++) {
             this.element.append(this.items[i])
         }
         var item_ct = this.element.children().length;
@@ -259,6 +264,7 @@ class Dropdown extends JqueryElement {
         this.placeholder = placeholder;
         this.default_value = default_value;
         this.value = default_value;
+        this.value_id = '.option input';
         this.val_to_text = {}; // Hash values to display text
         this.text = '';
         this.detail = false;
@@ -316,7 +322,7 @@ class Dropdown extends JqueryElement {
         for (let i=0; i<values.length; i++) {
             var value = values[i];
             var dropdown = this;
-            this.element.find('input').each(function() {
+            this.element.find(this.value_id).each(function() {
                 if (value.length == 2) {
                     var match = (value[0] == $(this).siblings('p').text() && value[1] == $(this).val());
                 } else {
@@ -448,6 +454,7 @@ class JsonDropdown extends Dropdown {
 class MultiLevelDropdown extends Dropdown {
     constructor(id, data, {type='checkbox', placeholder='', default_value=[], parent=null} = {}) {
         super(id, data, {type: type, placeholder: placeholder, default_value: default_value, parent:parent});
+        this.value_id = '.sub-option input';
     }
 
     select(option, e) {
