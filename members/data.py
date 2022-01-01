@@ -162,7 +162,6 @@ def get_profile_data(profiles, data_types):
                         if related_model:
                             field = field_names[data_type][0]
                             value = getattr(related_model, field)
-                            print(value)
                             data_temp += data_to_string(value)
                             if index < len(related_models) - 1:
                                 data_temp += ', '
@@ -314,7 +313,9 @@ def field_to_model(field):
 
 
 def data_to_string(value):
-    if isinstance(value,PhoneNumber):
+    if value is None:
+        return ''
+    elif isinstance(value,PhoneNumber):
         return value.as_e164
     else:
         return str(value)
