@@ -1688,6 +1688,12 @@ class MenuSiteSelect extends JqueryElement {
     }
 
     set_value(val, change) {
+        if (Array.isArray(val) && Array.isArray(this.value) && arraysEqual(this.value, val)) {
+            change = false;
+        }
+        if (this.value == val) {
+            change = false;
+        }
         this.value = val;
         if (!Array.isArray(val)) {
             val = [val];
