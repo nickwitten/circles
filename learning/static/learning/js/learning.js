@@ -702,7 +702,6 @@ class InfoSlide extends JqueryElement {
 
     set_update() {
         this.detail = false;
-        console.log(this.detail);
         this.element.find('.btn-container.update-btns').show();
         this.element.find('.btn-container.detail-btns').hide();
         var custom_fields = this.update_form.custom_fields;
@@ -1265,7 +1264,7 @@ class InfoSlide extends JqueryElement {
 
 
 
-class LearningList extends JqueryElement {
+class LearningList extends DataList {
     constructor(id) {
         super(id);
         this.site_data = create_loading_object();
@@ -1286,6 +1285,7 @@ class LearningList extends JqueryElement {
         this.create_programming = $('#create_programming');
         this.create_theme = $('#create_theme');
         this.create_module = $('#create_module');
+        this.reset();
         this.loader_element = this.element.siblings('.loading');
         this.get_items();
         this.listeners();
@@ -1457,7 +1457,6 @@ class LearningList extends JqueryElement {
         document.cookie = 'viewing_sites=' + JSON.stringify(val) +
             '; path=/';
     }
-        
 
     get_type_select_data() {
         var training_options = [['All', 'All']].concat(role_positions);
@@ -1522,30 +1521,37 @@ class LearningList extends JqueryElement {
     }
 
     build_items(items, types) {
-        this.element.empty();
+        //this.element.empty();
+        this.items = [];
         for (let i=0; i<items.length; i++) {
             var item_data = items[i];
             var item_container = $('<li/>').addClass('item-container');
-            var item_element = $('<p/>')
+            var item_element = $('<p/>').addClass('align-middle')
                 .addClass('item blacklink')
                 .attr('value', item_data[1])
                 .attr('data-type', types[0])
                 .text(item_data[0]);
             item_container.append(item_element);
+            this.items.push(item_container);
             var sub_items = item_data[2];
             sub_items = (sub_items) ? sub_items : [];
             for (let j=0; j<sub_items.length; j++) {
+                var sub_container = $('<li/>').addClass('item-container');
                 var sub_data = sub_items[j];
-                var sub_element = $('<p/>')
+                var sub_element = $('<p/>').addClass('align-middle')
                     .addClass('sub-item blacklink')
                     .addClass(sub_data[2])
                     .attr('value', sub_data[1])
                     .attr('data-type', types[1])
                     .text(sub_data[0]);
-                item_container.append(sub_element);
+                sub_container.append(sub_element);
+                //item_container.append(sub_element);
+                this.items.push(sub_container);
             }
-            this.element.append(item_container);
+            //this.element.append(item_container);
+            //this.items.push(item_container);
         }
+        this.reset();
     }
 }
 
