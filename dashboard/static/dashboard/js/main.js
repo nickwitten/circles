@@ -502,6 +502,7 @@ class MultiLevelDropdown extends Dropdown {
     update_value() {
         var dropdown = this;
         var value_element = this.element.find('.value').first();
+        var old_value = this.value;
         this.value = [];
         this.element.find('input').each(function() {
             if ($(this).is(':checked')) {
@@ -518,7 +519,9 @@ class MultiLevelDropdown extends Dropdown {
             this.text = this.placeholder;
         }
         value_element.text(this.text);
-        this.element.trigger(":change");
+        if (!arraysEqual(old_value, this.value)) {
+            this.element.trigger(":change");
+        }
     }
 
     styles() {
