@@ -314,7 +314,7 @@ def field_to_model(field):
 
 def data_to_string(value):
     if value is None:
-        return ''
+        return ''  # This will be 'Not Available'
     elif isinstance(value,PhoneNumber):
         return value.as_e164
     else:
