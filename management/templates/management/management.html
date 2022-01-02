@@ -1,0 +1,15 @@
+{% extends 'management/base.html' %}
+{% load static %}
+
+{% block app_tabs %}
+<ul class="sub_tags bg-blue" xmlns:style="http://www.w3.org/1999/xhtml" xmlns:style="http://www.w3.org/1999/xhtml">
+    <li class=""><a class="black sub_tabs" href="{% url 'management' %}">Management</a></li>
+</ul>
+{% endblock %}
+
+{% block content %}
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'management/js/management.js' %}"></script>
+{% endblock %}

@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'dashboard.apps.DashboardConfig',
     'meetings.apps.MeetingsConfig',
     'learning.apps.LearningConfig',
+    'management.apps.ManagementConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

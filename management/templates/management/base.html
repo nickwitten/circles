@@ -1,0 +1,20 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+<!--------------- Nav Bar ------------------->
+
+{% block tabs %}
+  <link rel="stylesheet" type="text/css" href="{% static 'management/css/management.css' %}"/>
+  {% include 'dashboard/tabs.html' with management=True %}
+{% endblock tabs %}
+
+{% block app_tabs %}
+{% endblock app_tabs %}
+
+<!------------------------------------------->
+
+{% block content %}
+{% endblock content %}
+
+{% block js %}
+{% endblock js %}

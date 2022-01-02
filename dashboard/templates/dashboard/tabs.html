@@ -3,6 +3,7 @@
 <li class="{% if members %}active{% endif %}"><a href="{% url 'profiles' %}"><p>Members</p></a></li>
 <li class="{% if meetings %}active{% endif %}"><a href="{% url 'meetings' %}"><p>Meetings</p></a></li>
 <li class="{% if learning %}active{% endif %}"><a href="{% url 'learning' %}"><p>Learning</p></a></li>
+<li class="{% if management %}active{% endif %}"><a href="{% url 'management' %}"><p>Management</p></a></li>
 <!--<li class="{% if progress %}active{% endif %}"><a href="#"><p>Progress</p></a></li>-->
 {% else %}
 <!--<li class='active'><a href="{% url 'dashboard' %}"><p>Dashboard</p></a></li>-->
