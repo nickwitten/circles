@@ -257,14 +257,14 @@ class DataList extends JqueryElement {
 
 
 class Dropdown extends JqueryElement {
-    constructor(id, data, {type='checkbox', placeholder='', default_value=[], parent=null} = {}) {
+    constructor(id, data, {type='checkbox', placeholder='', value_id='.option input', default_value=[], parent=null} = {}) {
         super(id, parent);
         this.data = data;
         this.type = type;
         this.placeholder = placeholder;
         this.default_value = default_value;
+        this.value_id = value_id;
         this.value = default_value;
-        this.value_id = '.option input';
         this.val_to_text = {}; // Hash values to display text
         this.text = '';
         this.detail = false;
@@ -452,9 +452,8 @@ class JsonDropdown extends Dropdown {
 
 
 class MultiLevelDropdown extends Dropdown {
-    constructor(id, data, {type='checkbox', placeholder='', default_value=[], parent=null} = {}) {
-        super(id, data, {type: type, placeholder: placeholder, default_value: default_value, parent:parent});
-        this.value_id = '.sub-option input';
+    constructor(id, data, {type='checkbox', placeholder='', value_id='.sub-option input', default_value=[], parent=null} = {}) {
+        super(id, data, {type: type, placeholder: placeholder, value_id: value_id, default_value: default_value, parent:parent});
     }
 
     select(option, e) {
