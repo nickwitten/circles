@@ -20,10 +20,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic.base import RedirectView
 
+
 urlpatterns = [
     # path('',include('dashboard.urls')),
     path('', RedirectView.as_view(url='members/', permanent=False), name='index'),
-    path('dashboard/', include('dashboard.urls')),
+    # path('dashboard/', include('dashboard.urls')),
     path('members/',include('members.urls')),
     path('meetings/',include('meetings.urls')),
     path('learning/',include('learning.urls')),
@@ -36,3 +37,4 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

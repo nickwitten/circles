@@ -84,7 +84,18 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'circles.middleware.RequireAccessMiddleware',
 ]
+
+ACCESS_REQUIRED_URLS = (
+    r'/members/(.*)$',
+    r'/meetings/(.*)$',
+    r'/learning/(.*)$',
+    r'/management/(.*)$',
+)
+ACCESS_REQUIRED_URLS_EXCEPTIONS = (
+)
+
 
 ROOT_URLCONF = 'circles.urls'
 
@@ -166,8 +177,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
-LOGIN_REDIRECT_URL = 'dashboard'
-LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = '/members'
+LOGIN_URL = '/login'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')

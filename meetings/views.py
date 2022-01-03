@@ -1,7 +1,6 @@
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import JsonResponse, Http404
 from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
 import datetime
 from meetings import models
 from meetings import forms
@@ -10,7 +9,6 @@ from members.models import FilterSet
 from django.http import QueryDict
 import json
 
-@login_required
 def meetings(request):
     site_access = request.user.userinfo.user_site_access_dict()
     form = forms.MeetingCreationForm(user=request.user)
@@ -20,7 +18,6 @@ def meetings(request):
     }
     return render(request, 'meetings/meetings.html', context)
 
-@login_required
 def get_meetings(request):
     sites = json.loads(request.GET.get('site_pks'))
     baseyear = int(request.GET.get('baseyear'))
@@ -40,7 +37,6 @@ def get_meetings(request):
     }
     return JsonResponse(data)
 
-@login_required
 def get_meeting_info(request):
     pk = request.GET.get('pk')
     meeting = get_object_or_404(models.Meeting, pk=pk)
@@ -51,7 +47,7 @@ def get_meeting_info(request):
     }
     return JsonResponse(data)
 
-@login_required
+
 def get_members(request):
     lists = request.GET.get('lists', None)
     meeting = request.GET.get('meeting', None)
@@ -75,7 +71,7 @@ def get_members(request):
     }
     return JsonResponse(data)
 
-@login_required
+
 def post_meeting_info(request, pk):
     if request.method == 'POST':
         form_dict = QueryDict(request.POST.get('form'))
@@ -118,7 +114,7 @@ def post_meeting_info(request, pk):
         data = base_meeting.to_dict() if base_meeting else created_meetings[0].to_dict()
         return JsonResponse(data)
 
-@login_required
+
 def delete_meeting(request, pk):
     meeting = get_object_or_404(models.Meeting, pk=pk)
     if meeting.site not in request.user.userinfo.user_site_access():

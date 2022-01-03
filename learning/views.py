@@ -7,7 +7,6 @@ from django.db.models.functions import Concat
 from django.http import JsonResponse, QueryDict
 from django.shortcuts import render, get_object_or_404
 from django.views.generic.base import TemplateView, View
-from django.contrib.auth.mixins import LoginRequiredMixin
 import members.models as member_models
 from members.data import unique_maintain_order
 from circles import settings
@@ -46,7 +45,7 @@ class Learning(TemplateView):
         return context
 
 
-class LearningModels(LoginRequiredMixin, AjaxMixin, View):
+class LearningModels(AjaxMixin, View):
     data = {}
     # Hash to (class, related_name, form_class)
     models = {
@@ -393,7 +392,7 @@ class LearningModels(LoginRequiredMixin, AjaxMixin, View):
             raise ValidationError('Invalid Form')
 
 
-class LearningFiles(LoginRequiredMixin, AjaxMixin, View):
+class LearningFiles(AjaxMixin, View):
     models = {
         'programming': (models.Programming, models.ProgrammingFile),
         'module': (models.Module, models.ModuleFile),
@@ -438,7 +437,7 @@ class LearningFiles(LoginRequiredMixin, AjaxMixin, View):
         learning_file.delete()
 
 
-class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
+class MembersCompleted(AjaxMixin, View):
     data = {}
     models = {
         'theme': (models.Theme, models.ProfileTheme),
@@ -499,7 +498,7 @@ class MembersCompleted(LoginRequiredMixin, AjaxMixin, View):
         return model, profile
 
 
-class LearningSchedule(LoginRequiredMixin, AjaxMixin, View):
+class LearningSchedule(AjaxMixin, View):
     data = {}
     models = {
         'programming': models.Programming,

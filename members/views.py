@@ -1,7 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.views.generic import CreateView,DetailView,UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
 from django.http import QueryDict, Http404
 from .models import Profile, Residence, Role, Child, ChildInfo, FilterSet
@@ -52,18 +51,18 @@ class SiteAccessMixin:
             return super().form_valid(form)
 
 
-class ProfileDetailView(LoginRequiredMixin, SiteAccessMixin, DetailView):
+class ProfileDetailView(SiteAccessMixin, DetailView):
     model = Profile
     template_name = 'members/profile_detail.html'
 
 
-class ProfileUpdateView(LoginRequiredMixin, SiteAccessMixin, UpdateView):
+class ProfileUpdateView(SiteAccessMixin, UpdateView):
     model = Profile
     template_name = 'members/update_profile.html'
     form_class = forms.ProfileUpdateForm
 
 
-class ProfileDeleteView(LoginRequiredMixin, SiteAccessMixin, BSModalDeleteView):
+class ProfileDeleteView(SiteAccessMixin, BSModalDeleteView):
     model = Profile
     template_name = 'members/modal_delete.html'
     success_message = 'Deleted'
@@ -101,7 +100,7 @@ def create_profile(request):
     return render(request, 'members/create_profile.html',context)
 
 
-class ResidenceCreateView(LoginRequiredMixin, SiteAccessMixin, BSModalCreateView):
+class ResidenceCreateView(SiteAccessMixin, BSModalCreateView):
     model = Residence
     template_name = 'members/modal_create.html'
     form_class = forms.ResidenceCreationForm
@@ -114,7 +113,7 @@ class ResidenceCreateView(LoginRequiredMixin, SiteAccessMixin, BSModalCreateView
         context['title'] = 'Add Home Information'
         return context
 
-class ResidenceUpdateView(LoginRequiredMixin, SiteAccessMixin, BSModalUpdateView):
+class ResidenceUpdateView(SiteAccessMixin, BSModalUpdateView):
     model = Residence
     template_name = 'members/modal_create.html'
     form_class = forms.ResidenceCreationForm
@@ -127,7 +126,7 @@ class ResidenceUpdateView(LoginRequiredMixin, SiteAccessMixin, BSModalUpdateView
         context['title'] = 'Update Home Information'
         return context
 
-class ResidenceDeleteView(LoginRequiredMixin, SiteAccessMixin, BSModalDeleteView):
+class ResidenceDeleteView(SiteAccessMixin, BSModalDeleteView):
     model = Residence
     template_name = 'members/modal_delete.html'
     success_message = 'Deleted'
@@ -142,7 +141,7 @@ class ResidenceDeleteView(LoginRequiredMixin, SiteAccessMixin, BSModalDeleteView
         return context
 
 
-class RoleCreateView(LoginRequiredMixin, SiteAccessMixin, BSModalCreateView):
+class RoleCreateView(SiteAccessMixin, BSModalCreateView):
     model = Role
     template_name = 'members/modal_create.html'
     form_class = forms.RoleCreationForm
@@ -161,7 +160,7 @@ class RoleCreateView(LoginRequiredMixin, SiteAccessMixin, BSModalCreateView):
         return context
 
 
-class RoleUpdateView(LoginRequiredMixin, SiteAccessMixin, BSModalUpdateView):
+class RoleUpdateView(SiteAccessMixin, BSModalUpdateView):
     model = Role
     template_name = 'members/modal_create.html'
     form_class = forms.RoleCreationForm
@@ -180,7 +179,7 @@ class RoleUpdateView(LoginRequiredMixin, SiteAccessMixin, BSModalUpdateView):
         return kwargs
 
 
-class RoleDeleteView(LoginRequiredMixin, SiteAccessMixin, BSModalDeleteView):
+class RoleDeleteView(SiteAccessMixin, BSModalDeleteView):
     model = Role
     template_name = 'members/modal_delete.html'
     success_message = 'Deleted'
@@ -195,7 +194,7 @@ class RoleDeleteView(LoginRequiredMixin, SiteAccessMixin, BSModalDeleteView):
         return context
 
 
-class ChildrenEditView(LoginRequiredMixin, SiteAccessMixin, DetailView):
+class ChildrenEditView(SiteAccessMixin, DetailView):
     model = Profile
     template_name = 'members/children_edit.html'
     context_object_name = 'profile'
@@ -209,7 +208,7 @@ class ChildrenEditView(LoginRequiredMixin, SiteAccessMixin, DetailView):
         return super().get_context_data(**kwargs)
 
 
-class ChildInfoCreateView(LoginRequiredMixin, SiteAccessMixin, BSModalCreateView):
+class ChildInfoCreateView(SiteAccessMixin, BSModalCreateView):
     model = ChildInfo
     template_name = 'members/modal_create.html'
     form_class = forms.ChildInfoCreationForm
@@ -227,7 +226,7 @@ class ChildInfoCreateView(LoginRequiredMixin, SiteAccessMixin, BSModalCreateView
         context['title'] = 'Create Set'
         return context
 
-class ChildInfoUpdateView(LoginRequiredMixin, SiteAccessMixin, BSModalUpdateView):
+class ChildInfoUpdateView(SiteAccessMixin, BSModalUpdateView):
     model = ChildInfo
     template_name = 'members/modal_create.html'
     form_class = forms.ChildInfoCreationForm
@@ -240,7 +239,7 @@ class ChildInfoUpdateView(LoginRequiredMixin, SiteAccessMixin, BSModalUpdateView
         context['title'] = 'Update Information'
         return context
 
-class ChildInfoDeleteView(LoginRequiredMixin, SiteAccessMixin, BSModalDeleteView):
+class ChildInfoDeleteView(SiteAccessMixin, BSModalDeleteView):
     model = ChildInfo
     template_name = 'members/modal_delete.html'
     success_message = 'Deleted'
@@ -248,7 +247,7 @@ class ChildInfoDeleteView(LoginRequiredMixin, SiteAccessMixin, BSModalDeleteView
     def get_success_url(self):
         return reverse('edit-children',args=(self.object.profile.id,))
 
-class ChildCreateView(LoginRequiredMixin, CreateView):
+class ChildCreateView(CreateView):
     model = Child
     template_name = 'members/modal_create.html'
     form_class = forms.ChildCreationForm
@@ -268,7 +267,7 @@ class ChildCreateView(LoginRequiredMixin, CreateView):
         context['title'] = 'Add Child'
         return context
 
-class ChildUpdateView(LoginRequiredMixin, UpdateView):
+class ChildUpdateView(UpdateView):
     model = Child
     template_name = 'members/modal_create.html'
     form_class = forms.ChildCreationForm
@@ -286,7 +285,7 @@ class ChildUpdateView(LoginRequiredMixin, UpdateView):
         context['title'] = 'Update Child Info'
         return context
 
-class ChildDeleteView(LoginRequiredMixin, BSModalDeleteView):
+class ChildDeleteView(BSModalDeleteView):
     model = Child
     template_name = 'members/modal_delete.html'
     success_message = 'Deleted'
