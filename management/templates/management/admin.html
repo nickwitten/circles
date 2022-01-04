@@ -1,0 +1,63 @@
+<div id="header" class=" border-bottom">
+    <div id="manage_title" class="">
+        <h4>Administration</h4>
+    </div>
+</div>
+<div id="content">
+
+    <div id="admin_folders" class="folders">
+        <div id="users_folder" class="folder">
+            <div class="folder-header">
+                <h5 class="folder-header-text">Users</h6>
+                <i class="pointer fas fa-caret-right"></i>
+            </div>
+            <div id="users_content" class="folder-content">
+                <div class="left">
+                    <ul id="users" class="data-list">
+                        {% for user in users %}
+                        <li class="user"><p>{{ user.0 }} {{ user.1 }}</p></li>
+                        {% endfor %}
+                        <li class="user"><p>Dummy User</p></li>
+                        <li class="user"><p>Dummy User</p></li>
+                        <li class="user"><p>Dummy User</p></li>
+                        <li class="user"><p>Dummy User</p></li>
+                        <li class="user"><p>Dummy User</p></li>
+                        <li class="user"><p>Dummy User</p></li>
+                        <li class="user"><p>Dummy User</p></li>
+                        <li class="user"><p>Dummy User</p></li>
+                        <li class="user"><p>Dummy User</p></li>
+                        <li class="user"><p>Dummy User</p></li>
+                        <li class="user"><p>Dummy User</p></li>
+                        <li class="user"><p>Dummy User</p></li>
+                        <li class="user"><p>Dummy User</p></li>
+                    </ul>
+                </div>
+                <div class="right">
+                </div>
+            </div>
+        </div>
+
+
+        <div id="chapters_folder" class="folder">
+            <div class="folder-header">
+                <h5 class="folder-header-text">Chapters</h6>
+                <i class="pointer fas fa-caret-right"></i>
+            </div>
+            <div id="chapters_content" class="folder-content">
+                <div class="left">
+                    <ul id="chapters">
+                        {% for chapter in sites %}
+                        <li class="chapter item" data-pk="{{chapter.pk}}"><p><u>{{ chapter.str }}</u></p></li>
+                        {% for site in chapter.sites %}
+                        <li class="site item" data-pk="{{site.pk}}"><p>{{ site.str }}</p></li>
+                        {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="right">
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

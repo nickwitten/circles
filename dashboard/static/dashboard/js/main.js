@@ -70,7 +70,11 @@ function makeQuery(queryDict) {
 
 function parseQuery(queryString) {
     var query = {};
-    var pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
+	var queryString = (queryString[0] === '?') ? queryString.substr(1) : queryString;
+    if (!queryString.length) {
+        return query;
+    }
+    var pairs = queryString.split('&');
     for (var i = 0; i < pairs.length; i++) {
         var pair = pairs[i].split('=');
         var name = decodeURIComponent(pair[0]);
@@ -197,7 +201,7 @@ class JqueryElement {
 }
 
 class DataList extends JqueryElement {
-    constructor(id, items) {
+    constructor(id, items, parent) {
         super(id, parent);
         this.element.addClass('data-list');
         this.items = (items) ? items : [];
@@ -252,6 +256,48 @@ class DataList extends JqueryElement {
             var mpHeight = $(this).outerHeight(true)-$(this).height();  // margin/padding
             $(this).height(item_size-mpHeight);
         });
+    }
+}
+
+
+class Folders extends JqueryElement {
+    constructor(id, parent=null) {
+        super(id, parent);
+        this.max_height = 500;
+        this.listeners();
+    }
+
+    open(header_element) {
+        var folder = $(header_element).closest('.folder');
+        var content = folder.find('.folder-content');
+        var height = content.height('auto').outerHeight(true);
+        if (this.max_height !== null) {
+            height = (height<this.max_height)?height:this.max_height
+        }
+        content.height(0);
+        content.height(height+2);
+        folder.addClass("open");
+    }
+
+    close(header_element) {
+        var folder = $(header_element).closest('.folder');
+        var content = folder.find('.folder-content');
+        content.height(0);
+        folder.removeClass("open");
+    }
+
+    toggle(header_element) {
+        var folder = $(header_element).closest('.folder');
+        var content = folder.find('.folder-content');
+        if (folder.hasClass("open")) {
+            this.close(header_element);
+        } else {
+            this.open(header_element);
+        }
+    }
+
+    listeners() {
+        this.element.find(".folder-header").click({'object': this, 'func': this.toggle}, this.dispatch);
     }
 }
 

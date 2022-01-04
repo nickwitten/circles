@@ -1,0 +1,74 @@
+#main_container {
+    display: flex;
+    position: relative;
+    flex-flow: column;
+    background-color: white;
+    height: 88vh;
+    margin: 10px auto;
+    padding: 10px 20px;
+    overflow-y: hidden;
+}
+
+#header {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    width: 100%;
+    padding: 1rem;
+}
+
+#content {
+    display: flex;
+    flex-flow: column;
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 2rem;
+}
+
+.folder-content {
+    display: flex;
+    flex-flow: row wrap;
+}
+.folder-content .left {
+    flex-grow: 1;
+    min-width: 200px;
+}
+.folder-content .right {
+    flex-grow: 1;
+    min-width: 200px;
+}
+
+#users_content {
+    display: flex;
+}
+#users {
+    border: 1px solid #dee2e6;
+    height: 20rem;
+    margin: 0 1rem;
+    overflow-y: auto;
+}
+#users .user {
+    padding: 0.5rem;
+}
+#users .user.active {
+    font-weight: 500;
+}
+
+#chapters_content {
+    display: flex;
+}
+#chapters {
+    border: 1px solid #dee2e6;
+    height: 20rem;
+    margin: 0 1rem;
+    overflow-y: auto;
+}
+#chapters .item {
+    padding: 0.5rem;
+}
+#chapters .item.active {
+    font-weight: 500;
+}
+#chapters .item.site p {
+    margin-left: 1rem;
+}

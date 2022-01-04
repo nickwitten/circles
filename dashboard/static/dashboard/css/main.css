@@ -639,6 +639,34 @@ header a{
 }
 
 
+.folder {
+}
+.folder .folder-header {
+    display: flex;
+    width: fit-content;
+    align-items: baseline;
+    padding: 0.5rem 0;
+}
+.folder .folder-header:hover {
+    cursor: pointer;
+}
+.folder .folder-header i {
+    margin-left: 0.5rem;
+}
+.folder .pointer {
+    transition: all 0.2s ease-in-out;
+}
+.folder.open .pointer {
+    transform: rotate(90deg);
+}
+.folder .folder-content {
+    height: 0;
+    overflow-y: hidden;
+    transition: all 0.2s ease-in-out;
+}
+
+
+
 .modal-container {
     z-index: 500;
     visibility: hidden;

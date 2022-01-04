@@ -5,6 +5,26 @@
         <p>All</p>
     </div>
     {% endif %}
+
+    {% if extra_options %}
+    {% for extra_option_group in extra_options %}
+    <div class="chapter">
+        {% if type == 'checkbox' %}
+        <input value="{{ extra_option_group.value }}" type="{{ type }}">
+        {% endif %}
+        <p class="chapter-text blacklink">{{ extra_option_group.str }}</p>
+        <div class="sites" style="display: None;">
+            {% for option in extra_option_group.options %}
+            <div class="site">
+                <input type="{{ type }}" value="{{ option.value }}">
+                <p class="blacklink site-text">{{ option.str }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
     {% for chapter in chapters %}
     <div class="chapter">
         {% if type == 'checkbox' %}
