@@ -200,11 +200,26 @@ class JqueryElement {
     }
 }
 
+
+
+
+class AjaxForm extends JqueryElement {
+    constructor(id, url, parent) {
+        super(id, parent);
+        this.url = url
+        this.element.load(this.url);
+    }
+}
+
+
+
+
 class DataList extends JqueryElement {
     constructor(id, items, parent) {
         super(id, parent);
         this.element.addClass('data-list');
         this.items = (items) ? items : [];
+        this.default_item_ct = 14;
     }
 
     reset() {
@@ -237,12 +252,11 @@ class DataList extends JqueryElement {
             }
             this.empty();
         } else  {
-            var default_item_ct = 15;
-            item_min_height = this.element.height() / default_item_ct;
+            item_min_height = this.element.height() / this.default_item_ct;
         }
         this.element.empty();
         var items_on_screen = Math.floor(this.element.outerHeight(true)/item_min_height);
-        var item_size = (this.element.outerHeight(true)-2) / items_on_screen;
+        var item_size = (this.element.outerHeight(true)) / items_on_screen;
         for (var i=0; i<this.items.length; i++) {
             this.element.append(this.items[i])
         }
@@ -263,7 +277,7 @@ class DataList extends JqueryElement {
 class Folders extends JqueryElement {
     constructor(id, parent=null) {
         super(id, parent);
-        this.max_height = 500;
+        this.max_height = 550;
         this.listeners();
     }
 

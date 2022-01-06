@@ -7,54 +7,55 @@
 
     <div id="admin_folders" class="folders">
         <div id="users_folder" class="folder">
-            <div class="folder-header">
+            <div class="folder-header border-bottom">
                 <h5 class="folder-header-text">Users</h6>
                 <i class="pointer fas fa-caret-right"></i>
             </div>
-            <div id="users_content" class="folder-content">
-                <div class="left">
-                    <ul id="users" class="data-list">
+            <div id="users_content" class="folder-content list-edit">
+                <div class="content">
+                    <ul id="users" class="data-list border-right">
                         {% for user in users %}
-                        <li class="user"><p>{{ user.0 }} {{ user.1 }}</p></li>
+                        <li class="list-item"><p>{{ user.first_name }} {{ user.last_name }}</p></li>
                         {% endfor %}
-                        <li class="user"><p>Dummy User</p></li>
-                        <li class="user"><p>Dummy User</p></li>
-                        <li class="user"><p>Dummy User</p></li>
-                        <li class="user"><p>Dummy User</p></li>
-                        <li class="user"><p>Dummy User</p></li>
-                        <li class="user"><p>Dummy User</p></li>
-                        <li class="user"><p>Dummy User</p></li>
-                        <li class="user"><p>Dummy User</p></li>
-                        <li class="user"><p>Dummy User</p></li>
-                        <li class="user"><p>Dummy User</p></li>
-                        <li class="user"><p>Dummy User</p></li>
-                        <li class="user"><p>Dummy User</p></li>
-                        <li class="user"><p>Dummy User</p></li>
                     </ul>
                 </div>
-                <div class="right">
+                <div id="user_form_container" class="content hide form-container">
+                </div>
+                <div>
+                    <ul id="users_options" class="options border-left">
+                        <li data-url="{% url 'create-user' %}" class="option"><a href="#">Create User</a></li>
+                        <li class="option"><a href="#">Update User</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
 
 
         <div id="chapters_folder" class="folder">
-            <div class="folder-header">
+            <div class="folder-header border-bottom">
                 <h5 class="folder-header-text">Chapters</h6>
                 <i class="pointer fas fa-caret-right"></i>
             </div>
-            <div id="chapters_content" class="folder-content">
-                <div class="left">
-                    <ul id="chapters">
+            <div id="chapters_content" class="folder-content list-edit">
+                <div class="content">
+                    <ul id="chapters" class="data-list border-right">
                         {% for chapter in sites %}
-                        <li class="chapter item" data-pk="{{chapter.pk}}"><p><u>{{ chapter.str }}</u></p></li>
+                        <li class="chapter list-item" data-pk="{{chapter.pk}}"><p><u>{{ chapter.str }}</u></p></li>
                         {% for site in chapter.sites %}
-                        <li class="site item" data-pk="{{site.pk}}"><p>{{ site.str }}</p></li>
+                        <li class="site list-item" data-pk="{{site.pk}}"><p>{{ site.str }}</p></li>
                         {% endfor %}
                         {% endfor %}
                     </ul>
                 </div>
-                <div class="right">
+                <div id="chapter_form_container" class="content hide form-container">
+                </div>
+                <div>
+                    <ul id="chapter_options" class="options border-left">
+                        <li data-url="{% url 'create-chapter' %}" class="option"><a href="#">Create Chapter</a></li>
+                        <li class="option"><a href="#">Update Chapter</a></li>
+                        <li data-url="{% url 'create-site' %}" class="option"><a href="#">Create Site</a></li>
+                        <li class="option"><a href="#">Update Site</a></li>
+                    </ul>
                 </div>
             </div>
         </div>

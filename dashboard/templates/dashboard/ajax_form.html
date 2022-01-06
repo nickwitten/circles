@@ -1,0 +1,37 @@
+<form action="{%if object %}{% url update_url_name pk=object.pk %}{% else %}{% url create_url_name %}{% endif %}" class="ajax-form" method="POST">
+    {% csrf_token %}
+    {% if object %}
+    <h6 class="header">Update {{ object_name }}</h6>
+    {% else %}
+    <h6 class="header">Create {{ object_name }}</h6>
+    {% endif %}
+    <div class="fields">
+
+        <!-- In case there are multiple forms -->
+        {% if forms %}
+        {% for form in forms %}
+        {% for field in form %}
+        <div class="field">
+            {{ field.label_tag }}
+            {{ field }}
+        </div>
+        {% endfor %}
+        {% endfor %}
+        {% endif %}
+        <!-------------------------------------->
+
+        {% for field in form %}
+        <div class="field">
+            {{ field.label_tag }}
+            {{ field }}
+        </div>
+        {% endfor %}
+
+    </div>
+    <div class="buttons reverse">
+        <button class="btn btn-outline-info" type="submit">Submit</button>
+        {% if object %}
+        <button class="delete-btn btn btn-outline-danger" data-type="POST" data-url="{% url delete_url_name pk=object.pk }}">Delete</button>
+        {% endif %}
+    </div>
+</form>

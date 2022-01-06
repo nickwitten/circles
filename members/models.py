@@ -17,8 +17,8 @@ class Chapter(models.Model):
         return f'{self.chapter}'
 
 class Site(models.Model):
-    site = models.CharField(max_length=64)
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='sites', null=True)
+    site = models.CharField(max_length=64)
 
     def profiles(self):
         return Profile.objects.filter(roles__site=self).distinct()

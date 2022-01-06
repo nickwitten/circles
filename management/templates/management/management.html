@@ -28,6 +28,15 @@
 {% block js %}
 <script>
     var url_management = "{% url 'management' %}";
+    var url_create_user = "{% url 'create-user' %}";
+    var url_update_user = "{% url 'update-user' pk=0 %}";
+    var url_delete_user = "{% url 'delete-user' pk=0 %}";
+    var url_create_chapter = "{% url 'create-chapter' %}";
+    var url_update_chapter = "{% url 'update-chapter' pk=0 %}";
+    var url_delete_chapter = "{% url 'delete-chapter' pk=0 %}";
+    var url_create_site = "{% url 'create-site' %}";
+    var url_update_site = "{% url 'update-site' pk=0 %}";
+    var url_delete_site = "{% url 'delete-site' pk=0 %}";
 </script>
 <script src="{% static 'management/js/management.js' %}"></script>
 {% endblock %}

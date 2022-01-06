@@ -3,6 +3,7 @@
 
 :root {
   --circles-blue:  #4989c7;
+  --light-grey: #dee2e6;
 }
 body {
   background: #fafafa;
@@ -479,6 +480,54 @@ header a{
     }
 }
 
+
+.ajax-form {
+    display: flex;
+    flex-flow: column;
+    justify-content: space-between;
+}
+.ajax-form .header {
+    text-align: center;
+    padding: 0.5rem;
+}
+.ajax-form .fields{
+    display: table;
+    border-spacing: 0.5rem
+}
+.ajax-form .field {
+    display: table-row;
+    align-items: baseline;
+}
+.ajax-form .buttons {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+}
+.ajax-form .reverse {
+    flex-direction: row-reverse;
+}
+.ajax-form label,
+.ajax-form input {
+    display: table-cell;
+    margin: 0;
+    font-size: calc(8px + 0.3vw);
+    padding: 0;
+}
+.ajax-form input {
+    height: auto;
+    border: none;
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 0;
+    font-size: calc(8px + 0.3vw);
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+
 .multi-level-dropdown,
 .dropdown {
     position: relative;
@@ -643,7 +692,6 @@ header a{
 }
 .folder .folder-header {
     display: flex;
-    width: fit-content;
     align-items: baseline;
     padding: 0.5rem 0;
 }
@@ -661,8 +709,43 @@ header a{
 }
 .folder .folder-content {
     height: 0;
-    overflow-y: hidden;
+    overflow-y: auto;
     transition: all 0.2s ease-in-out;
+}
+
+
+.list-edit {
+    display: flex;
+    flex-flow: row wrap;
+}
+.list-edit .content {
+    flex-grow: 1;
+    transition: all 0.2s ease-in-out;
+}
+.list-edit .content.hide {
+    overflow: hidden;
+    flex-grow: 0;
+    width: 0;
+}
+.list-edit .data-list {
+    height: 25rem;
+    overflow-y: auto;
+}
+.list-edit .list-item {
+    padding: 0.5rem;
+}
+.list-edit .list-item.active {
+    font-weight: 500;
+}
+.list-edit .form-container {
+    display: flex;
+    justify-content: center;
+}
+.list-edit .options {
+    height: 100%;
+}
+.list-edit .option {
+    padding: 0.5rem;
 }
 
 

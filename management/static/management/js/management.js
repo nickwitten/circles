@@ -1,29 +1,96 @@
-class AdminManage extends JqueryElement {
-    constructor(id, parent) {
+class ModelListEdit extends JqueryElement {
+    constructor(id, datalist_id, form_id, parent) {
         super(id, parent)
-        this.folders = new Folders("admin_folders", this);
-        this.init_users();
-        this.init_chapters();
+        this.datalist_id = datalist_id;
+        this.form_id = form_id;
+        this.init_datalist();
+        this.listeners();
     }
 
-    init_users() {
-        var user_elements = $('#users').find('.user');
+    init_datalist() {
+        var list_elements = this.element.find('.list-item');
+        var jquery_items = []
+        for (var i=0; i<list_elements.length; i++ ) {
+            jquery_items.push($(list_elements[i]));
+        }
+        this.data_list = new DataList(this.datalist_id, jquery_items, this);
+        this.data_list.reset();
+    }
+
+    select_form(option) {
+        if ($(option).attr("data-url")) {
+            this.form = new AjaxForm(this.form_id, $(option).attr("data-url"), this);
+            this.element.find(".content.hide").removeClass("hide");
+        }
+    }
+
+    listeners() {
+        this.element.children().off(".list-edit");
+        this.element.find(".option").on("click.list-edit", {'object': this, 'func': this.select_form}, this.dispatch);
+    }
+}
+
+class Users extends JqueryElement {
+    constructor(id, parent) {
+        super(id, parent)
+        var user_elements = this.element.find('.user');
         var items = []
         for (var i=0; i<user_elements.length; i++ ) {
             items.push($(user_elements[i]));
         }
         this.users = new DataList("users", items, this);
         this.users.reset();
+        this.user_form = new AjaxForm("user_form_container", url_create_user, this);
+        this.listeners();
     }
 
-    init_chapters() {
-        var elements = $('#chapters').find('.item');
+    select_form(option) {
+        if ($(option).attr("data-url")) {
+            this.user_form = new AjaxForm("user_form_container", $(option).attr("data-url"), this);
+            this.element.find(".content.hide").removeClass("hide");
+        }
+    }
+
+    listeners() {
+        this.element.children().off(".manage");
+        this.element.find(".option").on("click.manage", {'object': this, 'func': this.select_form}, this.dispatch);
+    }
+}
+
+class Chapters extends JqueryElement {
+    constructor(id, parent) {
+        super(id, parent);
+        var elements = this.element.find('.item');
         var items = []
         for (var i=0; i<elements.length; i++ ) {
             items.push($(elements[i]));
         }
         this.chapters = new DataList("chapters", items, this);
         this.chapters.reset();
+        this.chapter_form = new AjaxForm("chapter_form_container", url_create_chapter, this);
+        this.listeners();
+    }
+
+    select_form(option) {
+        if ($(option).attr("data-url")) {
+            this.chapter_form = new AjaxForm("chapter_form_container", $(option).attr("data-url"), this);
+            this.element.find(".content.hide").removeClass("hide");
+        }
+    }
+
+    listeners() {
+        this.element.children().off(".manage");
+        this.element.find(".option").on("click.manage", {'object': this, 'func': this.select_form}, this.dispatch);
+    }
+}
+
+
+class AdminManage extends JqueryElement {
+    constructor(id, parent) {
+        super(id, parent)
+        this.folders = new Folders("admin_folders", this);
+        this.users = new ModelListEdit("users_content", "users", "user_form_container", this);
+        this.chapters = new ModelListEdit("chapters_content", "chapters", "chapter_form_container", this);
     }
 }
 
@@ -81,8 +148,6 @@ function update_page() {
         management_menu.trigger_update();
         return
     }
-    console.log(query);
-    console.log(management_menu.manage_select.value);
 
 //     if (query.site) {
 //         learning_list.site_select.set_value(query.site, true);

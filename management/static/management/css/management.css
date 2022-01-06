@@ -25,50 +25,11 @@
     padding: 2rem;
 }
 
-.folder-content {
-    display: flex;
-    flex-flow: row wrap;
-}
-.folder-content .left {
-    flex-grow: 1;
-    min-width: 200px;
-}
-.folder-content .right {
-    flex-grow: 1;
-    min-width: 200px;
-}
 
-#users_content {
-    display: flex;
-}
-#users {
-    border: 1px solid #dee2e6;
-    height: 20rem;
-    margin: 0 1rem;
-    overflow-y: auto;
-}
-#users .user {
-    padding: 0.5rem;
-}
-#users .user.active {
-    font-weight: 500;
-}
-
-#chapters_content {
-    display: flex;
-}
 #chapters {
-    border: 1px solid #dee2e6;
-    height: 20rem;
-    margin: 0 1rem;
-    overflow-y: auto;
+    height: 15rem;
 }
-#chapters .item {
-    padding: 0.5rem;
-}
-#chapters .item.active {
-    font-weight: 500;
-}
-#chapters .item.site p {
+#chapters .list-item.site p {
     margin-left: 1rem;
 }
+
