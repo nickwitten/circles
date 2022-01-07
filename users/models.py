@@ -14,11 +14,13 @@ class UserInfo(models.Model):
         return f'{self.user}'
 
     def user_site_access(self):
+        if self.user.is_superuser:
+            return Site.objects.all()
         return self.site_access.all()
 
     def user_site_access_dict(self):
         site_access = []
-        sites = self.site_access.all()
+        sites = self.user_site_access()
         for site in sites:
             sites_chapter = site.chapter
             site_dict = {'pk': site.pk, 'str': str(site)}
@@ -32,12 +34,12 @@ class UserInfo(models.Model):
         return site_access
 
     def user_meeting_access(self):
-        sites = self.site_access.all()
+        sites = self.user_site_access()
         meetings = Meeting.objects.filter(site__in=sites)
         return meetings
 
     def user_profile_access(self):
-        sites = self.site_access.all()
+        sites = self.user_site_access()
         # Need to check if it has a role with site field in sites
         profiles = Profile.objects.filter(roles__site__in=sites).distinct()
         return profiles

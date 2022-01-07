@@ -526,6 +526,10 @@ header a{
     background-clip: padding-box;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
+.ajax-form .invalid {
+    display: table-cell;
+    font-size: calc(8px + 0.3vw);
+}
 
 
 .multi-level-dropdown,
@@ -721,9 +725,9 @@ header a{
 .list-edit .content {
     flex-grow: 1;
     transition: all 0.2s ease-in-out;
+    overflow: hidden;
 }
 .list-edit .content.hide {
-    overflow: hidden;
     flex-grow: 0;
     width: 0;
 }
@@ -738,8 +742,14 @@ header a{
     font-weight: 500;
 }
 .list-edit .form-container {
+    position: relative;
     display: flex;
     justify-content: center;
+}
+.list-edit .form-container .back {
+    width: fit-content;
+    left: 0;
+    top: 0;
 }
 .list-edit .options {
     height: 100%;

@@ -6,6 +6,7 @@ from django.db.models import Value
 from django.db import models as django_models
 from django.db.models.functions import Concat
 from django.http import JsonResponse, QueryDict
+from django.urls import reverse
 from django.shortcuts import render, get_object_or_404
 from django.views.generic.base import TemplateView, View
 from django.contrib.auth.models import User
@@ -73,7 +74,7 @@ class UserInfo(TemplateView):
         return super(UserInfo, self).get(request, *args, forms=self.render_forms(), object=user, **kwargs)
 
     def post(self, request):
-        super(UserInfo, self).post(request, *args, **kwargs)
+        pass
 
 chapter_context = {
     'create_url_name': 'create-chapter',
@@ -86,6 +87,9 @@ class CreateChapterView(generic.CreateView):
     template_name = 'dashboard/ajax_form.html'
     form_class = member_forms.ChapterCreationForm
     extra_context = chapter_context
+
+    def get_success_url(self):
+        return reverse("management")
 
 class UpdateChapterView(generic.CreateView):
     model = member_models.Chapter
@@ -107,6 +111,9 @@ class CreateSiteView(generic.CreateView):
     template_name = 'dashboard/ajax_form.html'
     form_class = member_forms.SiteCreationForm
     extra_context = site_context
+
+    def get_success_url(self):
+        return reverse("management")
 
 class UpdateSiteView(generic.CreateView):
     model = member_models.Site

@@ -190,6 +190,7 @@ class JqueryElement {
         this.parent = parent;
     }
 
+    // Call a function from jquery event data
     dispatch(event) {
         var event_this = this;
         var extra_data = null;
@@ -198,16 +199,76 @@ class JqueryElement {
         }
         event.data.func.call(event.data.object, event_this, event, extra_data);
     }
+
+    // Return a callback function to call func from the given object
+    callback(func, {callfrom=this, extra_data={}} = {}) {
+        return function() {
+            func.call(callfrom, extra_data);
+        }
+    }
 }
 
 
 
 
 class AjaxForm extends JqueryElement {
-    constructor(id, url, parent) {
+    constructor(id, url, {onload_func=null, success_func=null, invalid_func=null, parent=null} = {}) {
         super(id, parent);
-        this.url = url
-        this.element.load(this.url);
+        this.url = url;
+        this.method = "POST";
+        this.errorClass = ".invalid";
+        this.onload = onload_func;
+        this.success = success_func;
+        this.invalid = invalid_func;
+        this.form_element = null;
+        this.submit_btn = null
+    }
+
+    load() {
+        this.element.load(this.url, null, this.callback(this.on_load, {callfrom: this}));
+    }
+
+    on_load() {
+        // Addback includes the element being called from
+        this.form_element = this.element.find("form").addBack("form").first();
+        this.submit_btn = this.element.find(".submit-btn");
+
+        this.listeners();
+        if (typeof(this.onload) === 'function') {
+            this.onload();
+        }
+    }
+
+    submit_form(event_object, event) {
+        event.preventDefault();
+        $.ajax({
+            type: this.method,
+            url: this.url,
+            data: new FormData(this.form_element[0]),
+            contentType: false,
+            processData: false,
+            context: this,
+            beforeSend: function () {
+                this.submit_btn.prop("disabled", true);
+            },
+            success: function (response) {
+                if ($(response).find(this.errorClass).length > 0) {
+                    // Form is not valid, update it with errors
+                    this.element.html(response);
+                    this.on_load();
+                    if (typeof(this.invalid) == 'function') {
+                        this.invalid(response);
+                    }
+                } else if (typeof(this.success) === 'function') {
+                    this.success(response);
+                }
+            }
+        });
+    }
+
+    listeners() {
+        this.element.find("*").addBack("*").off(".ajaxform");
+        this.element.find(".submit-btn").on("click.ajaxform", {'func': this.submit_form, 'object': this}, this.dispatch);
     }
 }
 

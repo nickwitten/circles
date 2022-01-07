@@ -1,4 +1,5 @@
 <form action="{%if object %}{% url update_url_name pk=object.pk %}{% else %}{% url create_url_name %}{% endif %}" class="ajax-form" method="POST">
+    <!--<i class="back fas fa-times blacklink"></i>-->
     {% csrf_token %}
     {% if object %}
     <h6 class="header">Update {{ object_name }}</h6>
@@ -12,6 +13,9 @@
         {% for form in forms %}
         {% for field in form %}
         <div class="field">
+            {% for error in field.errors %}
+            {{ error }}
+            {% endfor %}
             {{ field.label_tag }}
             {{ field }}
         </div>
@@ -22,6 +26,12 @@
 
         {% for field in form %}
         <div class="field">
+            {% for error in field.errors %}
+            <span class="invalid"></span>  <!--spacer-->
+            <strong class="invalid">{{ error }}</strong>
+            {% endfor %}
+        </div>
+        <div class="field">
             {{ field.label_tag }}
             {{ field }}
         </div>
@@ -29,7 +39,8 @@
 
     </div>
     <div class="buttons reverse">
-        <button class="btn btn-outline-info" type="submit">Submit</button>
+        <!--<button class="submit-btn btn btn-outline-info" type="submit">Submit</button>-->
+        <button class="submit-btn btn btn-outline-info">Submit</button>
         {% if object %}
         <button class="delete-btn btn btn-outline-danger" data-type="POST" data-url="{% url delete_url_name pk=object.pk }}">Delete</button>
         {% endif %}

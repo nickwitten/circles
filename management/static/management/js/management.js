@@ -19,68 +19,53 @@ class ModelListEdit extends JqueryElement {
 
     select_form(option) {
         if ($(option).attr("data-url")) {
-            this.form = new AjaxForm(this.form_id, $(option).attr("data-url"), this);
-            this.element.find(".content.hide").removeClass("hide");
+            var onload_func = function() {
+                this.parent.show_form();
+            }
+            var success_func = function(response) {
+                console.log($(response));
+                this.parent.hide_form();
+                var data_list = $('#'+this.parent.datalist_id);
+                data_list.html($(response).find("#"+this.parent.datalist_id));
+                this.parent.init_datalist();
+            }
+            var invalid_func = function() {
+                this.parent.add_back_btn();
+                this.parent.listeners();
+            }
+            this.form = new AjaxForm(this.form_id, $(option).attr("data-url"), {'onload_func': onload_func, 'success_func': success_func, 'invalid_func': invalid_func, 'parent': this});
+            this.form.load();
+        }
+    }
+
+    show_form() {
+        // (this) is the AjaxForm
+        this.add_back_btn();
+        var hidden = this.element.find(".content.hide");
+        hidden.removeClass("hide");
+        var full_width = hidden.css("width", "auto").width();
+        hidden.width(0);
+        hidden.width(full_width);
+        this.listeners();
+    }
+
+    hide_form() {
+        if (this.hasOwnProperty("form")) {
+            this.form.element.css("width", "");
+            this.form.element.addClass("hide");
+        }
+    }
+
+    add_back_btn() {
+        if (!$('#'+this.form_id).find('.back').length) {
+            $('#'+this.form_id).prepend($('<i/>').addClass("back fas fa-times blacklink"));
         }
     }
 
     listeners() {
-        this.element.children().off(".list-edit");
+        this.element.find("*").addBack("*").off(".list-edit");
         this.element.find(".option").on("click.list-edit", {'object': this, 'func': this.select_form}, this.dispatch);
-    }
-}
-
-class Users extends JqueryElement {
-    constructor(id, parent) {
-        super(id, parent)
-        var user_elements = this.element.find('.user');
-        var items = []
-        for (var i=0; i<user_elements.length; i++ ) {
-            items.push($(user_elements[i]));
-        }
-        this.users = new DataList("users", items, this);
-        this.users.reset();
-        this.user_form = new AjaxForm("user_form_container", url_create_user, this);
-        this.listeners();
-    }
-
-    select_form(option) {
-        if ($(option).attr("data-url")) {
-            this.user_form = new AjaxForm("user_form_container", $(option).attr("data-url"), this);
-            this.element.find(".content.hide").removeClass("hide");
-        }
-    }
-
-    listeners() {
-        this.element.children().off(".manage");
-        this.element.find(".option").on("click.manage", {'object': this, 'func': this.select_form}, this.dispatch);
-    }
-}
-
-class Chapters extends JqueryElement {
-    constructor(id, parent) {
-        super(id, parent);
-        var elements = this.element.find('.item');
-        var items = []
-        for (var i=0; i<elements.length; i++ ) {
-            items.push($(elements[i]));
-        }
-        this.chapters = new DataList("chapters", items, this);
-        this.chapters.reset();
-        this.chapter_form = new AjaxForm("chapter_form_container", url_create_chapter, this);
-        this.listeners();
-    }
-
-    select_form(option) {
-        if ($(option).attr("data-url")) {
-            this.chapter_form = new AjaxForm("chapter_form_container", $(option).attr("data-url"), this);
-            this.element.find(".content.hide").removeClass("hide");
-        }
-    }
-
-    listeners() {
-        this.element.children().off(".manage");
-        this.element.find(".option").on("click.manage", {'object': this, 'func': this.select_form}, this.dispatch);
+        this.element.find(".back").on("click.list-edit", {'object': this, 'func': this.hide_form}, this.dispatch);
     }
 }
 
