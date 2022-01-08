@@ -12,6 +12,7 @@ from django.views.generic.base import TemplateView, View
 from django.contrib.auth.models import User
 from django.views.generic.edit import FormView
 from django.views import generic
+from dashboard.views import MultiObjectView
 from users import forms as user_forms
 from users import models as user_models
 from members import forms as member_forms
@@ -44,12 +45,13 @@ class Management(TemplateView):
 #     def get(self, request):
 #         self.extra_context = {'user': self.request.user}
 
-class UserInfo(TemplateView):
+
+class UserInfo(MultiObjectView):
     template_name = 'dashboard/ajax_form.html'
     model_classes = [User, user_models.UserInfo]
     form_classes = [user_forms.UserRegisterForm, user_forms.UserInfoForm]
-    objects = [None, None]
-    initial = {}
+    objects = list()
+    initial = dict()
     extra_context = {
         'create_url_name': 'create-user',
         'update_url_name': 'update-user',
@@ -57,24 +59,18 @@ class UserInfo(TemplateView):
         'object_name': 'User',
     }
 
-    def render_forms(self):
-        if self.request.method == "POST":
-            forms = [form_class(instance=instance, initial=self.initial) \
-                    for form_class, instance in zip(self.form_classes, self.objects)]
-        if self.request.method == "GET":
-            forms = [form_class(instance=instance, initial=self.initial) \
-                    for form_class, instance in zip(self.form_classes, self.objects)]
-        return forms
-
-    def get(self, request, *args, **kwargs):
+    def get_objects(self, request, *args, **kwargs):
         pk = kwargs.pop("pk", None)
         user = User.objects.filter(pk=pk).first()
         userinfo = user.userinfo if user is not None else None
-        self.objects = [user, userinfo]
-        return super(UserInfo, self).get(request, *args, forms=self.render_forms(), object=user, **kwargs)
+        self.extra_context['object'] = user
+        return [user, userinfo]
 
-    def post(self, request):
-        pass
+class DeleteUserView(generic.DeleteView):
+    model = User
+
+    def get_success_url(self):
+        return reverse("management")
 
 chapter_context = {
     'create_url_name': 'create-chapter',
@@ -91,14 +87,22 @@ class CreateChapterView(generic.CreateView):
     def get_success_url(self):
         return reverse("management")
 
-class UpdateChapterView(generic.CreateView):
+class UpdateChapterView(generic.UpdateView):
     model = member_models.Chapter
     template_name = 'dashboard/ajax_form.html'
     form_class = member_forms.ChapterCreationForm
     extra_context = chapter_context
 
-class DeleteChapterView(generic.CreateView):
+    def get_success_url(self):
+        return reverse("management")
+
+
+class DeleteChapterView(generic.DeleteView):
     model = member_models.Chapter
+
+    def get_success_url(self):
+        return reverse("management")
+
 
 site_context = {
     'create_url_name': 'create-site',
@@ -115,12 +119,20 @@ class CreateSiteView(generic.CreateView):
     def get_success_url(self):
         return reverse("management")
 
-class UpdateSiteView(generic.CreateView):
+class UpdateSiteView(generic.UpdateView):
     model = member_models.Site
     template_name = 'dashboard/ajax_form.html'
     form_class = member_forms.SiteCreationForm
     extra_context = site_context
 
-class DeleteSiteView(generic.CreateView):
+    def get_success_url(self):
+        return reverse("management")
+
+
+class DeleteSiteView(generic.DeleteView):
     model = member_models.Site
+
+    def get_success_url(self):
+        return reverse("management")
+
 

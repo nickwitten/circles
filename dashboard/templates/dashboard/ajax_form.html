@@ -40,9 +40,9 @@
     </div>
     <div class="buttons reverse">
         <!--<button class="submit-btn btn btn-outline-info" type="submit">Submit</button>-->
-        <button class="submit-btn btn btn-outline-info">Submit</button>
+        <button class="submit-btn btn btn-outline-secondary">Submit</button>
         {% if object %}
-        <button class="delete-btn btn btn-outline-danger" data-type="POST" data-url="{% url delete_url_name pk=object.pk }}">Delete</button>
+        <button class="delete-btn btn btn-outline-danger" data-type="POST" data-url="{% url delete_url_name pk=object.pk %}">Delete</button>
         {% endif %}
     </div>
 </form>

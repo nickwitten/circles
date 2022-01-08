@@ -528,7 +528,6 @@ header a{
 }
 .ajax-form .invalid {
     display: table-cell;
-    font-size: calc(8px + 0.3vw);
 }
 
 
@@ -724,7 +723,7 @@ header a{
 }
 .list-edit .content {
     flex-grow: 1;
-    transition: all 0.2s ease-in-out;
+    transition: all 0.1s ease-in-out;
     overflow: hidden;
 }
 .list-edit .content.hide {
@@ -756,6 +755,10 @@ header a{
 }
 .list-edit .option {
     padding: 0.5rem;
+}
+.list-edit .submit-btn,
+.list-edit .delete-btn {
+    font-size: calc(0.5vw + 5px);
 }
 
 

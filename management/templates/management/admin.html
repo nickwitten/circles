@@ -15,7 +15,7 @@
                 <div class="content">
                     <ul id="users" class="data-list border-right">
                         {% for user in users %}
-                        <li class="list-item"><p>{{ user.first_name }} {{ user.last_name }}</p></li>
+                        <li class="list-item" data-url="{% url 'update-user' pk=user.pk %}"><p class="blacklink">{{ user.first_name }} {{ user.last_name }}</p></li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -39,9 +39,9 @@
                 <div class="content">
                     <ul id="chapters" class="data-list border-right">
                         {% for chapter in sites %}
-                        <li class="chapter list-item" data-pk="{{chapter.pk}}"><p><u>{{ chapter.str }}</u></p></li>
+                        <li class="chapter list-item" data-url="{% url 'update-chapter' pk=chapter.pk %}"><p class="blacklink"><u>{{ chapter.str }}</u></p></li>
                         {% for site in chapter.sites %}
-                        <li class="site list-item" data-pk="{{site.pk}}"><p>{{ site.str }}</p></li>
+                        <li class="site list-item" data-url="{% url 'update-site' pk=site.pk %}"><p class="blacklink">{{ site.str }}</p></li>
                         {% endfor %}
                         {% endfor %}
                     </ul>

@@ -241,9 +241,14 @@ class AjaxForm extends JqueryElement {
 
     submit_form(event_object, event) {
         event.preventDefault();
+        var url = this.url;
+        var button_url = $(event_object).attr("data-url")
+        if (button_url !== undefined) {
+            var url = button_url;
+        }
         $.ajax({
             type: this.method,
-            url: this.url,
+            url: url,
             data: new FormData(this.form_element[0]),
             contentType: false,
             processData: false,
@@ -269,6 +274,82 @@ class AjaxForm extends JqueryElement {
     listeners() {
         this.element.find("*").addBack("*").off(".ajaxform");
         this.element.find(".submit-btn").on("click.ajaxform", {'func': this.submit_form, 'object': this}, this.dispatch);
+        this.element.find(".delete-btn").on("click.ajaxform", {'func': this.submit_form, 'object': this}, this.dispatch);
+    }
+}
+
+
+
+
+class ModelListEdit extends JqueryElement {
+    constructor(id, datalist_id, form_id, parent) {
+        super(id, parent)
+        this.datalist_id = datalist_id;
+        this.form_id = form_id;
+        this.init_datalist();
+        this.listeners();
+    }
+
+    init_datalist() {
+        var list_elements = this.element.find('.list-item');
+        var jquery_items = []
+        for (var i=0; i<list_elements.length; i++ ) {
+            jquery_items.push($(list_elements[i]));
+        }
+        this.data_list = new DataList(this.datalist_id, jquery_items, this);
+        this.data_list.reset();
+    }
+
+    select_form(option) {
+        if ($(option).attr("data-url")) {
+            var onload_func = function() {
+                this.parent.show_form();
+            }
+            var success_func = function(response) {
+                this.parent.hide_form();
+                var data_list = $('#'+this.parent.datalist_id);
+                data_list.html($(response).find("#"+this.parent.datalist_id));
+                this.parent.init_datalist();
+                this.parent.listeners();
+            }
+            var invalid_func = function() {
+                this.parent.add_back_btn();
+                this.parent.listeners();
+            }
+            this.form = new AjaxForm(this.form_id, $(option).attr("data-url"), {'onload_func': onload_func, 'success_func': success_func, 'invalid_func': invalid_func, 'parent': this});
+            this.form.load();
+        }
+    }
+
+    show_form() {
+        // (this) is the AjaxForm
+        this.add_back_btn();
+        var hidden = this.element.find(".content.hide");
+        hidden.removeClass("hide");
+        var full_width = hidden.css("width", "auto").width();
+        hidden.width(0);
+        hidden.width(full_width);
+        this.listeners();
+    }
+
+    hide_form() {
+        if (this.hasOwnProperty("form")) {
+            this.form.element.css("width", "");
+            this.form.element.addClass("hide");
+        }
+    }
+
+    add_back_btn() {
+        if (!$('#'+this.form_id).find('.back').length) {
+            $('#'+this.form_id).prepend($('<i/>').addClass("back fas fa-times blacklink"));
+        }
+    }
+
+    listeners() {
+        this.element.find("*").addBack("*").off(".list-edit");
+        this.element.find(".option").on("click.list-edit", {'object': this, 'func': this.select_form}, this.dispatch);
+        this.element.find(".back").on("click.list-edit", {'object': this, 'func': this.hide_form}, this.dispatch);
+        this.element.find(".list-item").on("click.list-edit", {'object': this, 'func': this.select_form}, this.dispatch);
     }
 }
 
