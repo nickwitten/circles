@@ -1,0 +1,15 @@
+<form id="{{ form.prefix }}_form" action="{%if object %}{% url update_url_name pk=object.pk %}{% else %}{% url create_url_name %}{% endif %}" class="{{ form_classes }}" method="POST">
+    {% csrf_token %}
+    {% for field in form %}
+    {% for error in field.errors %}
+    <div class="field">
+        <span class="invalid"></span>  <!--spacer-->
+        <strong class="invalid">{{ error }}</strong>
+    </div>
+    {% endfor %}
+    <div class="field">
+        {{ field.label_tag }}
+        {{ field }}
+    </div>
+    {% endfor %}
+</form>

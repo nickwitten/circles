@@ -485,6 +485,8 @@ header a{
     display: flex;
     flex-flow: column;
     justify-content: space-between;
+    padding: 1rem;
+    height: 100%;
 }
 .ajax-form .header {
     text-align: center;
@@ -506,12 +508,17 @@ header a{
 .ajax-form .reverse {
     flex-direction: row-reverse;
 }
+.ajax-form form {
+    display: contents;
+}
 .ajax-form label,
-.ajax-form input {
+.ajax-form input,
+.ajax-form select {
     display: table-cell;
     margin: 0;
     font-size: calc(8px + 0.3vw);
     padding: 0;
+    vertical-align: middle;
 }
 .ajax-form input {
     height: auto;
@@ -742,8 +749,9 @@ header a{
 }
 .list-edit .form-container {
     position: relative;
-    display: flex;
-    justify-content: center;
+    flex-grow: 0;
+}
+.list-edit .ajax-form {
 }
 .list-edit .form-container .back {
     width: fit-content;

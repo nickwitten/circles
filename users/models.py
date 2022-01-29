@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from members.models import Site
+from members.models import Site, Chapter
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from meetings.models import Meeting
@@ -31,6 +31,9 @@ class UserInfo(models.Model):
                     added = True
             if not added:
                 site_access += [{'pk':sites_chapter.pk, 'str': str(sites_chapter), 'sites': [site_dict]}]
+        if self.user.is_superuser:
+            # If the user is a superuser add empty chapters as well.  Helpful when creating new chapters.
+            site_access += [{'pk': chapter.pk, 'str': str(chapter), 'sites': []} for chapter in Chapter.objects.filter(sites=None)]
         return site_access
 
     def user_meeting_access(self):

@@ -30,3 +30,9 @@ class UserInfoForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.visible_fields():
             field.field.widget.attrs['class'] = 'form-control'
+
+    def save(self, commit=True, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        assert user is not None
+        self.instance = user.userinfo
+        super().save(commit)

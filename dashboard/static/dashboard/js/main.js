@@ -183,6 +183,27 @@ function expandTitle(placeholder, selector) {
 
 
 
+class FormDataJSON extends FormData {
+    toJSON() {
+        var object = {};
+        this.forEach((value, key) => {
+            // Reflect.has in favor of: object.hasOwnProperty(key)
+            if(!Reflect.has(object, key)){
+                object[key] = value;
+                return;
+            }
+            if(!Array.isArray(object[key])){
+                object[key] = [object[key]];
+            }
+            object[key].push(value);
+        });
+        return object
+    }
+}
+
+
+
+
 class JqueryElement {
     constructor(id, parent=null) {
         this.id = id;
@@ -230,7 +251,7 @@ class AjaxForm extends JqueryElement {
 
     on_load() {
         // Addback includes the element being called from
-        this.form_element = this.element.find("form").addBack("form").first();
+        this.form_element = this.element.find("form").addBack("form");
         this.submit_btn = this.element.find(".submit-btn");
 
         this.listeners();
@@ -240,21 +261,53 @@ class AjaxForm extends JqueryElement {
     }
 
     submit_form(event_object, event) {
+        /** Submit the form, if there are multiple
+         *  forms found within this element, a 
+         *  json string will be sent to the backend
+         *  with the keys being the form id
+        **/
         event.preventDefault();
         var url = this.url;
         var button_url = $(event_object).attr("data-url")
         if (button_url !== undefined) {
             var url = button_url;
         }
+        var data;
+        var process_data;
+        var content_type;
+        var headers;
+        if (this.form_element.length == 1) {
+            var data = new FormData(this.form_element[0]);
+            process_data = false;  // For sending dom elements false
+            content_type = false;
+            headers = {};
+        } else  if (this.form_element.length > 1) {
+            var data = {}
+            for (var i=0; i<this.form_element.length; i++) {
+                var form = $(this.form_element[i])
+                var form_data = new FormDataJSON(form[0])
+                data[form.attr("id").replace("_form", "")] = JSON.stringify(form_data);
+            }
+            process_data = true;  // For sending dom elements false
+            content_type = 'application/x-www-form-urlencoded; charset=UTF-8';  // this is the default
+            var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
+            headers = {
+                'X-CSRFToken': csrftoken,
+            }
+        } else {
+            console.log("No Form Found");
+            return
+        }
         $.ajax({
             type: this.method,
             url: url,
-            data: new FormData(this.form_element[0]),
-            contentType: false,
-            processData: false,
+            data: data,
+            headers: headers,
+            processData: process_data,
+            contentType: content_type,
             context: this,
             beforeSend: function () {
-                this.submit_btn.prop("disabled", true);
+                //this.submit_btn.prop("disabled", true);
             },
             success: function (response) {
                 if ($(response).find(this.errorClass).length > 0) {

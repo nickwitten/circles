@@ -42,16 +42,8 @@ class Management(TemplateView):
         return super(Management, self).get_context_data(*args, **kwargs)
 
 
-#     def get(self, request):
-#         self.extra_context = {'user': self.request.user}
-
-
 class UserInfo(MultiObjectView):
     template_name = 'dashboard/ajax_form.html'
-    model_classes = [User, user_models.UserInfo]
-    form_classes = [user_forms.UserRegisterForm, user_forms.UserInfoForm]
-    objects = list()
-    initial = dict()
     extra_context = {
         'create_url_name': 'create-user',
         'update_url_name': 'update-user',
@@ -59,12 +51,42 @@ class UserInfo(MultiObjectView):
         'object_name': 'User',
     }
 
-    def get_objects(self, request, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.objects = {
+            "user": {
+                "form_class": user_forms.UserRegisterForm,
+                "instance": None,
+                "initial_data": None,
+                "form_data": None,
+            },
+            "userinfo": {
+                "form_class": user_forms.UserInfoForm,
+                "instance": None,
+                "initial_data": None,
+                "form_data": None,
+            }
+        }
+
+    def get_instances(self, request, *args, **kwargs):
         pk = kwargs.pop("pk", None)
         user = User.objects.filter(pk=pk).first()
-        userinfo = user.userinfo if user is not None else None
-        self.extra_context['object'] = user
-        return [user, userinfo]
+        self.objects["user"]["instance"] = user
+        self.objects["userinfo"]["instance"] = user.userinfo if user is not None else None
+        self.extra_context["object"] = user
+
+    def save_forms(self, forms):
+        all_valid = all([form.is_valid() for form in forms])
+        if all_valid:
+            user_form, userinfo_form = forms
+            user = user_form.save()
+            userinfo_form.save(user=user)
+        return all_valid
+
+    def get_success_url(self):
+        return reverse("management")
+
+
 
 class DeleteUserView(generic.DeleteView):
     model = User
@@ -86,6 +108,7 @@ class CreateChapterView(generic.CreateView):
 
     def get_success_url(self):
         return reverse("management")
+
 
 class UpdateChapterView(generic.UpdateView):
     model = member_models.Chapter
