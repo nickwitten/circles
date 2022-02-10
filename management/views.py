@@ -32,8 +32,8 @@ class Management(TemplateView):
         self.extra_context = {
                 'user': self.request.user,
                 'users': User.objects.all(),
-                # 'sites': self.request.user.userinfo.user_site_access_dict(),
-                'sites': {},
+                'sites': self.request.user.userinfo.user_site_access_dict(),
+                'empty_sites': {},
                 'extra_options': [{
                     'str': 'Adminstration',
                     'value': 'administration',
