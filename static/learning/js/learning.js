@@ -13,7 +13,6 @@ class LearningTypeDropdown extends MultiLevelDropdown {
         var elements = super.build();
         this.element.empty();
         var value = $('<h4/>')
-            .text('Winter Garden Training')
             .addClass('title');
         var options = elements[3];
         options.find('input').first().prop("checked", true);
@@ -1275,7 +1274,8 @@ class LearningList extends DataList {
         this.site_select = this.menu.site_select;
     	this.initialize_site_select();
         var type_data = this.get_type_select_data();
-        this.type_select = new LearningTypeDropdown('learning_type_select', type_data, {type: 'radio'});
+        this.type_select = new LearningTypeDropdown('learning_type_select', type_data, {type: 'radio', value_id:'.option input'});
+        // this.type_select.set_value(['All']);  // If we want training to be default
         this.programming_slide = new InfoSlide('programming_info', 'programming', this);
         this.theme_slide = new InfoSlide('theme_info', 'theme', this);
         this.module_slide = new InfoSlide('module_info', 'module', this);

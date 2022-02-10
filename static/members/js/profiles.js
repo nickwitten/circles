@@ -213,7 +213,7 @@ var filters = [];
 // Form that contains user inputs to filter out and display profile data
 var toolinputform;
 // profiles search result item
-var profileResultList = new DataList("result-list", [])
+var profileResultList = new DataList("result-list")
 
 
 // Initialize page

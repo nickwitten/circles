@@ -3,6 +3,7 @@
 
 :root {
   --circles-blue:  #4989c7;
+  --light-grey: #dee2e6;
 }
 body {
   background: #fafafa;
@@ -479,6 +480,64 @@ header a{
     }
 }
 
+
+.ajax-form {
+    display: flex;
+    flex-flow: column;
+    justify-content: space-between;
+    padding: 1rem;
+    height: 100%;
+}
+.ajax-form .header {
+    text-align: center;
+    padding: 0.5rem;
+}
+.ajax-form .fields{
+    display: table;
+    border-spacing: 0.5rem
+}
+.ajax-form .field {
+    display: table-row;
+    align-items: baseline;
+}
+.ajax-form .buttons {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+}
+.ajax-form .reverse {
+    flex-direction: row-reverse;
+}
+.ajax-form form {
+    display: contents;
+}
+.ajax-form label,
+.ajax-form input,
+.ajax-form select {
+    display: table-cell;
+    margin: 0;
+    font-size: calc(8px + 0.3vw);
+    padding: 0;
+    vertical-align: middle;
+}
+.ajax-form input {
+    height: auto;
+    border: none;
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 0;
+    font-size: calc(8px + 0.3vw);
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.ajax-form .invalid {
+    display: table-cell;
+}
+
+
 .multi-level-dropdown,
 .dropdown {
     position: relative;
@@ -637,6 +696,79 @@ header a{
     padding: 0.25rem;
     font-size: calc(10px + 0.3vw);
 }
+
+
+.folder {
+}
+.folder .folder-header {
+    display: flex;
+    align-items: baseline;
+    padding: 0.5rem 0;
+}
+.folder .folder-header:hover {
+    cursor: pointer;
+}
+.folder .folder-header i {
+    margin-left: 0.5rem;
+}
+.folder .pointer {
+    transition: all 0.2s ease-in-out;
+}
+.folder.open .pointer {
+    transform: rotate(90deg);
+}
+.folder .folder-content {
+    height: 0;
+    overflow-y: auto;
+    transition: all 0.2s ease-in-out;
+}
+
+
+.list-edit {
+    display: flex;
+    flex-flow: row wrap;
+}
+.list-edit .content {
+    flex-grow: 1;
+    transition: all 0.1s ease-in-out;
+    overflow: hidden;
+}
+.list-edit .content.hide {
+    flex-grow: 0;
+    width: 0;
+}
+.list-edit .data-list {
+    height: 25rem;
+    overflow-y: auto;
+}
+.list-edit .list-item {
+    padding: 0.5rem;
+}
+.list-edit .list-item.active {
+    font-weight: 500;
+}
+.list-edit .form-container {
+    position: relative;
+    flex-grow: 0;
+}
+.list-edit .ajax-form {
+}
+.list-edit .form-container .back {
+    width: fit-content;
+    left: 0;
+    top: 0;
+}
+.list-edit .options {
+    height: 100%;
+}
+.list-edit .option {
+    padding: 0.5rem;
+}
+.list-edit .submit-btn,
+.list-edit .delete-btn {
+    font-size: calc(0.5vw + 5px);
+}
+
 
 
 .modal-container {
@@ -938,6 +1070,7 @@ header a{
     -moz-box-shadow:   3px 3px 3px 3px #cccccc96;  /* Firefox 3.5 - 3.6 */
     box-shadow:        3px 3px 3px 3px #cccccc96;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
     transition: all 0.3s ease-in-out;
+    border-radius: 5px;
 }
 #menu.show {
     left: 0;
@@ -945,41 +1078,31 @@ header a{
 #menu h3 {
     margin: 0.25rem 0.5rem;
 }
+#menu .menu-header {
+    display: flex;
+    padding-top: 0.5rem;
+    justify-content: center;
+}
 
 .menu-site-select {
     position: relative;
 }
-.menu-site-select .chapter,
-.menu-site-select .all {
-    display: flex;
-    align-items: center;
-    width: 50%;
-    outline: 1px solid #dee2e6;
-    font-size: calc(12px, 0.5vw);
-}
-.menu-site-select .chapter.shadow {
-    -webkit-box-shadow: 1px 0px 6px 1px #d0d0d0 !important;
-    -moz-box-shadow:   1px 0px 6px 1px #d0d0d0 !important;
-    box-shadow: 1px 0px 6px 1px #d0d0d0 !important;
+.menu-site-select .chapter {
+    padding: 1rem 0 1rem 0.5rem;
 }
 .chapter-text,
 .all p {
-    padding: 10px;
-}
-.menu-site-select .sites {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 50%;
+    margin: 0 10px;
+    font-size: 18px;
 }
 .menu-site-select .sites .site {
     display: flex;
     align-items: center;
-    width: 100%;
-    outline: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
+    padding: 0.5rem 0 0.5rem 1rem;
 }
 .menu-site-select input {
-    margin: 5px;
+    margin: 0 5px;
 }
 
 
