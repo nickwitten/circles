@@ -70,7 +70,11 @@ function makeQuery(queryDict) {
 
 function parseQuery(queryString) {
     var query = {};
-    var pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
+	var queryString = (queryString[0] === '?') ? queryString.substr(1) : queryString;
+    if (!queryString.length) {
+        return query;
+    }
+    var pairs = queryString.split('&');
     for (var i = 0; i < pairs.length; i++) {
         var pair = pairs[i].split('=');
         var name = decodeURIComponent(pair[0]);
@@ -179,6 +183,27 @@ function expandTitle(placeholder, selector) {
 
 
 
+class FormDataJSON extends FormData {
+    toJSON() {
+        var object = {};
+        this.forEach((value, key) => {
+            // Reflect.has in favor of: object.hasOwnProperty(key)
+            if(!Reflect.has(object, key)){
+                object[key] = value;
+                return;
+            }
+            if(!Array.isArray(object[key])){
+                object[key] = [object[key]];
+            }
+            object[key].push(value);
+        });
+        return object
+    }
+}
+
+
+
+
 class JqueryElement {
     constructor(id, parent=null) {
         this.id = id;
@@ -186,6 +211,7 @@ class JqueryElement {
         this.parent = parent;
     }
 
+    // Call a function from jquery event data
     dispatch(event) {
         var event_this = this;
         var extra_data = null;
@@ -194,13 +220,201 @@ class JqueryElement {
         }
         event.data.func.call(event.data.object, event_this, event, extra_data);
     }
+
+    // Return a callback function to call func from the given object
+    callback(func, {callfrom=this, extra_data={}} = {}) {
+        return function() {
+            func.call(callfrom, extra_data);
+        }
+    }
 }
 
+
+
+
+class AjaxForm extends JqueryElement {
+    constructor(id, url, {onload_func=null, success_func=null, invalid_func=null, parent=null} = {}) {
+        super(id, parent);
+        this.url = url;
+        this.method = "POST";
+        this.errorClass = ".invalid";
+        this.onload = onload_func;
+        this.success = success_func;
+        this.invalid = invalid_func;
+        this.form_element = null;
+        this.submit_btn = null
+    }
+
+    load() {
+        this.element.load(this.url, null, this.callback(this.on_load, {callfrom: this}));
+    }
+
+    on_load() {
+        // Addback includes the element being called from
+        this.form_element = this.element.find("form").addBack("form");
+        this.submit_btn = this.element.find(".submit-btn");
+
+        this.listeners();
+        if (typeof(this.onload) === 'function') {
+            this.onload();
+        }
+    }
+
+    submit_form(event_object, event) {
+        /** Submit the form, if there are multiple
+         *  forms found within this element, a 
+         *  json string will be sent to the backend
+         *  with the keys being the form id
+        **/
+        event.preventDefault();
+        var url = this.url;
+        var button_url = $(event_object).attr("data-url")
+        if (button_url !== undefined) {
+            var url = button_url;
+        }
+        var data;
+        var process_data;
+        var content_type;
+        var headers;
+        if (this.form_element.length == 1) {
+            var data = new FormData(this.form_element[0]);
+            process_data = false;  // For sending dom elements false
+            content_type = false;
+            headers = {};
+        } else  if (this.form_element.length > 1) {
+            var data = {}
+            for (var i=0; i<this.form_element.length; i++) {
+                var form = $(this.form_element[i])
+                var form_data = new FormDataJSON(form[0])
+                data[form.attr("id").replace("_form", "")] = JSON.stringify(form_data);
+            }
+            process_data = true;  // For sending dom elements false
+            content_type = 'application/x-www-form-urlencoded; charset=UTF-8';  // this is the default
+            var csrftoken = $('[name = "csrfmiddlewaretoken"]').val();
+            headers = {
+                'X-CSRFToken': csrftoken,
+            }
+        } else {
+            console.log("No Form Found");
+            return
+        }
+        $.ajax({
+            type: this.method,
+            url: url,
+            data: data,
+            headers: headers,
+            processData: process_data,
+            contentType: content_type,
+            context: this,
+            beforeSend: function () {
+                //this.submit_btn.prop("disabled", true);
+            },
+            success: function (response) {
+                if ($(response).find(this.errorClass).length > 0) {
+                    // Form is not valid, update it with errors
+                    this.element.html(response);
+                    this.on_load();
+                    if (typeof(this.invalid) == 'function') {
+                        this.invalid(response);
+                    }
+                } else if (typeof(this.success) === 'function') {
+                    this.success(response);
+                }
+            }
+        });
+    }
+
+    listeners() {
+        this.element.find("*").addBack("*").off(".ajaxform");
+        this.element.find(".submit-btn").on("click.ajaxform", {'func': this.submit_form, 'object': this}, this.dispatch);
+        this.element.find(".delete-btn").on("click.ajaxform", {'func': this.submit_form, 'object': this}, this.dispatch);
+    }
+}
+
+
+
+
+class ModelListEdit extends JqueryElement {
+    constructor(id, datalist_id, form_id, parent) {
+        super(id, parent)
+        this.datalist_id = datalist_id;
+        this.form_id = form_id;
+        this.init_datalist();
+        this.listeners();
+    }
+
+    init_datalist() {
+        var list_elements = this.element.find('.list-item');
+        var jquery_items = []
+        for (var i=0; i<list_elements.length; i++ ) {
+            jquery_items.push($(list_elements[i]));
+        }
+        this.data_list = new DataList(this.datalist_id, jquery_items, this);
+        this.data_list.reset();
+    }
+
+    select_form(option) {
+        if ($(option).attr("data-url")) {
+            var onload_func = function() {
+                this.parent.show_form();
+            }
+            var success_func = function(response) {
+                this.parent.hide_form();
+                var data_list = $('#'+this.parent.datalist_id);
+                data_list.html($(response).find("#"+this.parent.datalist_id));
+                this.parent.init_datalist();
+                this.parent.listeners();
+            }
+            var invalid_func = function() {
+                this.parent.add_back_btn();
+                this.parent.listeners();
+            }
+            this.form = new AjaxForm(this.form_id, $(option).attr("data-url"), {'onload_func': onload_func, 'success_func': success_func, 'invalid_func': invalid_func, 'parent': this});
+            this.form.load();
+        }
+    }
+
+    show_form() {
+        // (this) is the AjaxForm
+        this.add_back_btn();
+        var hidden = this.element.find(".content.hide");
+        hidden.removeClass("hide");
+        var full_width = hidden.css("width", "auto").width();
+        hidden.width(0);
+        hidden.width(full_width);
+        this.listeners();
+    }
+
+    hide_form() {
+        if (this.hasOwnProperty("form")) {
+            this.form.element.css("width", "");
+            this.form.element.addClass("hide");
+        }
+    }
+
+    add_back_btn() {
+        if (!$('#'+this.form_id).find('.back').length) {
+            $('#'+this.form_id).prepend($('<i/>').addClass("back fas fa-times blacklink"));
+        }
+    }
+
+    listeners() {
+        this.element.find("*").addBack("*").off(".list-edit");
+        this.element.find(".option").on("click.list-edit", {'object': this, 'func': this.select_form}, this.dispatch);
+        this.element.find(".back").on("click.list-edit", {'object': this, 'func': this.hide_form}, this.dispatch);
+        this.element.find(".list-item").on("click.list-edit", {'object': this, 'func': this.select_form}, this.dispatch);
+    }
+}
+
+
+
+
 class DataList extends JqueryElement {
-    constructor(id, items) {
+    constructor(id, items, parent) {
         super(id, parent);
         this.element.addClass('data-list');
         this.items = (items) ? items : [];
+        this.default_item_ct = 14;
     }
 
     reset() {
@@ -233,12 +447,11 @@ class DataList extends JqueryElement {
             }
             this.empty();
         } else  {
-            var default_item_ct = 15;
-            item_min_height = this.element.height() / default_item_ct;
+            item_min_height = this.element.height() / this.default_item_ct;
         }
         this.element.empty();
         var items_on_screen = Math.floor(this.element.outerHeight(true)/item_min_height);
-        var item_size = (this.element.outerHeight(true)-2) / items_on_screen;
+        var item_size = (this.element.outerHeight(true)) / items_on_screen;
         for (var i=0; i<this.items.length; i++) {
             this.element.append(this.items[i])
         }
@@ -252,6 +465,54 @@ class DataList extends JqueryElement {
             var mpHeight = $(this).outerHeight(true)-$(this).height();  // margin/padding
             $(this).height(item_size-mpHeight);
         });
+    }
+}
+
+
+class Folders extends JqueryElement {
+    constructor(id, parent=null) {
+        super(id, parent);
+        this.max_height = 550;
+        this.listeners();
+    }
+
+    open(header_element) {
+        var folder = $(header_element).closest('.folder');
+        var content = folder.find('.folder-content');
+        var height = content.height('auto').outerHeight(true);
+        if (this.max_height !== null) {
+            height = (height<this.max_height)?height:this.max_height
+        }
+        content.height(0);
+        content.height(height+2);
+        folder.addClass("open");
+    }
+
+    close(header_element) {
+        var folder = $(header_element).closest('.folder');
+        var content = folder.find('.folder-content');
+        content.height(0);
+        folder.removeClass("open");
+    }
+
+    toggle(header_element, e, event_this) {
+
+        if ($(e.target).is('input')) {
+            return
+        }
+
+        var folder = $(header_element).closest('.folder');
+        var content = folder.find('.folder-content');
+        if (folder.hasClass("open")) {
+            this.close(header_element);
+        } else {
+            this.open(header_element);
+        }
+    }
+
+    listeners() {
+        this.element.find("*").off(".folder");
+        this.element.find(".folder-header").on("click.folder", {'object': this, 'func': this.toggle}, this.dispatch);
     }
 }
 
@@ -1651,27 +1912,17 @@ class Menu extends JqueryElement {
 
 
 
-class MenuSiteSelect extends JqueryElement {
-    constructor(id, type) {
-        super(id);
+class MenuSiteSelect extends Folders {
+    constructor(id, type, parent=null) {
+        super(id, parent);
         this.value = [];
         this.type = type;
         this.reset();
-        this.listeners();
-        this.show_sites(this.element.find('.chapter')[0]);
         if (type == 'radio')  // One must be chosen for radio button
         {
             this.select(this.element.find('.site')[0]);
         }
-    }
-
-    show_sites(chapter) {
-        this.element.find('.chapter').each(function() {
-            $(this).find('.sites').hide();
-            $(this).removeClass('shadow')
-        })
-        $(chapter).addClass('shadow');
-        $(chapter).find('.sites').show();
+        this.listeners();
     }
 
     update_value() {
@@ -1702,7 +1953,7 @@ class MenuSiteSelect extends JqueryElement {
         }
         var site_select = this;
         var all_chapters = true;
-        this.element.find('.chapter').each(function() {
+        this.element.find('.chapter').siblings().each(function() {
             var all_sites = true;
             $(this).find('.site input').each(function() {
                 if (val.includes($(this).val())) {
@@ -1713,7 +1964,8 @@ class MenuSiteSelect extends JqueryElement {
                 }
             });
             if (all_sites) {
-                $(this).children('input').first().prop('checked', true);
+                $(this).siblings('.chapter').children('input').first().prop('checked', true);
+                console.log(this);
             } else {
                 $(this).children('input').first().prop('checked', false);
                 all_chapters = false;
@@ -1728,8 +1980,14 @@ class MenuSiteSelect extends JqueryElement {
     }
 
     select(selected, e) {
-        var option = $(selected).closest('div');
+        // if (!$(selected).is('input')) {
+        //     $(selected).find('input').prop("checked", true);
+        // }
+        var option = $(selected).closest('div').addBack();
         var option_input = option.find('input');
+        console.log(option);
+        console.log(option_input);
+        console.log(option_input.prop("checked"));
 
         if (this.type == 'radio') {
             this.element.find('input').each(function() {
@@ -1741,11 +1999,17 @@ class MenuSiteSelect extends JqueryElement {
         }
 
         if (!e || !$(e.target).is('input')) {
+            // if (e !== undefined) {
+            //     option_input = $(e.target);
+            // }
+            console.log(option_input.prop("checked"));
             option_input.prop('checked', !(option_input.prop("checked")));
+            console.log(option_input.prop("checked"));
         }
 
         // ALL was selected
         if (option.hasClass('all')) {
+            console.log(option_input.prop("checked"));
             this.element.find('input').each(function() {
                 $(this).prop('checked', option_input.prop("checked"));
             });
@@ -1753,7 +2017,8 @@ class MenuSiteSelect extends JqueryElement {
 
         // Full chapter was selected
         if (option.hasClass('chapter')) {
-            option.find('.sites').find('input').each(function() {
+            console.log(option_input.prop("checked"));
+            option.siblings().find('input').each(function() {
                 $(this).prop('checked', option_input.prop("checked"));
             });
         }
@@ -1761,21 +2026,25 @@ class MenuSiteSelect extends JqueryElement {
         // Site was selected
         if (option.hasClass('site')) {
             var allChecked = true;
-            option.closest('.sites').children().each(function() {
+            option.siblings('.site').addBack().each(function() {
                 if (!($(this).find('input').is(':checked'))) {
                     allChecked = false;
                 }
             });
-            option.closest('.chapter').children('input').prop('checked', allChecked);
+            option.closest('.folder').find('.chapter').find('input').prop('checked', allChecked);
         }
 
         // Check to see if all chapters are selected
         allChecked = true
-        this.element.find('.chapter').each(function() {
-            if (!($(this).children('input').is(':checked'))) {
-                allChecked = false;
-            }
+        this.element.find('.chapter').siblings().each(function() {
+            $(this).children().find('input').each(function() {
+                console.log(this);
+                if (!$(this).prop("checked")) {
+                    allChecked = false;
+                }
+            })
         });
+        console.log(allChecked);
         this.element.find('.all input').prop('checked', allChecked);
         this.update_value();
     }
@@ -1797,12 +2066,13 @@ class MenuSiteSelect extends JqueryElement {
     }
 
     listeners() {
-        $('#menu_btn').click({func: this.show, object: this}, this.dispatch);
-        this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
-        this.element.find('.chapter').click({func: this.show_sites, object: this}, this.dispatch);
-        this.element.find('.chapter input').click({func: this.change, object: this}, this.dispatch);
-        this.element.find('.all').click({func: this.change, object: this}, this.dispatch);
-        this.element.find('.site').click({func: this.change, object: this}, this.dispatch);
+        super.listeners();
+        this.element.find("*").addBack("*").off(".menu");
+        $('#menu_btn').on("click.menu", {func: this.show, object: this}, this.dispatch);
+        this.element.find('.back').on("click.menu", {func: this.hide, object: this}, this.dispatch);
+        //this.element.find('.chapter').siblings().addBack().find('input').on("click.menu", {func: this.change, object: this}, this.dispatch);
+        this.element.find('.site').on("click.menu", {func: this.change, object: this}, this.dispatch);
+        this.element.find('.chapter input').on("click.menu", {func: this.change, object: this}, this.dispatch);
     }
 }
 

@@ -1258,8 +1258,10 @@ class Calendar extends JqueryElement {
     }
 
     update_site_select_cookie() {
-        document.cookie = 'viewing_sites=' + JSON.stringify(this.site_select.value) +
-            '; path=/';
+        if (this.site_select.value.length) {
+            document.cookie = 'viewing_sites=' + JSON.stringify(this.site_select.value) +
+                '; path=/';
+        }
     }
 
     make_meeting_text_color(color_str) {

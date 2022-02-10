@@ -1,6 +1,6 @@
 from django import forms
 from bootstrap_modal_forms.forms import BSModalModelForm
-from .models import Profile, Residence, Role, Child, ChildInfo, Site, FilterSet
+from .models import Profile, Residence, Role, Child, ChildInfo, Site, FilterSet, Chapter
 from django.contrib.auth.models import User
 from .data import form_choices_text
 
@@ -11,6 +11,15 @@ class FieldStyleMixin:
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = "form-control"
 
+class ChapterCreationForm(forms.ModelForm):
+    class Meta:
+        model = Chapter
+        fields = '__all__'
+
+class SiteCreationForm(forms.ModelForm):
+    class Meta:
+        model = Site
+        fields = '__all__'
 
 class RoleCreationForm(FieldStyleMixin, BSModalModelForm):
     class Meta:

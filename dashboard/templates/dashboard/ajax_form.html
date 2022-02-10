@@ -1,0 +1,25 @@
+<div class="ajax-form">
+    {% if object %}
+    <h6 class="header">Update {{ object_name }}</h6>
+    {% else %}
+    <h6 class="header">Create {{ object_name }}</h6>
+    {% endif %}
+
+    <div class="fields">
+        {% if forms %}
+            {% for form in forms %}
+                {% include 'dashboard/form.html' with form=form form_classes='' %}
+            {% endfor %}
+        {% else %}
+            {% include 'dashboard/form.html' with form=form form_classes='' %}
+        {% endif %}
+    </div>
+
+    <div class="buttons reverse">
+        <!--<button class="submit-btn btn btn-outline-info" type="submit">Submit</button>-->
+        <button class="submit-btn btn btn-outline-secondary">Submit</button>
+        {% if object %}
+        <button class="delete-btn btn btn-outline-danger" data-type="POST" data-url="{% url delete_url_name pk=object.pk %}">Delete</button>
+        {% endif %}
+    </div>
+</div>

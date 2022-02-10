@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'dashboard.apps.DashboardConfig',
     'meetings.apps.MeetingsConfig',
     'learning.apps.LearningConfig',
+    'management.apps.ManagementConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -83,7 +84,18 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'circles.middleware.RequireAccessMiddleware',
 ]
+
+ACCESS_REQUIRED_URLS = (
+    r'/members/(.*)$',
+    r'/meetings/(.*)$',
+    r'/learning/(.*)$',
+    r'/management/(.*)$',
+)
+ACCESS_REQUIRED_URLS_EXCEPTIONS = (
+)
+
 
 ROOT_URLCONF = 'circles.urls'
 
@@ -159,14 +171,14 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
-LOGIN_REDIRECT_URL = 'dashboard'
-LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = '/members'
+LOGIN_URL = '/login'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')

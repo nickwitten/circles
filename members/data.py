@@ -314,7 +314,7 @@ def field_to_model(field):
 
 def data_to_string(value):
     if value is None:
-        return ''
+        return ''  # This will be 'Not Available'
     elif isinstance(value,PhoneNumber):
         return value.as_e164
     else:
@@ -324,8 +324,8 @@ def data_to_string(value):
 def query_related(related_models, data_type):
     if 'first' in data_type: related_models = [related_models.first()]
     elif 'all' in data_type: related_models = list(related_models)
-    elif 'current' in data_type: related_models = list(related_models.filter(end_date=None))
     elif 'excurrent' in data_type: related_models = list(related_models.exclude(end_date=None))
+    elif 'current' in data_type: related_models = list(related_models.filter(end_date=None))
     return related_models
 
 

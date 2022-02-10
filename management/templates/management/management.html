@@ -1,0 +1,42 @@
+{% extends 'management/base.html' %}
+{% load static %}
+
+{% block app_tabs %}
+<ul class="sub_tags bg-blue" xmlns:style="http://www.w3.org/1999/xhtml" xmlns:style="http://www.w3.org/1999/xhtml">
+    <li class=""><a class="black sub_tabs" href="{% url 'management' %}">Management</a></li>
+</ul>
+{% endblock %}
+
+{% block content %}
+
+
+<div id="main_container" class="shadow container">
+    <i id="menu_btn" class="fas fa-bars blacklink"></i>
+    <div id="menu">
+        <i class="fas fa-times back blacklink"></i>
+        <div class="menu-header"><h3>Manage</h3></div>
+        {% include 'dashboard/site_select.html' with id='menu_site_select' type='radio' chapters=empty_sites extra_options=extra_options %}
+    </div>
+    {% include 'management/admin.html' %}
+</div>
+
+{% include 'dashboard/modal.html' with id='modal' %}
+
+
+{% endblock %}
+
+{% block js %}
+<script>
+    var url_management = "{% url 'management' %}";
+    var url_create_user = "{% url 'create-user' %}";
+    var url_update_user = "{% url 'update-user' pk=0 %}";
+    var url_delete_user = "{% url 'delete-user' pk=0 %}";
+    var url_create_chapter = "{% url 'create-chapter' %}";
+    var url_update_chapter = "{% url 'update-chapter' pk=0 %}";
+    var url_delete_chapter = "{% url 'delete-chapter' pk=0 %}";
+    var url_create_site = "{% url 'create-site' %}";
+    var url_update_site = "{% url 'update-site' pk=0 %}";
+    var url_delete_site = "{% url 'delete-site' pk=0 %}";
+</script>
+<script src="{% static 'management/js/management.js' %}"></script>
+{% endblock %}
