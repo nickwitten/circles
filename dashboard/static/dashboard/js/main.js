@@ -495,7 +495,12 @@ class Folders extends JqueryElement {
         folder.removeClass("open");
     }
 
-    toggle(header_element) {
+    toggle(header_element, e, event_this) {
+
+        if ($(e.target).is('input')) {
+            return
+        }
+
         var folder = $(header_element).closest('.folder');
         var content = folder.find('.folder-content');
         if (folder.hasClass("open")) {
@@ -506,7 +511,8 @@ class Folders extends JqueryElement {
     }
 
     listeners() {
-        this.element.find(".folder-header").click({'object': this, 'func': this.toggle}, this.dispatch);
+        this.element.find("*").off(".folder");
+        this.element.find(".folder-header").on("click.folder", {'object': this, 'func': this.toggle}, this.dispatch);
     }
 }
 
@@ -1906,27 +1912,17 @@ class Menu extends JqueryElement {
 
 
 
-class MenuSiteSelect extends JqueryElement {
-    constructor(id, type) {
-        super(id);
+class MenuSiteSelect extends Folders {
+    constructor(id, type, parent=null) {
+        super(id, parent);
         this.value = [];
         this.type = type;
         this.reset();
-        this.listeners();
-        this.show_sites(this.element.find('.chapter')[0]);
         if (type == 'radio')  // One must be chosen for radio button
         {
             this.select(this.element.find('.site')[0]);
         }
-    }
-
-    show_sites(chapter) {
-        this.element.find('.chapter').each(function() {
-            $(this).find('.sites').hide();
-            $(this).removeClass('shadow')
-        })
-        $(chapter).addClass('shadow');
-        $(chapter).find('.sites').show();
+        this.listeners();
     }
 
     update_value() {
@@ -1957,7 +1953,7 @@ class MenuSiteSelect extends JqueryElement {
         }
         var site_select = this;
         var all_chapters = true;
-        this.element.find('.chapter').each(function() {
+        this.element.find('.chapter').siblings().each(function() {
             var all_sites = true;
             $(this).find('.site input').each(function() {
                 if (val.includes($(this).val())) {
@@ -1968,7 +1964,8 @@ class MenuSiteSelect extends JqueryElement {
                 }
             });
             if (all_sites) {
-                $(this).children('input').first().prop('checked', true);
+                $(this).siblings('.chapter').children('input').first().prop('checked', true);
+                console.log(this);
             } else {
                 $(this).children('input').first().prop('checked', false);
                 all_chapters = false;
@@ -1983,8 +1980,14 @@ class MenuSiteSelect extends JqueryElement {
     }
 
     select(selected, e) {
-        var option = $(selected).closest('div');
+        // if (!$(selected).is('input')) {
+        //     $(selected).find('input').prop("checked", true);
+        // }
+        var option = $(selected).closest('div').addBack();
         var option_input = option.find('input');
+        console.log(option);
+        console.log(option_input);
+        console.log(option_input.prop("checked"));
 
         if (this.type == 'radio') {
             this.element.find('input').each(function() {
@@ -1996,11 +1999,17 @@ class MenuSiteSelect extends JqueryElement {
         }
 
         if (!e || !$(e.target).is('input')) {
+            // if (e !== undefined) {
+            //     option_input = $(e.target);
+            // }
+            console.log(option_input.prop("checked"));
             option_input.prop('checked', !(option_input.prop("checked")));
+            console.log(option_input.prop("checked"));
         }
 
         // ALL was selected
         if (option.hasClass('all')) {
+            console.log(option_input.prop("checked"));
             this.element.find('input').each(function() {
                 $(this).prop('checked', option_input.prop("checked"));
             });
@@ -2008,7 +2017,8 @@ class MenuSiteSelect extends JqueryElement {
 
         // Full chapter was selected
         if (option.hasClass('chapter')) {
-            option.find('.sites').find('input').each(function() {
+            console.log(option_input.prop("checked"));
+            option.siblings().find('input').each(function() {
                 $(this).prop('checked', option_input.prop("checked"));
             });
         }
@@ -2016,21 +2026,25 @@ class MenuSiteSelect extends JqueryElement {
         // Site was selected
         if (option.hasClass('site')) {
             var allChecked = true;
-            option.closest('.sites').children().each(function() {
+            option.siblings('.site').addBack().each(function() {
                 if (!($(this).find('input').is(':checked'))) {
                     allChecked = false;
                 }
             });
-            option.closest('.chapter').children('input').prop('checked', allChecked);
+            option.closest('.folder').find('.chapter').find('input').prop('checked', allChecked);
         }
 
         // Check to see if all chapters are selected
         allChecked = true
-        this.element.find('.chapter').each(function() {
-            if (!($(this).children('input').is(':checked'))) {
-                allChecked = false;
-            }
+        this.element.find('.chapter').siblings().each(function() {
+            $(this).children().find('input').each(function() {
+                console.log(this);
+                if (!$(this).prop("checked")) {
+                    allChecked = false;
+                }
+            })
         });
+        console.log(allChecked);
         this.element.find('.all input').prop('checked', allChecked);
         this.update_value();
     }
@@ -2052,12 +2066,13 @@ class MenuSiteSelect extends JqueryElement {
     }
 
     listeners() {
-        $('#menu_btn').click({func: this.show, object: this}, this.dispatch);
-        this.element.find('.back').click({func: this.hide, object: this}, this.dispatch);
-        this.element.find('.chapter').click({func: this.show_sites, object: this}, this.dispatch);
-        this.element.find('.chapter input').click({func: this.change, object: this}, this.dispatch);
-        this.element.find('.all').click({func: this.change, object: this}, this.dispatch);
-        this.element.find('.site').click({func: this.change, object: this}, this.dispatch);
+        super.listeners();
+        this.element.find("*").addBack("*").off(".menu");
+        $('#menu_btn').on("click.menu", {func: this.show, object: this}, this.dispatch);
+        this.element.find('.back').on("click.menu", {func: this.hide, object: this}, this.dispatch);
+        //this.element.find('.chapter').siblings().addBack().find('input').on("click.menu", {func: this.change, object: this}, this.dispatch);
+        this.element.find('.site').on("click.menu", {func: this.change, object: this}, this.dispatch);
+        this.element.find('.chapter input').on("click.menu", {func: this.change, object: this}, this.dispatch);
     }
 }
 

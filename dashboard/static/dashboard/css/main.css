@@ -1070,6 +1070,7 @@ header a{
     -moz-box-shadow:   3px 3px 3px 3px #cccccc96;  /* Firefox 3.5 - 3.6 */
     box-shadow:        3px 3px 3px 3px #cccccc96;  /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
     transition: all 0.3s ease-in-out;
+    border-radius: 5px;
 }
 #menu.show {
     left: 0;
@@ -1077,41 +1078,31 @@ header a{
 #menu h3 {
     margin: 0.25rem 0.5rem;
 }
+#menu .menu-header {
+    display: flex;
+    padding-top: 0.5rem;
+    justify-content: center;
+}
 
 .menu-site-select {
     position: relative;
 }
-.menu-site-select .chapter,
-.menu-site-select .all {
-    display: flex;
-    align-items: center;
-    width: 50%;
-    outline: 1px solid #dee2e6;
-    font-size: calc(12px, 0.5vw);
-}
-.menu-site-select .chapter.shadow {
-    -webkit-box-shadow: 1px 0px 6px 1px #d0d0d0 !important;
-    -moz-box-shadow:   1px 0px 6px 1px #d0d0d0 !important;
-    box-shadow: 1px 0px 6px 1px #d0d0d0 !important;
+.menu-site-select .chapter {
+    padding: 1rem 0 1rem 0.5rem;
 }
 .chapter-text,
 .all p {
-    padding: 10px;
-}
-.menu-site-select .sites {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 50%;
+    margin: 0 10px;
+    font-size: 18px;
 }
 .menu-site-select .sites .site {
     display: flex;
     align-items: center;
-    width: 100%;
-    outline: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
+    padding: 0.5rem 0 0.5rem 1rem;
 }
 .menu-site-select input {
-    margin: 5px;
+    margin: 0 5px;
 }
 
 

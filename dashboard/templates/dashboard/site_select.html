@@ -1,19 +1,24 @@
 <div id="{{ id }}" class="menu-site-select">
     {% if type == 'checkbox' %}
-    <div class="all">
-        <input type="checkbox" checked>
-        <p>All</p>
+    <div class="folder">
+        <div class="chapter all folder-header border-bottom">
+            <input type="checkbox" checked>
+            <p>All</p>
+        </div>
     </div>
     {% endif %}
 
     {% if extra_options %}
     {% for extra_option_group in extra_options %}
-    <div class="chapter">
-        {% if type == 'checkbox' %}
-        <input value="{{ extra_option_group.value }}" type="{{ type }}">
-        {% endif %}
-        <p class="chapter-text blacklink">{{ extra_option_group.str }}</p>
-        <div class="sites" style="display: None;">
+    <div class="folder">
+        <div class="chapter folder-header border-bottom">
+            {% if type == 'checkbox' %}
+            <input value="{{ extra_option_group.value }}" type="{{ type }}">
+            {% endif %}
+            <p class="folder-header-text chapter-text blacklink">{{ extra_option_group.str }}</p>
+            <i class="pointer fas fa-caret-right"></i>
+        </div>
+        <div class="sites folder-content">
             {% for option in extra_option_group.options %}
             <div class="site">
                 <input type="{{ type }}" value="{{ option.value }}">
@@ -25,13 +30,17 @@
     {% endfor %}
     {% endif %}
 
+
     {% for chapter in chapters %}
-    <div class="chapter">
-        {% if type == 'checkbox' %}
-        <input value="{{ chapter.pk }}" type="{{ type }}">
-        {% endif %}
-        <p class="chapter-text blacklink">{{ chapter.str }}</p>
-        <div class="sites" style="display: None;">
+    <div class="folder">
+        <div class="chapter folder-header border-bottom">
+            {% if type == 'checkbox' %}
+            <input value="{{ chapter.pk }}" type="{{ type }}">
+            {% endif %}
+            <p class="folder-header-text chapter-text blacklink">{{chapter.str}}</p>
+            <i class="pointer fas fa-caret-right"></i>
+        </div>
+        <div class="sites folder-content">
             {% for site in chapter.sites %}
             <div class="site">
                 <input type="{{ type }}" value="{{ site.pk }}">
@@ -41,4 +50,5 @@
         </div>
     </div>
     {% endfor %}
+
 </div>

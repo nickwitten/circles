@@ -14,7 +14,7 @@
     <i id="menu_btn" class="fas fa-bars blacklink"></i>
     <div id="menu">
         <i class="fas fa-times back blacklink"></i>
-        <h3>Manage</h3>
+        <div class="menu-header"><h3>Manage</h3></div>
         {% include 'dashboard/site_select.html' with id='menu_site_select' type='radio' chapters=sites extra_options=extra_options %}
     </div>
     {% include 'management/admin.html' %}
